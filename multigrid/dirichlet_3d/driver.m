@@ -34,17 +34,21 @@ z0 = 1.23;
 len = pi;
 
 % Number of layers in the multi-grid
-l = 6;
+l = 4;
+
+% Number of cells in coarsest grid - must be odd
+n = 7;
+assert(mod(n,2) == 1,"Number of elements on coarsest grid must be odd")
 
 % number of cells in each dimension
-N = 2^l+1;
+N = 2^l*(n-1)+1;
 
 % Number of smoothings per grids
-nsmooth = 15;
+nsmooth = 20;
 
 % Maximal number of iterations
-max_iter = 4000;
-max_time = 150; % seconds
+max_iter = 2500;
+max_time = 60; % seconds
 
 % Tolerance
 tol = 100*eps;
@@ -97,12 +101,17 @@ err_vcycle = zeros(max_iter,1);
 u_vcycle = zeros(size(u))+u;
 t_vcycle = zeros(max_iter,1);
 
+% Precomputing LDL factorization for coarsest grid
+A = system_matrix(n,h);
+[L,D,P,S]=ldl(A);
+
 start = tic;
 for i=1:max_iter
-    u_vcycle = Vcycle(u_vcycle,f,nsmooth,h);
+    u_vcycle = Vcycle(u_vcycle,f,nsmooth,h,n,L,D,P,S);
     r = -residual(u_vcycle,f,h);
     err_vcycle(i) = norm(reshape(r,[],1),2)/norm(reshape(f,[],1),2);%max(max(abs(u_vcycle-utrue)));
     t_vcycle(i) = toc(start);
+    disp(strcat(['Vcycle iteration ',num2str(i)]))
     if (err_vcycle(i) < tol) || (t_vcycle(i) > max_time)
         err_vcycle = err_vcycle(1:i);
         t_vcycle = t_vcycle(1:i);

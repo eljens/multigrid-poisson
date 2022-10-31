@@ -1,4 +1,4 @@
-function unew = Vcycle(unew,f,nsmooth,h)
+function unew = Vcycle(unew,f,nsmooth,h,n,L,D,P,S)
 %VCYCLE
 % This function makes one Vcycle on a cubic domain with $1+2^l$ lattices in
 % each dimension. Uniform grid spacing is assumed. On the coarsest domain,
@@ -25,8 +25,8 @@ function unew = Vcycle(unew,f,nsmooth,h)
 % 28th of October 2022
     assert(h > 0,"Grid spacing must be positive");
     assert(nsmooth > 0,"Number of Jacobi iterations must be at least one")
-    if(size(unew,1) == 3)
-        unew = f(2,2,2);
+    if(size(unew,1) == n)
+        unew = exact(f,h,L,D,P,S);
         return;
     end
 
@@ -45,7 +45,7 @@ function unew = Vcycle(unew,f,nsmooth,h)
     ec = zeros(size(rc));
 
     % Recursion
-    ec = Vcycle(ec,rc,nsmooth,h);
+    ec = Vcycle(ec,rc,nsmooth,h,n,L,D,P,S);
 
     % Interpolating error
     ef = interpolate(ec);
