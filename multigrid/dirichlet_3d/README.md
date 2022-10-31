@@ -1,22 +1,22 @@
 # A Multi-Grid Poisson Solver
 This project contains a Matlab implementation of a V-cycle multi-grid solver and a baseline Jacobi solver. It solves the Poisson problem on the form
-$$
+```math
 \Delta u = f
-$$
+```
 There are Dirichlet boundary considions imposed on all surfaces. It is assumed that the number of cells in each dimension is even, or equivalently that the number of lattices is odd.
 
 ## Test Problem
 We may consider some trigonometric function
-$$
+```math
 u(x,y,x) = \sin(k_x x)\sin(k_y y)\sin(k_z z)
-$$
+```
 for which it is easy to derive the analytic Laplcian
-$$
+```math
 f = \Delta u = -(kx^2+ky^2+kz^2)u(x,y,x)
-$$
+```
 A slice of the domain has been plotted for simplicity.
 <p align="center">
-  <img src="./figures/solution.png" width="600," title="Analytic and approximate solutions">
+  <img src="./figures/solution.png" width="900," title="Analytic and approximate solutions">
 </p>
 
 ## Convergence Study
