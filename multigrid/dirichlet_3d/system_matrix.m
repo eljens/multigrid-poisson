@@ -1,27 +1,28 @@
-function A = system_matrix(n,h)
-e = ones(n,n,n)/h^2;
+function A = system_matrix(N,h)
+e = ones(N(1),N(2),N(3))/h^2;
 
 b = e;
 
 a = -6*e;
 
 a(:,:,1) = 1;
-a(:,:,n) = 1;
+a(:,:,N(3)) = 1;
 a(:,1,:) = 1;
-a(:,n,:) = 1;
+a(:,N(2),:) = 1;
 a(1,:,:) = 1;
-a(n,:,:) = 1;
+a(N(1),:,:) = 1;
 b(:,:,1) = 0;
-b(:,:,n) = 0;
+b(:,:,N(3)) = 0;
 b(:,1,:) = 0;
-b(:,n,:) = 0;
+b(:,N(2),:) = 0;
 b(1,:,:) = 0;
-b(n,:,:) = 0;
+b(N(1),:,:) = 0;
 
 b = b(:);
 a = a(:);
 
-A = spdiags([b([(n*n+1):end 1:n*n]) b([(n+1):end 1:n]) b([2:end 1]) a...
-    b([end 1:(end-1)]) b([(end-n+1):end 1:end-(n)]) b([(end-n*n+1):end 1:end-(n*n)])],[-n*n,-n,-1,0,1,n,n*n],n*n*n,n*n*n);
+A = spdiags([b([(N(1)*N(2)+1):end 1:N(1)*N(2)]) b([(N(1)+1):end 1:N(1)]) b([2:end 1]) a...
+    b([end 1:(end-1)]) b([(end-N(1)+1):end 1:end-N(1)]) b([(end-N(1)*N(2)+1):end 1:end-N(1)*N(2)])],...
+    [-N(1)*N(2),-N(1),-1,0,1,N(1),N(1)*N(2)],prod(N),prod(N));
 
 end

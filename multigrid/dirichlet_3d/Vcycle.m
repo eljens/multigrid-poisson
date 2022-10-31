@@ -12,12 +12,17 @@ function unew = Vcycle(unew,f,nsmooth,h,n,L,D,P,S)
 %   f: The right hand side. 3D matrix.
 %   nsmooth: The number of Jacobi iterations per grid. Scalar.
 %   h: The grid spacing. Scalar.
+%   n: The dimensions of the coarsest domain. 1 times 3 vector.
+%   L: The lower triangular matrix from the LDL' factorization. 2D matrix.
+%   D: The diagonal matrix from the LDL' factorization. 2D matrix.
+%   P: Mermutation matrix from the LDL' factorization. 2D matrix.
+%   S: The substitution matrix from the LDL' factorization. 2D matrix.
 %
 % Outputs:
 %   A: An approximation of the Laplacian of the solution iterate u. The
 %   residuals of Au=f may be computed ad r = f-Au.
 %
-% See also: JACOBI, RESIDUAL, RESTRICT, INTERPOLATE
+% See also: JACOBI, RESIDUAL, RESTRICT, INTERPOLATE, EXACT
 %
 % Author: Anton Rydahl
 % Richard Petersens Plads, bygn. 324 2800 Kgs. Lyngby
@@ -25,8 +30,8 @@ function unew = Vcycle(unew,f,nsmooth,h,n,L,D,P,S)
 % 28th of October 2022
     assert(h > 0,"Grid spacing must be positive");
     assert(nsmooth > 0,"Number of Jacobi iterations must be at least one")
-    if(size(unew,1) == n)
-        unew = exact(f,h,L,D,P,S);
+    if (size(unew,1) == n(1)) && (size(unew,2) == n(2)) && (size(unew,3) == n(3))
+        unew = exact(f,L,D,P,S);
         return;
     end
 

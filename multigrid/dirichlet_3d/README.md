@@ -3,9 +3,7 @@ This project contains a Matlab implementation of a V-cycle multi-grid solver and
 $$
 \Delta u = f
 $$
-The setup is a bit simplified:
-- The solver only works for cubic, equidistant domains.
-- There are Dirichlet boundary considions on all surfaces.
+There are Dirichlet boundary considions imposed on all surfaces. It is assumed that the number of cells in each dimension is even, or equivalently that the number of lattices is odd.
 
 ## Test Problem
 We may consider some trigonometric function

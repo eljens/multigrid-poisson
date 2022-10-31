@@ -2,8 +2,10 @@
 % This piece of code compares the Jacobi method with a multi-grid method
 % based on Jacobi iterations on increasingly coarser grids.
 %
-% This implementation is simplified and will only work for cubic domains of
-% size 2^l+1 where l is a positive integer.
+% This implementation assumes that the finest grid will always have an even
+% number of cells, or equivalently an odd number of grid points in each
+% dimension. This is only for easing the implementation of the
+% interpolation and restriction operations.
 %
 % Dirichlet boundary conditions are imposed on all boundary surfaces.
 %
@@ -37,8 +39,8 @@ len = pi;
 l = 4;
 
 % Number of cells in coarsest grid - must be odd
-n = 7;
-assert(mod(n,2) == 1,"Number of elements on coarsest grid must be odd")
+n = [5, 9, 7];
+assert(sum(mod(n,2) == 1) == 3,"Number of elements on coarsest grid must be odd")
 
 % number of cells in each dimension
 N = 2^l*(n-1)+1;
@@ -48,25 +50,25 @@ nsmooth = 20;
 
 % Maximal number of iterations
 max_iter = 2500;
-max_time = 60; % seconds
+max_time = 120; % seconds
 
 % Tolerance
 tol = 100*eps;
 
 % Axes
-x = linspace(x0,x0+len,N);
-y = linspace(y0,y0+len,N);
-z = linspace(z0,z0+len,N);
+x = linspace(x0,x0+len,N(1));
+y = linspace(y0,y0+len*(N(2)-1)/(N(1)-1),N(2));
+z = linspace(z0,z0+len*(N(3)-1)/(N(1)-1),N(3));
 
 % Creating mesh grid
-[X,Y,Z] = meshgrid(x',y',z');
+[X,Y,Z] = ndgrid(x',y',z');
 
 % The uniform grid spacing is given by
 h = x(2)-x(1);
 
 % Initializing the Dirichlet boaundary conditions
 u = ufun(X,Y,Z);
-u(2:end-1,2:end-1,2:end-1) = zeros(N-2,N-2,N-2);
+u(2:end-1,2:end-1,2:end-1) = zeros(N(1)-2,N(2)-2,N(3)-2);
 
 % Intializing the right hand side
 f = ffun(X,Y,Z);
@@ -121,7 +123,7 @@ end
 
 %% Plot of some slice of the solution
 
-plotidx = floor(N/2);
+plotidx = floor(N(3)/2);
 
 fig = figure('units','inch','position',[0,0,15,4]);
 subplot(1,3,1)

@@ -16,10 +16,8 @@ function uf = interpolate(uc)
 % Richard Petersens Plads, bygn. 324 2800 Kgs. Lyngby
 % email: rydahlanton@gmail.com
 % 28th of October 2022
-    assert((size(uc,1) == size(uc,2)) && (size(uc,1) == size(uc,3)),...
-        "This function is only meant for cubic domains.")
-    n = size(uc,1);
-    uf = zeros(2*n-1,2*n-1,2*n-1);
+    N = size(uc);
+    uf = zeros(2*N(1)-1,2*N(2)-1,2*N(3)-1);
     uf(1:2:end,1:2:end,1:2:end) = uc;
     uf(2:2:end,:,:) = (uf(3:2:end,:,:) + uf(1:2:end-2,:,:))/2;
     uf(:,2:2:end,:) = (uf(:,3:2:end,:) + uf(:,1:2:end-2,:))/2;
