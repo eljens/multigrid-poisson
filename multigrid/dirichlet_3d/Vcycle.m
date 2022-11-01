@@ -50,7 +50,7 @@ function unew = Vcycle(unew,f,nsmooth,h,n,L,D,P,S)
     ec = zeros(size(rc));
 
     % Recursion
-    ec = Vcycle(ec,rc,nsmooth,h,n,L,D,P,S);
+    ec = Vcycle(ec,rc,nsmooth,2*h,n,L,D,P,S);
 
     % Interpolating error
     ef = interpolate(ec);

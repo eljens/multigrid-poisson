@@ -49,8 +49,8 @@ N = 2^l*(n-1)+1;
 nsmooth = 20;
 
 % Maximal number of iterations
-max_iter = 2500;
-max_time = 120; % seconds
+max_iter = 1000;
+max_time = 30; % seconds
 
 % Tolerance
 tol = 100*eps;
@@ -104,7 +104,7 @@ u_vcycle = zeros(size(u))+u;
 t_vcycle = zeros(max_iter,1);
 
 % Precomputing LDL factorization for coarsest grid
-A = system_matrix(n,h);
+A = system_matrix(n,h*(2^l));
 [L,D,P,S]=ldl(A);
 
 start = tic;
