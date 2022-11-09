@@ -1,8 +1,8 @@
 function [ufun,ffun,dxfun,dyfun] = problem_definition()
     % Function periods
-    kx = 4;
-    ky = 5;
-    kz = 6;
+    kx = 5.56;
+    ky = 19;
+    kz = -0.34;
 
     % Test function
     ufun = @(x,y,z)(sin(kx*x).*sin(ky*y).*sin(kz*z));

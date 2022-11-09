@@ -9,7 +9,7 @@ y0 = 0.21;
 z0 = 1.23;
 
 % Length of domain sides
-len = pi/10;
+len = pi/20;
 
 % Number of smoothings per grids
 nsmooth = 20;
@@ -43,7 +43,7 @@ for l=3:6
     disp(strcat(['Solved on level ',num2str(l)]))
 end
 %%
-[alpha,beta] = ols_log_fit(err_vec(3:end),h_vec(3:end));
+[alpha,beta] = ols_log_fit(err_vec(2:end),h_vec(2:end));
 
 figure(1)
 loglog(h_vec,err_vec,'b*-','DisplayName',strcat(['Abs Err $O(h^{',num2str(beta),'})$']))
