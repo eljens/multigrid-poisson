@@ -4,11 +4,15 @@
 #include "definitions.h"
 #import <iostream>
 #import "omp.h"
+extern "C" {
+	#include "print.h"
+}
 
 using std::initializer_list;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::string;
 
 template <class T>
 class Array {
@@ -61,6 +65,12 @@ class Array {
 				i++;
 			}
 			return (uint_t) res;
+		}
+
+		void to_vtk_file(){
+			cout << "Printing file " << endl;
+			print_vtk("array.vtk",this->shape[0],this->shape[1],this->shape[2],this->at);
+			cout << "Printed file " << endl;
 		}
 };
 

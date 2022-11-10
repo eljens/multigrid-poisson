@@ -35,10 +35,11 @@ Settings parser(int argc, char * argv[]){
 std::ostream& operator<<(std::ostream& os, const Settings& settings)
 {
       os << "Settings:" <<endl;
-      os << "\tDomain size: (" << settings.dims[0] << "," << settings.dims[0] << "," << settings.dims[0] << ")" << endl;
+      os << "\tDomain size: (" << settings.dims[0] << "," << settings.dims[1] << "," << settings.dims[2] << ")" << endl;
       os << "\tMax iterations: " << settings.maxiter << endl;
       os << "\tTolerance " << settings.tolerance << endl;
       os << "\tHost id: " << settings.host << endl;
+      os << "\tDevice id: " << settings.host << endl;
       os << "\tNumber of devices: " << settings.numdev << endl;
       return os;
 }

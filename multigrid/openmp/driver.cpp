@@ -1,5 +1,8 @@
 #import "array.h"
 #import "parser.h"
+#import "domain.h"
+#include "definitions.h"
+#include "problem_definition.h"
 #import <iostream>
 #import <cstdlib>
 #import <cassert>
@@ -9,7 +12,16 @@ using std::endl;
 
 int main(int argc, char * argv[]){
     Settings settings = parser(argc,argv);
-    cout << settings;
+    Domain<double_t> domain(settings);
+
+    domain.init(&ufun,&ffun,&dudxfun,&dudyfun);
+
+    domain.to_device();
+
+    domain.to_host();
+
+    domain.save_result();
+
     /*
     DeviceArray<double_t>A(omp_get_default_device(),{10,3,2});
     for (int i=0;i<10;i++){
@@ -35,5 +47,6 @@ int main(int argc, char * argv[]){
     }
     cout << "DeviceArray works as intended" << endl;
     */
+    cout << "Yas" << endl;
     return EXIT_SUCCESS;
 }
