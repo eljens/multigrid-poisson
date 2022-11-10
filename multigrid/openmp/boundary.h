@@ -6,19 +6,18 @@
 typedef enum {NORTH,SOUTH,EAST,WEST,TOP,BOTTOM} Location_t;
 
 template <class T>
-class Boundary {
+class Boundary :
+    public Array<T>{
     protected:
-    Array<T> * at;
-    Location_t location;
-    public:
-    Boundary(Location_t location,uint_t dim1,uint_t dim2){
-        this->location = location;
-        at = new Array<T>({dim1,dim2});
-    }
-    ~Boundary(){
-        delete at;
-    }
-    //virtual void write() = 0;
+        Location_t location;
+        public:
+        Boundary(Location_t location,initializer_list<uint_t> args,Array<T> domain) : Array<T>(args){
+            this->location = location;
+        }
+        ~Boundary(){
+            delete at;
+        }
+        //virtual void write() = 0;
 };
 
 #endif

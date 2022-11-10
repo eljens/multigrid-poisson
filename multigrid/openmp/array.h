@@ -18,6 +18,7 @@ class Array {
 		uint_t * shape;
 		uint_t ndims = 0;
 		uint_t size;
+		int_t * strides;
 		Array(initializer_list<uint_t> args) {
 			// Counting the number of input arguments
 			for (auto arg : args){
@@ -29,7 +30,7 @@ class Array {
 			uint_t i = 0;
 			uint_t prod = 1;
 			for (auto arg : args){
-				shape[i] = arg;
+				this->shape[i] = arg;
 				prod *=arg;
 				i++;
 			}
@@ -37,11 +38,29 @@ class Array {
 
 			// Allocating the space
 			this->at = new T[size];
+
+			// Computing the strides
+			this->strides = new int_t[size];
+			int cumprod = 1;
+			for(int i=this->ndims-1;i>=0;i--){
+				this->strides[i] = cumprod;
+				cumprod *= this->shape[i];
+			}
 		}
 	
 		~Array() {
 			delete[] this->shape;
 			delete[] this->at;
+		}
+
+		inline uint_t idx(initializer_list<int_t> offsets){
+			int_t res = 0;
+			uint_t i = 0;
+			for (auto offset : offsets){
+				res += offset * this->strides[i];
+				i++;
+			}
+			return (uint_t) res;
 		}
 };
 
@@ -59,6 +78,7 @@ class DeviceArray :
 				if (this->devptr == NULL){
 					cerr << "Error allocating DeviceArray on device " << this->device << endl;
 				}
+				#pragma omp target enter data map(to:this->strides[:this->ndims]) device(this->device)
 			}
 
 			~DeviceArray(){

@@ -1,5 +1,4 @@
-#import "array.h"
-#import "parser.h"
+#import "../array.h"
 #import <iostream>
 #import <cstdlib>
 #import <cassert>
@@ -7,10 +6,8 @@
 using std::cout;
 using std::endl;
 
-int main(int argc, char * argv[]){
-    Settings settings = parser(argc,argv);
-    cout << settings;
-    /*
+int main(void){
+    cout << "Devices available: " << omp_get_num_devices() << endl;
     DeviceArray<double_t>A(omp_get_default_device(),{10,3,2});
     for (int i=0;i<10;i++){
         for (int j=0;j<3;j++){
@@ -34,6 +31,6 @@ int main(int argc, char * argv[]){
         assert(A.at[i]==2*i);
     }
     cout << "DeviceArray works as intended" << endl;
-    */
+
     return EXIT_SUCCESS;
 }

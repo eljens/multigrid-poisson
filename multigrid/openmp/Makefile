@@ -19,17 +19,17 @@ LIBS += -L/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/runtime/src/ -lomp
 $(info Compiler flags are: $(CFLAGS))
 $(info Linker flags are: $(LIBS))
 
-CC = /work3/s174515/LLVM/bin/clang#clang
-CXX = /work3/s174515/LLVM/bin/clang++#clang++
+CC = /work3/s174515/LLVM/bin/clang
+CXX = /work3/s174515/LLVM/bin/clang++
 
-OBJ = 
+OBJ = parser.o
 
 all: $(APP)
 
 $(APP): $(APP).cpp $(OBJ)
 	$(CXX) $(CFLAGS) -o $@ $^ $(LIBS)
 
-%.o: %.cpp 
+%.o: %.cpp
 	$(CXX) $(CFLAGS) -o $@ -c $<
 
 clean:
