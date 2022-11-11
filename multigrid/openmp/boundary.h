@@ -16,10 +16,10 @@ class Boundary :
             const double_t x0 = settings.origin[0];
             const double_t y0 = settings.origin[1];
             const double_t z0 = settings.origin[2];
-            const double h = settings.h;
-            uint offx = 0;
-            uint offy = 0;
-            uint offz = 0;
+            const double_t h = settings.h;
+            double_t offx = 0;
+            double_t offy = 0;
+            double_t offz = 0;
             switch (this->location){
                 case TOP:
                     offz = settings.dims[2]-1;
@@ -36,7 +36,7 @@ class Boundary :
             for(int i = 0;i<this->shape[0];i++){
                 for(int j = 0;j<this->shape[1];j++){
                     for(int k = 0;k<this->shape[2];k++){
-                        this->at[this->idx({i,j,k})] = fun(x0+(i+offx)*h,y0+(j+offy)*h,z0+(i+offz)*h);
+                        this->at[this->idx({i,j,k})] = fun(x0+(((double_t)i)+offx)*h,y0+(((double_t)j)+offy)*h,z0+(((double_t)k)+offz)*h);
                     }
                 }
             }

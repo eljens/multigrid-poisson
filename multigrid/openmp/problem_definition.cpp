@@ -1,7 +1,7 @@
 #include "problem_definition.h"
 
 #define kx 5.56
-#define ky 19.0
+#define ky 8.0
 #define kz -4.34
 
 double_t ufun(double_t x,double_t y,double_t z){

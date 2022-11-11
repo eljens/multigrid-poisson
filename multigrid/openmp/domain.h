@@ -13,6 +13,15 @@ class Domain
 {
 	private:
 		Settings & settings;
+	protected:
+		void write_bc_to(DeviceArray<T> * uarr) {
+			this->north->write_to(uarr,this->settings);
+			this->south->write_to(uarr,this->settings);
+			this->east->write_to(uarr,this->settings);
+			this->west->write_to(uarr,this->settings);
+			this->top->write_to(uarr,this->settings);
+			this->bottom->write_to(uarr,this->settings);
+		}
 	public:
 		DeviceArray<T> * u;
 		DeviceArray<T> * uprev;
@@ -62,13 +71,8 @@ class Domain
 			this->top->init(ufun,dudxfun,dudyfun,this->settings);
 			this->bottom->init(ufun,dudxfun,dudyfun,this->settings);
 
-			// Writing to u
-			this->north->write_to(this->u,this->settings);
-			this->south->write_to(this->u,this->settings);
-			this->east->write_to(this->u,this->settings);
-			this->west->write_to(this->u,this->settings);
-			this->top->write_to(this->u,this->settings);
-			this->bottom->write_to(this->u,this->settings);
+			this->write_bc_to(this->u);
+			this->write_bc_to(this->uprev);
 		}
 
 		void to_device(){

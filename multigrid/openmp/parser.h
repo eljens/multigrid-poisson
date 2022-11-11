@@ -23,7 +23,7 @@ class Settings {
     int_t dev = omp_get_default_device();
     uint_t numdev = omp_get_num_devices();
     double_t h = M_PI/100.0; 
-    double_t origin[3] = {0.25, -0.5, 0.0};
+    double_t origin[3] = {0.5, -0.5, -1.25};
 };
 
 Settings parser(int argc, char * argv[]);
