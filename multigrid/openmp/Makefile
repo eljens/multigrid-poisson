@@ -29,7 +29,7 @@ all: $(APP)
 $(APP): $(APP).cpp $(OBJ) print.o
 	$(CXX) $(CFLAGS) -std=c++17 -o $@ $^ $(LIBS)
 
-%.o: %.cpp
+%.o: %.cpp %.h
 	$(CXX) $(CFLAGS) -std=c++17 -o $@ -c $<
 
 print.o: print.c

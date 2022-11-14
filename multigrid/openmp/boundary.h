@@ -9,7 +9,7 @@ typedef enum {NORTH,SOUTH,EAST,WEST,TOP,BOTTOM} Location_t;
 
 template <class T>
 class Boundary :
-    public DeviceArray<T>{
+    public DeviceArray<T> {
     protected:
         Location_t location;
         void init_by_fun(funptr fun,Settings & settings){
@@ -33,25 +33,27 @@ class Boundary :
                 default:
                     break;
             }
-            for(int i = 0;i<this->shape[0];i++){
-                for(int j = 0;j<this->shape[1];j++){
-                    for(int k = 0;k<this->shape[2];k++){
-                        this->at[this->idx({i,j,k})] = fun(x0+(((double_t)i)+offx)*h,y0+(((double_t)j)+offy)*h,z0+(((double_t)k)+offz)*h);
+            for(int_t i = 0;i<this->shape[0];i++){
+                for(int_t j = 0;j<this->shape[1];j++){
+                    for(int_t k = 0;k<this->shape[2];k++){
+                        this->at[this->idx(i,j,k)] = fun(x0+(((double_t)i)+offx)*h,y0+(((double_t)j)+offy)*h,z0+(((double_t)k)+offz)*h);
                     }
                 }
             }
         }
+
         public:
-        Boundary(int_t device, Location_t location,initializer_list<uint_t> args) : DeviceArray<T>(device,args){
+        Boundary(int_t device, Location_t location,uint_t i, uint_t j, uint_t k) : DeviceArray<T>(device,i,j,k){
             this->location = location;
         }
-        ~Boundary(){
 
+        virtual ~Boundary() {
+            
         }
         
         virtual void init(funptr ufun,funptr dudxfun,funptr dudyfun,Settings & settings);
 
-        void write_to(DeviceArray<T> * u,Settings & settings){
+        void write_to(DeviceArray<T> * uarr,Settings & settings){
             int_t offx = 0;
             int_t offy = 0;
             int_t offz = 0;
@@ -68,10 +70,10 @@ class Boundary :
                 default:
                     break;
             }
-            for(int i = 0;i<this->shape[0];i++){
-                for(int j = 0;j<this->shape[1];j++){
-                    for(int k = 0;k<this->shape[2];k++){
-                        u->at[u->idx({i+offx,j+offy,k+offz})] = this->at[this->idx({i,j,k})];
+            for(int_t i = 0;i<this->shape[0];i++){
+                for(int_t j = 0;j<this->shape[1];j++){
+                    for(int_t k = 0;k<this->shape[2];k++){
+                        uarr->at[uarr->idx(i+offx,j+offy,k+offz)] = this->at[this->idx(i,j,k)];
                     }
                 }
             }
@@ -82,8 +84,12 @@ template <class T>
 class Dirichlet :
     public Boundary<T> {
         public:
-        Dirichlet(int_t device,Location_t location,initializer_list<uint_t> args) : Boundary<T>(device,location,args){
+        Dirichlet(int_t device,Location_t location,uint_t i, uint_t j, uint_t k) : Boundary<T>(device,location,i,j,k){
 
+        }
+
+        virtual ~Dirichlet(){
+            //
         }
 
         void init(funptr ufun,funptr dudxfun,funptr dudyfun,Settings & settings){
@@ -96,8 +102,12 @@ template <class T>
 class Neumann :
     public Boundary<T> {
         public:
-        Neumann(int_t device,Location_t location,initializer_list<uint_t> args) : Boundary<T>(device,location,args){
+        Neumann(int_t device,Location_t location,uint_t i, uint_t j, uint_t k) : Boundary<T>(device,location,i,j,k){
 
+        }
+
+        virtual ~Neumann() {
+            //
         }
 
         void init(funptr ufun,funptr dudxfun,funptr dudyfun,Settings & settings){

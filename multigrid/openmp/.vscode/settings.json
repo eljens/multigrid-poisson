@@ -35,6 +35,17 @@
         "tuple": "cpp",
         "type_traits": "cpp",
         "utility": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "cstring": "cpp",
+        "ctime": "cpp",
+        "hash_map": "cpp",
+        "bitset": "cpp",
+        "unordered_map": "cpp",
+        "fstream": "cpp",
+        "iomanip": "cpp",
+        "ratio": "cpp",
+        "cfenv": "cpp",
+        "cinttypes": "cpp",
+        "typeindex": "cpp"
     }
 }
