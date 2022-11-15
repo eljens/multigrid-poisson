@@ -4,7 +4,7 @@
 #define CHUNK_SIZE 8
 
 #include "domain.h"
-#include "array.h"
+#include "devicearray.h"
 
 #include <iostream>
 
@@ -22,8 +22,6 @@ void jacobi(Domain<T>& domain,T omega){
 
     const T hsq = domain.settings.h*domain.settings.h;
 
-    //cout << "Sizes: u: " << u.size << ", uprev: " << v.size << ", f: " << f.size << endl;
-    //cout << "Address of u is " << u.at << " and address of uprev is " << v.at << endl;
     T * udev = u.devptr;
     T * vdev = v.devptr;
     T * fdev = f.devptr; 

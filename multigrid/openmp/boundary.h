@@ -1,7 +1,7 @@
 #ifndef POISSON_BOUNDARY
 #define POISSON_BOUNDARY
 
-#include "array.h"
+#include "devicearray.h"
 #include "definitions.h"
 #include "problem_definition.h"
 

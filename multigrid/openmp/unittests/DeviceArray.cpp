@@ -1,4 +1,4 @@
-#include "../array.h"
+#include "../devicearray.h"
 #include <iostream>
 #include <cstdlib>
 #include <cassert>

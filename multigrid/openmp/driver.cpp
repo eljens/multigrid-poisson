@@ -1,4 +1,3 @@
-#include "array.h"
 #include "parser.h"
 #include "domain.h"
 #include "definitions.h"
