@@ -4,6 +4,8 @@
 #include "definitions.h"
 #include "parser.h"
 #include "boundary.h"
+#include "neumann.h"
+#include "dirichlet.h"
 #include "problem_definition.h"
 #include "jacobi.h"
 
