@@ -15,25 +15,38 @@ CFLAGS += -I/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/runtime/src/
 LIBS = -lm -L/appl/gcc/11.3.0-binutils-2.38/lib64/ -Wl,-rpath,/appl/gcc/11.3.0-binutils-2.38/lib64/
 LIBS += -L/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/runtime/src/ -lomp
 
-
-$(info Compiler flags are: $(CFLAGS))
-$(info Linker flags are: $(LIBS))
+#$(info Compiler flags are: $(CFLAGS))
+#$(info Linker flags are: $(LIBS))
 
 CC = /work3/s174515/LLVM/bin/clang
 CXX = /work3/s174515/LLVM/bin/clang++
 
+SRCDIR   = src
+OBJDIR   = lib
+BINDIR   = bin
+INCLDIR  = include
+
 OBJ = parser.o problem_definition.o
 
-all: $(APP)
+all: $(BINDIR)/$(APP)
 
-$(APP): $(APP).cpp $(OBJ) print.o
+$(BINDIR)/$(APP): $(APP).cpp $(OBJDIR)/parser.o $(OBJDIR)/problem_definition.o $(OBJDIR)/print.o
 	$(CXX) $(CFLAGS) -std=c++17 -o $@ $^ $(LIBS)
 
-%.o: %.cpp %.h
+$(OBJDIR)/parser.o: $(SRCDIR)/parser.cpp
 	$(CXX) $(CFLAGS) -std=c++17 -o $@ -c $<
 
-print.o: print.c
+$(OBJDIR)/problem_definition.o: $(SRCDIR)/problem_definition.cpp
+	$(CXX) $(CFLAGS) -std=c++17 -o $@ -c $<
+
+$(OBJDIR)/print.o: $(SRCDIR)/print.c
 	$(CC) $(CFLAGS) -std=c17 -o $@ -c $<
 
 clean:
-	-rm -f $(APP) *.core *.o 
+	-rm -f $(BINDIR)/$(APP) *.core *.o 
+	-rm -f $(OBJDIR)/*.o
+
+realclean:
+	make clean
+	-rm -rf *.vtk
+

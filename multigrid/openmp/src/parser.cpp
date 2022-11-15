@@ -1,4 +1,4 @@
-#include "parser.h"
+#include "../include/parser.h"
 
 Settings parser(int argc, char * argv[]){
     string str;

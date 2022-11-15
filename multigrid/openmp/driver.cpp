@@ -1,8 +1,8 @@
-#include "parser.h"
-#include "domain.h"
-#include "definitions.h"
-#include "problem_definition.h"
-#include "jacobi.h"
+#include "include/parser.h"
+#include "include/domain.h"
+#include "include/definitions.h"
+#include "include/problem_definition.h"
+#include "include/jacobi.h"
 #include <iostream>
 #include <cstdlib>
 #include <cassert>

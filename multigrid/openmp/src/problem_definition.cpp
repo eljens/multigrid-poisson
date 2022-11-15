@@ -1,4 +1,4 @@
-#include "problem_definition.h"
+#include "../include/problem_definition.h"
 
 #define kx 5.56
 #define ky 8.0
