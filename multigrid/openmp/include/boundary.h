@@ -4,6 +4,8 @@
 #include "devicearray.h"
 #include "definitions.h"
 #include "problem_definition.h"
+#include "parser.h"
+#include "halo.h"
 
 typedef enum {NORTH,SOUTH,EAST,WEST,TOP,BOTTOM} Location_t;
 
@@ -21,11 +23,12 @@ class Boundary :
         
         virtual void init(funptr ufun,funptr dudxfun,funptr dudyfun,Settings & settings);
 
-        void write_to(DeviceArray<T> * uarr,Settings & settings);
+        void write_to(DeviceArray<T> * uarr);
 };
 
 template<class T>
-Boundary<T>::Boundary(int_t device, Location_t location,uint_t i, uint_t j, uint_t k) : DeviceArray<T>(device,i,j,k){
+Boundary<T>::Boundary(int_t device, Location_t location,uint_t i, uint_t j, uint_t k) :
+    DeviceArray<T>(device,i,j,k) {
     this->location = location;
 }
 
@@ -35,19 +38,19 @@ Boundary<T>::~Boundary() {
 }
 
 template<class T>
-void Boundary<T>::write_to(DeviceArray<T> * uarr,Settings & settings){
+void Boundary<T>::write_to(DeviceArray<T> * uarr){
     int_t offx = 0;
     int_t offy = 0;
     int_t offz = 0;
     switch (this->location){
         case TOP:
-            offz = settings.dims[2]-1;
+            offz = uarr->shape[2]-1;
             break;
         case NORTH:
-            offy = settings.dims[1]-1;
+            offy = uarr->shape[1]-1;
             break;
         case EAST:
-            offx = settings.dims[0]-1;
+            offx = uarr->shape[0]-1;
             break;
         default:
             break;

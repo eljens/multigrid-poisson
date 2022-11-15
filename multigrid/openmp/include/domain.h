@@ -8,6 +8,8 @@
 #include "dirichlet.h"
 #include "problem_definition.h"
 #include "jacobi.h"
+#include "halo.h"
+
 
 using std::cout;
 using std::swap;
@@ -23,6 +25,7 @@ class Domain
 {
 	private:
 		Settings & settings;
+		Halo halo;
 
 		// Granting access to Jacobi
 		friend void jacobi<T>(Domain<T>& domain, T omega);
@@ -42,10 +45,10 @@ class Domain
 		}
 
 		void init_u(DeviceArray<T> * uarr){
-			for(int_t i = 0;i<uarr->shape[0];i++){
-                for(int_t j = 0;j<uarr->shape[1];j++){
-                    for(int_t k = 0;k<uarr->shape[2];k++){
-                        uarr->at[uarr->idx(i,j,k)] = (T) 0.0;
+			for(int_t i = 0;i<uarr->shape[0]+uarr->halo.east+uarr->halo.west;i++){
+                for(int_t j = 0;j<uarr->shape[1]+uarr->halo.north+uarr->halo.south;j++){
+                    for(int_t k = 0;k<uarr->shape[2]+uarr->halo.top+uarr->halo.bottom;k++){
+                        uarr->at[uarr->idx_halo(i,j,k)] = (T) 0.0;
                     }
                 }
             }
@@ -54,12 +57,12 @@ class Domain
 		bool even = true;
 
 		void write_bc_to(DeviceArray<T> * uarr) {
-			this->north->write_to(uarr,this->settings);
-			this->south->write_to(uarr,this->settings);
-			this->east->write_to(uarr,this->settings);
-			this->west->write_to(uarr,this->settings);
-			this->top->write_to(uarr,this->settings);
-			this->bottom->write_to(uarr,this->settings);
+			this->north->write_to(uarr);
+			this->south->write_to(uarr);
+			this->east->write_to(uarr);
+			this->west->write_to(uarr);
+			this->top->write_to(uarr);
+			this->bottom->write_to(uarr);
 		}
 		
 	public:
@@ -72,17 +75,14 @@ class Domain
 		Boundary<T> * west;
 		Boundary<T> * top;
 		Boundary<T> * bottom;
-		uint_t halox[2] = {0,0};
-		uint_t haloy[2] = {0,0};
-		uint_t haloz[2] = {0,0};
 
-		Domain(Settings & _settings) : settings(_settings)
+		Domain(Settings & _settings) : settings(_settings), halo(0,0,0,0,0,0)
 		{
 			cout << "Created domain with settings " << endl;
 			cout << settings;
-			this->u = new DeviceArray<T>(settings.dev,settings.dims[0],settings.dims[1],settings.dims[2]);
-			this->uprev = new DeviceArray<T>(settings.dev,settings.dims[0],settings.dims[1],settings.dims[2]);
-			this->f = new DeviceArray<T>(settings.dev,settings.dims[0],settings.dims[1],settings.dims[2]);
+			this->u = new DeviceArray<T>(settings,halo);
+			this->uprev = new DeviceArray<T>(settings,halo);
+			this->f = new DeviceArray<T>(settings,halo);
 
 			this->north = new Dirichlet<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
 			this->south = new Dirichlet<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);
@@ -139,9 +139,9 @@ class Domain
 		}
 
 		void save_result(){
-			this->f->to_vtk_file("f.vtk");
-			this->u->to_vtk_file("u.vtk");
-			this->uprev->to_vtk_file("uprev.vtk");
+			this->f->print(settings,"f.vtk");
+			this->u->print(settings,"u.vtk");
+			this->uprev->print(settings,"uprev.vtk");
 		}
 
 		void swap_u(){

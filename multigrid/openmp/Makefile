@@ -30,7 +30,7 @@ OBJ = parser.o problem_definition.o
 
 all: $(BINDIR)/$(APP)
 
-$(BINDIR)/$(APP): $(APP).cpp $(OBJDIR)/parser.o $(OBJDIR)/problem_definition.o $(OBJDIR)/print.o
+$(BINDIR)/$(APP): $(APP).cpp $(OBJDIR)/parser.o $(OBJDIR)/problem_definition.o
 	$(CXX) $(CFLAGS) -std=c++17 -o $@ $^ $(LIBS)
 
 $(OBJDIR)/parser.o: $(SRCDIR)/parser.cpp
@@ -38,9 +38,6 @@ $(OBJDIR)/parser.o: $(SRCDIR)/parser.cpp
 
 $(OBJDIR)/problem_definition.o: $(SRCDIR)/problem_definition.cpp
 	$(CXX) $(CFLAGS) -std=c++17 -o $@ -c $<
-
-$(OBJDIR)/print.o: $(SRCDIR)/print.c
-	$(CC) $(CFLAGS) -std=c17 -o $@ -c $<
 
 clean:
 	-rm -f $(BINDIR)/$(APP) *.core *.o 
