@@ -36,9 +36,9 @@ DeviceArray<T>::DeviceArray(uint_t _device,uint_t i, uint_t j, uint_t k) :
 template <class T>
 DeviceArray<T>::DeviceArray(Settings & settings, Halo & _halo) :
 	Array<T>(
-		settings.dims[0]+_halo.east+_halo.west,
-		settings.dims[1]+_halo.north+_halo.south,
-		settings.dims[2]+_halo.top+_halo.bottom,
+		settings.dims[0],
+		settings.dims[1],
+		settings.dims[2],
 		_halo), device(settings.dev) {
 	this->device_allocator();
 }

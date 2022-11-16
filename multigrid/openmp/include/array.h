@@ -40,6 +40,8 @@ class Array {
 		inline uint_t idx_halo(uint_t i,uint_t j, uint_t k) const;
 
 		void print(Settings & settings,const char * str) const;
+
+        void print_halo(Settings & settings,const char * str) const;
 };
 
 template <class T>
@@ -95,7 +97,7 @@ void Array<T>::print(Settings & settings, const char *fname) const{
 
     FILE *f_ptr;
     uint_t written = 0;
-    uint_t items = this->size;
+    uint_t items = this->shape[0]*this->shape[1]*this->shape[2];
     uint_t i,j,k;
 
     if ( (f_ptr = fopen(fname, "w")) == NULL ) {
@@ -135,6 +137,72 @@ void Array<T>::print(Settings & settings, const char *fname) const{
             for (j = 0; j < this->shape[1]; ++j) {
                 for (i = 0; i < this->shape[0]; ++i) {
                     written += fwrite(&(this->at[this->idx(i,j,k)]), sizeof(T), 1, f_ptr);
+                }
+            }
+        }
+    }
+
+    if ( written != items ) {
+	    cerr << "Failed to print file " << fname << endl;
+    }
+
+    fclose(f_ptr);
+}
+
+template <class T>
+void Array<T>::print_halo(Settings & settings, const char *fname) const{
+
+    FILE *f_ptr;
+    uint_t written = 0;
+    uint_t items = this->size;
+    uint_t i,j,k;
+
+    if ( (f_ptr = fopen(fname, "w")) == NULL ) {
+       perror("No output! fopen()");
+       return;
+    }
+
+    uint_t nx = this->shape[0] + this->halo.east + this->halo.west;
+    uint_t ny = this->shape[1] + this->halo.north + this->halo.south;
+    uint_t nz = this->shape[2] + this->halo.top + this->halo.bottom;
+
+    cout << "Printing file " << fname << " with shape (" << nx << "," << ny << "," << nz << ")" << endl;
+
+    // Write VTK file header
+    fprintf(f_ptr, "# vtk DataFile Version 3.0\n");
+    fprintf(f_ptr, "saved from function print_vtk.\n");
+    fprintf(f_ptr, "BINARY\n");
+    fprintf(f_ptr, "DATASET STRUCTURED_POINTS\n");
+    fprintf(f_ptr, "DIMENSIONS %d %d %d\n",(int) nx,(int) ny,(int) nz);
+    fprintf(f_ptr, "ORIGIN %f %f %f\n",
+        (double) settings.origin[0]-((double)this->halo.west)*settings.h,
+        (double) settings.origin[1]-((double)this->halo.south)*settings.h,
+        (double) settings.origin[2]-((double)this->halo.bottom)*settings.h);
+    fprintf(f_ptr, "SPACING %f %f %f\n",(double) settings.h,(double) settings.h,(double) settings.h);
+    fprintf(f_ptr, "POINT_DATA %lu\n", items);
+    fprintf(f_ptr, "SCALARS %s %s 1\n", "gray", "double");
+    fprintf(f_ptr, "LOOKUP_TABLE default\n");
+
+    if ( is_little_endian() ) {
+        // System is little endian, so we need to reverse the byte order.
+        for (k = 0; k < nz; ++k) {
+            for (j = 0; j < ny; ++j) {
+                for (i = 0; i < nx; ++i) {
+            uint64_t crnt = *(uint64_t *)(&(this->at[this->idx_halo(i,j,k)])); // Get double as int
+
+            // Reverse byte order and write to file
+            crnt = (crnt & 0x00000000FFFFFFFF) << 32 | (crnt & 0xFFFFFFFF00000000) >> 32;
+            crnt = (crnt & 0x0000FFFF0000FFFF) << 16 | (crnt & 0xFFFF0000FFFF0000) >> 16;
+            crnt = (crnt & 0x00FF00FF00FF00FF) << 8  | (crnt & 0xFF00FF00FF00FF00) >> 8;
+            written += fwrite(&crnt, sizeof(uint64_t), 1, f_ptr);
+                }
+            }
+        }
+    } else {
+        for (k = 0; k < nz; ++k) {
+            for (j = 0; j < ny; ++j) {
+                for (i = 0; i < nx; ++i) {
+                    written += fwrite(&(this->at[this->idx_halo(i,j,k)]), sizeof(T), 1, f_ptr);
                 }
             }
         }

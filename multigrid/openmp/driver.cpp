@@ -33,7 +33,9 @@ int main(int argc, char * argv[]){
 
     domain.to_host();
 
-    domain.save_result();
+    domain.save();
+
+    domain.save_halo();
 
     double_t err = 0.0;
 
