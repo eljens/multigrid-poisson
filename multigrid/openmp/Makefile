@@ -45,5 +45,5 @@ clean:
 
 realclean:
 	make clean
-	-rm -rf *.vtk
+	-rm -rf results/*.vtk
 

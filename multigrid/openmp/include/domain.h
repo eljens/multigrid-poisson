@@ -76,7 +76,7 @@ class Domain
 		Boundary<T> * top;
 		Boundary<T> * bottom;
 
-		Domain(Settings & _settings) : settings(_settings), halo(1,1,1,1,1,1)
+		Domain(Settings & _settings) : settings(_settings), halo(2,2,2,2,2,2)
 		{
 			cout << "Created domain with settings " << endl;
 			cout << settings;
@@ -139,15 +139,15 @@ class Domain
 		}
 
 		void save(){
-			this->f->print(settings,"f.vtk");
-			this->u->print(settings,"u.vtk");
-			this->uprev->print(settings,"uprev.vtk");
+			this->f->print(settings,"results/f.vtk");
+			this->u->print(settings,"results/u.vtk");
+			this->uprev->print(settings,"results/uprev.vtk");
 		}
 
 		void save_halo(){
-			this->f->print_halo(settings,"f_halo.vtk");
-			this->u->print_halo(settings,"u_halo.vtk");
-			this->uprev->print_halo(settings,"uprev_halo.vtk");
+			this->f->print_halo(settings,"results/f_halo.vtk");
+			this->u->print_halo(settings,"results/u_halo.vtk");
+			this->uprev->print_halo(settings,"results/uprev_halo.vtk");
 		}
 
 		void swap_u(){
