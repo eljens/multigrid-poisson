@@ -23,7 +23,9 @@ class Boundary :
         
         virtual void init(funptr ufun,funptr dudxfun,funptr dudyfun,Settings & settings);
 
-        void write_to(DeviceArray<T> * uarr);
+        virtual void write_to(DeviceArray<T> & uarr, Settings & settings);
+
+        virtual void update(DeviceArray<T> & uarr, Settings & settings);
 };
 
 template<class T>
@@ -36,33 +38,6 @@ template<class T>
 Boundary<T>::~Boundary() {
     // Does nothing
 }
-
-template<class T>
-void Boundary<T>::write_to(DeviceArray<T> * uarr){
-    int_t offx = 0;
-    int_t offy = 0;
-    int_t offz = 0;
-    switch (this->location){
-        case TOP:
-            offz = uarr->shape[2]-1;
-            break;
-        case NORTH:
-            offy = uarr->shape[1]-1;
-            break;
-        case EAST:
-            offx = uarr->shape[0]-1;
-            break;
-        default:
-            break;
-    }
-    for(int_t i = 0;i<this->shape[0];i++){
-        for(int_t j = 0;j<this->shape[1];j++){
-            for(int_t k = 0;k<this->shape[2];k++){
-                uarr->at[uarr->idx(i+offx,j+offy,k+offz)] = this->at[this->idx(i,j,k)];
-            }
-        }
-    }
-};
 
 template<class T>
 void Boundary<T>::init_by_fun(funptr fun,Settings & settings){

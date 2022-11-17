@@ -24,7 +24,7 @@ class Settings {
     int_t host = omp_get_initial_device();
     int_t dev = omp_get_default_device();
     uint_t numdev = omp_get_num_devices();
-    double_t h = 0.02; 
+    double_t h = 0.01; 
     double_t origin[3] = {0.5, -0.5, -1.25};
 };
 

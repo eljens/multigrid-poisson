@@ -12,7 +12,7 @@ using std::endl;
 
 int main(int argc, char * argv[]){
     Settings settings = parser(argc,argv);
-    Domain<double_t> domain(settings);
+    Domain<double_t> domain(settings,false);
 
     cout << "Created domain" << endl;
     const double_t omega = 2.0/3.0;
@@ -27,8 +27,6 @@ int main(int argc, char * argv[]){
 
     for(int_t i=0;i<settings.maxiter;i++){
         jacobi<double_t>(domain,omega);
-        domain.swap_u();
-        //cout << "\rFinished iteration " << i << endl;
     }
 
     domain.to_host();
