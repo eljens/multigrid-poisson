@@ -2,17 +2,21 @@ function unew = jacobi(u,f,h,gx1,gxn,gy1,gyn)
 %JACOBI
 % This function performs one Jacobi iteration for a uniform discretization
 % of the 3D Poisson problem on the form $\Delta u = f$. The function uses
-% weight $\omega=\frac{2}{3}$.
+% weight omega=2/3.
 %
 % Syntax: unew = jacobi(u,f,h)
 %
 % Inputs:
-%   u: The current iterate of the solution. 3D matrix.
-%   f: The right hand side. 3D matrix.
-%   h: The grid spacing. Scalar.
+%   u:      The current iterate of the solution. 3D matrix.
+%   f:      The right hand side. 3D matrix.
+%   h:      The grid spacing. Scalar.
+%   gx1:    The Neumann condition on the west boundary. 2D matrix.
+%   gxn:    The Neumann condition on the east boundary. 2D matrix.
+%   gy1:    The Neumann condition on the south boundary. 2D matrix.
+%   gyn:    The Neumann condition on the north boundary. 2D matrix.
 %
 % Outputs:
-%   unew: The next iterate of the solution.
+%   unew:   The next iterate of the solution.
 %
 % Author: Anton Rydahl
 % Richard Petersens Plads, bygn. 324 2800 Kgs. Lyngby

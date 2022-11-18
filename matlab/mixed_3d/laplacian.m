@@ -1,14 +1,20 @@
 function A = laplacian(u,f,h,gx1,gxn,gy1,gyn)
 %LAPLACIAN
 % This function approximates the Laplacian operator on a 3D domain. This
-% function imposes Diriclet boundary conditions on all surface points.
+% function imposes Diriclet boundary conditions on the horizontal
+% boundaries (top and bottom. It imposes Neumann conditions on the vertical
+% boundaries (east, west, north, and south).
 %
-% Syntax: A = laplacian(u,f,h)
+% Syntax: A = laplacian(u,f,h,gx1,gxn,gy1,gyn)
 %
 % Inputs:
 %   u: The current iterate of the solution. 3D matrix.
 %   f: The right hand side. 3D matrix.
 %   h: The grid spacing. Scalar.
+%   gx1:    The Neumann condition on the west boundary. 2D matrix.
+%   gxn:    The Neumann condition on the east boundary. 2D matrix.
+%   gy1:    The Neumann condition on the south boundary. 2D matrix.
+%   gyn:    The Neumann condition on the north boundary. 2D matrix.
 %
 % Outputs:
 %   A: An approximation of the Laplacian of the solution iterate u. The
@@ -46,22 +52,22 @@ function A = laplacian(u,f,h,gx1,gxn,gy1,gyn)
     A(i,end,k) = (u(i-1,end,k)+u(i+1,end,k)+2*u(i,end-1,k)...
         +u(i,end,k-1)+u(i,end,k+1)-6*u(i,end,k)+2*h*gyn(i,1,k))./(h^2);
 
-    % South West Neumann
+    % South West Corner Neumann
     A(1,1,k) = (2*u(2,1,k)+2*u(1,2,k)...
         +u(1,1,k-1)+u(1,1,k+1)...
         -6*u(1,1,k)-2*h*gx1(1,1,k)-2*h*gy1(1,1,k))./(h^2);
 
-    % South East Neumann
+    % South East Corner Neumann
     A(end,1,k) = (2*u(end-1,1,k)+2*u(end,2,k)...
         +u(end,1,k-1)+u(end,1,k+1)...
         -6*u(end,1,k)+2*h*gxn(1,1,k)-2*h*gy1(end,1,k))./(h^2);
 
-    % North West Neumann
+    % North West Corner Neumann
     A(1,end,k) = (2*u(2,end,k)+2*u(1,end-1,k)...
         +u(1,end,k-1)+u(1,end,k+1)...
         -6*u(1,end,k)-2*h*gx1(1,end,k)+2*h*gyn(1,1,k))./(h^2);
 
-    % North East Neumann
+    % North East Corner Neumann
     A(end,end,k) = (2*u(end-1,end,k)+2*u(end,end-1,k)...
         +u(end,end,k-1)+u(end,end,k+1)...
         -6*u(end,end,k)+2*h*gxn(1,end,k)+2*h*gyn(end,1,k))./(h^2);

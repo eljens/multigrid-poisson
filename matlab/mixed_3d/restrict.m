@@ -1,6 +1,7 @@
 function uc = restrict(uf)
 %RESTRICT
 % This function selects every second point in a domain in each dimension.
+% this is also known as the injection interpolation operator.
 %
 % Syntax: uc = restrict(uf)
 %

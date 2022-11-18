@@ -26,3 +26,6 @@ The multigrid algorithms are based on the following properties/assumptions:
 - The multigrid scheme is based on V-cycles.
 - Injection is used as the restriction operator.
 - Bi- or trilinear interpolation is used as interpolation operator in 2d and 3d respectively.
+
+## Help
+Matlab function headers has been written following the [standard](https://se.mathworks.com/help/simulink/mdl_gd/maab/na_0025matlabfunctionheader.html) such that `help <function>.m` will print documentation in a formatted way that is easier to read than the comments in the Matlab editor.

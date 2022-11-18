@@ -3,7 +3,7 @@ This project contains a Matlab implementation of a V-cycle multi-grid solver and
 ```math
 \Delta u = f
 ```
-There are Dirichlet boundary considions imposed on all surfaces. It is assumed that the number of cells in each dimension is even, or equivalently that the number of lattices is odd.
+There are Dirichlet boundary condidions imposed on horizontal boundaries and Neumann conditions imposed on vertical boundaries. It is assumed that the number of cells in each dimension is even, or equivalently that the number of lattices is odd.
 
 ## Test Problem
 We may consider some trigonometric function

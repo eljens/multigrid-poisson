@@ -1,22 +1,28 @@
 function u = exact(u,f,L,U,p,h,gx1,gxn,gy1,gyn)
 %EXACT
 % This function computes the exact solution to \Delta u = f. This routine
-% takes a precomputed LDL' factorization as input. It can be computed by
-% [L,D,P,S]=ldl(A) where A is the system matrix.
+% takes a precomputed LU decomposition as input. The LU decomposition of 
+% the Laplacian operator on the coarsest grid can be computed with 
+% [L,U,p] = lu(A,'vector').
 %
-% Syntax: u = exact(f,L,D,P,S)
+% Syntax: u = exact(u,f,L,U,p,h,gx1,gxn,gy1,gyn)
 %
 % Inputs:
+%   u: The current iterate of the solution. 3D matrix.
 %   f: The right hand side. 3D matrix.
-%   L: The lower triangular matrix from the LDL' factorization. 2D matrix.
-%   D: The diagonal matrix from the LDL' factorization. 2D matrix.
-%   P: Mermutation matrix from the LDL' factorization. 2D matrix.
-%   S: The substitution matrix from the LDL' factorization. 2D matrix.
+%   L: The lower triangular matrix from the LU decomposition. 2D matrix.
+%   D: The upper triangular matrix from the U decomposition. 2D matrix.
+%   p: Mermutation matrix from the LU decomposition. 1D vector.
+%   h: The uniform grid spacing. Scalar.
+%   gx1: The Neumann condition on the west boundary. 2D matrix.
+%   gxn: The Neumann condition on the east boundary. 2D matrix.
+%   gy1: The Neumann condition on the south boundary. 2D matrix.
+%   gyn: The Neumann condition on the north boundary. 2D matrix.
 %
 % Outputs:
 %   u: The exact solution.
 %
-% See also: ldl
+% See also: LU
 %
 % Author: Anton Rydahl
 % Richard Petersens Plads, bygn. 324 2800 Kgs. Lyngby
@@ -25,10 +31,14 @@ function u = exact(u,f,L,U,p,h,gx1,gxn,gy1,gyn)
     N = size(f);
     f(:,:,2:end-1) = f(:,:,2:end-1)*h^2;
 
-    % Dirichlet condition
+    % Imposing the Dirichlet conditions
+    % Bottom
     f(:,:,1) = u(:,:,1);
+
+    % Top
     f(:,:,end) = u(:,:,end);
     
+    % Imposing the Neumann conditions
     % West
     f(1,:,2:end-1) = f(1,:,2:end-1) + 2*h*gx1(1,:,2:end-1);
 
@@ -41,10 +51,12 @@ function u = exact(u,f,L,U,p,h,gx1,gxn,gy1,gyn)
     % North
     f(:,end,2:end-1) = f(:,end,2:end-1) - 2*h*gyn(:,1,2:end-1);
     
-    f = f(:);%reshape(f,prod(N),1);
-    %u=S*P*(L'\(D\(L\((P'*S)*f))));
-    %A = system_matrix(N);
-    %u = A\f;
+    % Flattening the right hand side
+    f = f(:);
+    
+    % Solving for the exact solution using the precomputed LU factorization
     u = U\(L\f(p));
+
+    % Reshaping the solution from1D to 3D
     u = reshape(u,N);
 end
