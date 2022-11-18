@@ -1,4 +1,4 @@
-# Matlab Implementations of Multigrid Poisson Solvers
+# Matlab Implementations of Geometric Multigrid Poisson Solvers
 This subdirectory contains three different implementations of multigrid poisson solvers.
 
 ## Pure Dirichlet Conditions
@@ -14,3 +14,15 @@ Further, the discrete Laplacian is asymmetric and the LDL<sup>T</sup> cannot be 
 ```math
     (LU)u=f.
 ```
+
+## General Comments
+The multigrid algorithms are based on the following properties/assumptions:
+- The multigrid solvers are meant for linear elliptic PDEs only.
+- The domain is discretized into an equidistant cartesian grid.
+- Mixed boundary conditions are considered in the implementation in `mixed_3d`.
+    - Inhomogeneous Neumann conditions are imposed on vertical boundaries.
+    - Inhomogeneous Dirichlet conditions are imposed on horizontal boundaries.
+- The ghost points have been eliminated in the discretization.
+- The multigrid scheme is based on V-cycles.
+- Injection is used as the restriction operator.
+- Bi- or trilinear interpolation is used as interpolation operator in 2d and 3d respectively.
