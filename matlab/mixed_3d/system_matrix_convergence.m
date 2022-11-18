@@ -44,12 +44,12 @@ for l=1:3
     disp(strcat(['Finished iteration ',num2str(l)]))
 end
 %%
-p1 = WLSpolyfit(log(h_vec),log(abse),1);
+[alpha,beta] = ols_log_fit(abse,h_vec)
 
 figure(1)
 %loglog(h_vec,relres,'DisplayName','Relative Residual')
 %hold on
-loglog(h_vec,abse,'DisplayName',strcat(['Abs Err $O(h^{',num2str(p1(1)),'})$']))
+loglog(h_vec,abse,'DisplayName',strcat(['Abs Err $O(h^{',num2str(beta),'})$']))
 hold on
 loglog(h_vec,h_vec.^2,'DisplayName','O(h)')
 hold off
