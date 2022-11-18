@@ -6,11 +6,11 @@ There are two different implementations for two and three spatial dimensions in 
 Note that when all boundaries are of the same type as in this case, it results in a symmetric discretization of the Laplacian operator. Thus the coarsest level is solved with an LDL<sup>T</sup> factorization as
 ```math
     (LDL^T)u=f.
-```math
+```
 
 ## Mixed Boundary Conditions
 The model in `mixed_3d` has Neumann bondary conditions on all vertical boundaries and Dirichlet type boundary conditions on all horizontal boundaries. This results in a more complicated algorithm since the Neumann conditions for the defect/residual are not the same on each level like in the pure Dirichlet case.
 Further, the discrete Laplacian is asymmetric and the LDL<sup>T</sup> cannot be used. Instead, we use the LU factorization,
 ```math
     (LU)u=f.
-```math
+```
