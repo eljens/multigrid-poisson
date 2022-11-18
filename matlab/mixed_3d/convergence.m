@@ -30,12 +30,10 @@ assert(sum(mod(n,2) == 1) == 3,"Number of elements on coarsest grid must be odd"
 err_vec = [];
 h_vec = [];
 
-l = 4;
 for l=3:6
-    %len = 0.7*len;
     [X,Y,Z,gx1,gxn,gy1,gyn,u,f,utrue,h,N] = get_domain(n,l,len,x0,y0,z0,ufun,ffun,dxfun,dyfun);
 
-    %% Calling multigrid solver
+    % Calling multigrid solver
     [u,t,abse,relres] = multigrid_solver(u,f,utrue,nsmooth,h,n,gx1,gxn,gy1,gyn,max_iter);
 
     err_vec = [err_vec;abse(end)];
@@ -46,11 +44,14 @@ end
 [alpha,beta] = ols_log_fit(err_vec(2:end),h_vec(2:end));
 
 figure(1)
-loglog(h_vec,err_vec,'b*-','DisplayName',strcat(['Abs Err $O(h^{',num2str(beta),'})$']))
+loglog(h_vec,err_vec,'b*-','DisplayName',...
+    strcat(['Abs Err $O(h^{',num2str(beta),'})$']),'linewidth',2)
 hold on
-loglog(h_vec,12*h_vec.^2,'k--','DisplayName','$\mathcal{O}(h^2)$')
+loglog(h_vec,12*h_vec.^2,'k--',...
+    'DisplayName','$\mathcal{O}(h^2)$','linewidth',2)
 hold off
 grid()
 legend('interpreter','latex','fontsize',14,'location','nw')
 xlabel('$h$','interpreter','latex','fontsize',18)
 ylabel('Absolute Error','interpreter','latex','fontsize',18)
+saveas(gcf,'./figures/mg_convergence.png')

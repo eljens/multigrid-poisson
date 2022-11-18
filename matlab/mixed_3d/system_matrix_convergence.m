@@ -44,15 +44,19 @@ for l=1:3
     disp(strcat(['Finished iteration ',num2str(l)]))
 end
 %%
-[alpha,beta] = ols_log_fit(abse,h_vec)
+[alpha,beta] = ols_log_fit(abse,h_vec);
 
 figure(1)
 %loglog(h_vec,relres,'DisplayName','Relative Residual')
 %hold on
-loglog(h_vec,abse,'DisplayName',strcat(['Abs Err $O(h^{',num2str(beta),'})$']))
+loglog(h_vec,abse,'b*-','DisplayName',...
+    strcat(['Abs Err $O(h^{',num2str(beta),'})$']),'linewidth',2)
 hold on
-loglog(h_vec,h_vec.^2,'DisplayName','O(h)')
+loglog(h_vec,h_vec.^2,'k--','DisplayName',...
+   '$\mathcal{O}(h^2)$','linewidth',2)
 hold off
 grid()
-legend('interpreter','latex')
-
+legend('interpreter','latex','fontsize',14,'location','nw')
+xlabel('$h$','interpreter','latex','fontsize',18)
+ylabel('Absolute Error','interpreter','latex','fontsize',18)
+saveas(gcf,'./figures/sys_mat_convergence.png')

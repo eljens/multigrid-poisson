@@ -16,9 +16,12 @@ function [ufun,ffun,dxfun,dyfun] = problem_definition()
 % email: rydahlanton@gmail.com
 % 18th of November 2022
     % Function periods
-    kx = 5.56;
-    ky = 19;
-    kz = -0.34;
+%     kx = 5.56;
+%     ky = 19;
+%     kz = -0.34;
+    kx = 3;
+    ky = 2;
+    kz = 3.56;
 
     % Test function
     ufun = @(x,y,z)(sin(kx*x).*sin(ky*y).*sin(kz*z));

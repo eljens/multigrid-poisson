@@ -7,8 +7,6 @@
 % dimension. This is only for easing the implementation of the
 % interpolation and restriction operations.
 %
-% Dirichlet boundary conditions are imposed on all boundary surfaces.
-%
 % Author: Anton Rydahl
 % Richard Petersens Plads, bygn. 324 2800 Kgs. Lyngby
 % email: rydahlanton@gmail.com
@@ -16,22 +14,8 @@
 
 clear all; close all; clc;
 %%
-% Frequencies for test function
-kx = 3;
-ky = 2;
-kz = 3.56;
-
-% Test function
-ufun = @(x,y,z)(sin(kx*x).*sin(ky*y).*sin(kz*z));
-
-% x derivative
-dxfun = @(x,y,z)(kx*cos(kx*x).*sin(ky*y).*sin(kz*z));
-
-% y derivative
-dyfun = @(x,y,z)(ky*sin(kx*x).*cos(ky*y).*sin(kz*z));
-
-% Laplacian of the test function
-ffun = @(x,y,z)(-(kx^2+ky^2+kz^2)*sin(kx*x).*sin(ky*y).*sin(kz*z));
+% Test problem
+[ufun,ffun,dxfun,dyfun] = problem_definition();
 
 % Domain offsets from origo
 x0 = -0.71;
@@ -48,74 +32,40 @@ l = 5;
 n = [5, 5, 5];
 assert(sum(mod(n,2) == 1) == 3,"Number of elements on coarsest grid must be odd")
 
-% number of cells in each dimension
-N = 2^l*(n-1)+1;
-
 % Number of smoothings per grids
 nsmooth = 20;
 
 % Maximal number of iterations
 max_iter = 2000;
-max_time = 60; % seconds
+max_time = 20; % seconds
 
 % Tolerance
 tol = 100*eps;
 
-% Axes
-x = linspace(x0,x0+len,N(1));
-y = linspace(y0,y0+len*(N(2)-1)/(N(1)-1),N(2));
-z = linspace(z0,z0+len*(N(3)-1)/(N(1)-1),N(3));
-
-% Creating mesh grid
-[X,Y,Z] = ndgrid(x',y',z');
-
-% The uniform grid spacing is given by
-h = x(2)-x(1);
-
-% Initializing the Dirichlet boaundary conditions
-u = ufun(X,Y,Z);
-u(1:end,1:end,2:end-1) = zeros(N(1),N(2),N(3)-2);
-
-
-% Intializing the right hand side
-f = ffun(X,Y,Z);
-
-% Neumann conditions
-% Western boundary
-gx1 = dxfun(X(1,:,:),Y(1,:,:),Z(1,:,:));
-
-% Eastern boundary
-gxn = dxfun(X(end,:,:),Y(end,:,:),Z(end,:,:));
-
-% Southern boundary
-gy1 = dyfun(X(:,1,:),Y(:,1,:),Z(:,1,:));
-
-% Northern boundary
-gyn = dyfun(X(:,end,:),Y(:,end,:),Z(:,end,:));
-
-% Computing the true solution in order to compare results
-utrue = ufun(X,Y,Z);
+% Initializing the domain and the test problem
+[X,Y,Z,gx1,gxn,gy1,gyn,u,f,utrue,h,N] = ...
+    get_domain(n,l,len,x0,y0,z0,ufun,ffun,dxfun,dyfun);
 
 %%
 if prod(N) < 25000
-A = system_matrix(N);
-[L,U,p] = lu(A,'vector');
-usolve = exact(u,f,L,U,p,h,gx1,gxn,gy1,gyn);
-
-idx = round(N(3)/2);
-figure(1)
-subplot(1,3,1)
-surf(X(:,:,idx),Y(:,:,idx),utrue(:,:,idx))
-xlabel('x')
-ylabel('y')
-subplot(1,3,2)
-surf(X(:,:,idx),Y(:,:,idx),usolve(:,:,idx))
-xlabel('x')
-ylabel('y')
-subplot(1,3,3)
-surf(X(:,:,idx),Y(:,:,idx),utrue(:,:,idx)-usolve(:,:,idx))
-xlabel('x')
-ylabel('y')
+    A = system_matrix(N);
+    [L,U,p] = lu(A,'vector');
+    usolve = exact(u,f,L,U,p,h,gx1,gxn,gy1,gyn);
+    
+    idx = round(N(3)/2);
+    figure(1)
+    subplot(1,3,1)
+    surf(X(:,:,idx),Y(:,:,idx),utrue(:,:,idx))
+    xlabel('x')
+    ylabel('y')
+    subplot(1,3,2)
+    surf(X(:,:,idx),Y(:,:,idx),usolve(:,:,idx))
+    xlabel('x')
+    ylabel('y')
+    subplot(1,3,3)
+    surf(X(:,:,idx),Y(:,:,idx),utrue(:,:,idx)-usolve(:,:,idx))
+    xlabel('x')
+    ylabel('y')
 end
 
 %% Jacobi solver
@@ -141,30 +91,13 @@ for i=1:max_iter
 end
 
 %% Multigrid solver
-err_vcycle = zeros(max_iter,1);
 u_vcycle = zeros(size(u))+u;
-t_vcycle = zeros(max_iter,1);
+maxiter = 10;
 
-% Precomputing LU  factorization for coarsest grid
-A = system_matrix(n);
-[L,U,p] = lu(A,'vector');
-
-start = tic;
-figure(1)
-for i=1:max_iter
-    surf(X(:,:,5),Y(:,:,5),utrue(:,:,end-1)-u_vcycle(:,:,end-1))
-    u_vcycle = Vcycle2(u_vcycle,f,nsmooth,h,n,L,U,p,gx1,gxn,gy1,gyn);
-    r = residual(u_vcycle,f,h,gx1,gxn,gy1,gyn);
-    err_vcycle(i) = norm(reshape(r,[],1),2)/norm(reshape(f,[],1),2);%max(max(abs(u_vcycle-utrue)));
-    t_vcycle(i) = toc(start);
-    disp(find(r == max(max(max(r)))))
-    disp(strcat(['Vcycle iteration ',num2str(i),': Residual: ',num2str(err_vcycle(i))]))
-    if (err_vcycle(i) < tol) || (t_vcycle(i) > max_time)
-        err_vcycle = err_vcycle(1:i);
-        t_vcycle = t_vcycle(1:i);
-        break;
-    end
-end
+% Calling the Vcycle solver which uses a LU factorization on the coarsest
+% level
+[u_vcycle,t_vcycle,err_vcycle,relres] = ...
+    multigrid_solver(u_vcycle,f,utrue,nsmooth,h,n,gx1,gxn,gy1,gyn,maxiter);
 
 %% Plot of some slice of the solution
 
@@ -178,14 +111,15 @@ xlabel('$x$','interpreter','latex','fontsize',16)
 ylabel('$y$','interpreter','latex','fontsize',16)
 view([0 0 90])
 colorbar
+% Exact solution can only be computed for small problems in reasonable time
 if prod(N) < 25000
-subplot(2,2,2)
-surf(X(:,:,plotidx),Y(:,:,plotidx),usolve(:,:,plotidx))
-title("LU Solution")
-xlabel('$x$','interpreter','latex','fontsize',16)
-ylabel('$y$','interpreter','latex','fontsize',16)
-view([0 0 90])
-colorbar
+    subplot(2,2,2)
+    surf(X(:,:,plotidx),Y(:,:,plotidx),usolve(:,:,plotidx))
+    title("LU Solution")
+    xlabel('$x$','interpreter','latex','fontsize',16)
+    ylabel('$y$','interpreter','latex','fontsize',16)
+    view([0 0 90])
+    colorbar
 end
 subplot(2,2,3)
 surf(X(:,:,plotidx),Y(:,:,plotidx),u_jac(:,:,plotidx))

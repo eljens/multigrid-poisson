@@ -29,3 +29,13 @@ However, one V-cycle takes significantly longer than a Jacobi iteration. Therefo
   <img src="./figures/time.png" width="400" title="Convergence as function of time.">
 </p>
 In conclusion, the V-cycle does outperform the Jacobi method when measuring convergence per time which was also expected.
+
+## Verifying the Order of Accuracy
+From theory the scheme should be second order convergent, that is halving should result in a four times smaller maximal error. For the exact solver on the coarsest grid the empirical convergence is given in the following figure.
+<p align="center">
+  <img src="./figures/sys_mat_convergence.png" width="400" title="Convergence as function of grid spacing.">
+</p>
+For the whole multigrid algorithm the results are given by the following figure. The order is not exactly two so there might be an error in the implementation. Or perhaps it will be second order convergent for smaller grid spacings.
+<p align="center">
+  <img src="./figures/mg_convergence.png" width="400" title="Convergence as function of grid spacing.">
+</p>
