@@ -1,8 +1,7 @@
 #ifndef POISSON_JACOBI
 #define POISSON_JACOBI
 
-#define CHUNK_SIZE 8
-
+#include "definitions.h"
 #include "domain.h"
 #include "devicearray.h"
 

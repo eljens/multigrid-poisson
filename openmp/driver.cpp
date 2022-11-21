@@ -3,6 +3,7 @@
 #include "include/definitions.h"
 #include "include/problem_definition.h"
 #include "include/jacobi.h"
+#include "include/residual.h"
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
@@ -28,6 +29,8 @@ int main(int argc, char * argv[]){
     for(int_t i=0;i<settings.maxiter;i++){
         jacobi<double_t>(domain,omega);
     }
+
+    residual<double_t>(domain);
 
     domain.to_host();
 
