@@ -4,6 +4,7 @@
 #include "include/problem_definition.h"
 #include "include/jacobi.h"
 #include "include/residual.h"
+#include "include/injection.h"
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
@@ -37,6 +38,9 @@ int main(int argc, char * argv[]){
     domain.save();
 
     domain.save_halo();
+
+    Injection<double_t> injection;
+    domain.save_restriction(injection);
 
     double_t err = 0.0;
 

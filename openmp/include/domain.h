@@ -10,6 +10,7 @@
 #include "jacobi.h"
 #include "residual.h"
 #include "halo.h"
+#include "restriction.h"
 
 using std::cout;
 using std::swap;
@@ -66,6 +67,8 @@ class Domain
 		void save();
 
 		void save_halo();
+
+		void save_restriction(Restriction<T> & restriction);
 
 		void swap_u();
 };
@@ -161,6 +164,15 @@ void Domain<T>::save_halo(){
 	this->f->print_halo(settings,"results/f_halo.vtk");
 	this->u->print_halo(settings,"results/u_halo.vtk");
 	this->r->print_halo(settings,"results/r_halo.vtk");
+}
+
+template<class T>
+void Domain<T>::save_restriction(Restriction<T> & restriction){
+	DeviceArray<T> u_small(settings.dev,settings.dims[0]/2+1,settings.dims[1]/2+1,settings.dims[2]/2+1);
+	u_small.to_device();
+	restriction.restrict(*(this->u),u_small);
+	u_small.to_host();
+	u_small.print(settings,"results/u_restricted.vtk");
 }
 
 template<class T>
