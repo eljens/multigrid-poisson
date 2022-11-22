@@ -7,6 +7,7 @@
 #include "include/residual.h"
 #include "include/injection.h"
 #include "include/trilinearinterpolation.h"
+#include "include/grid.h"
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
@@ -18,6 +19,7 @@ int main(int argc, char * argv[]){
     Settings settings = parser(argc,argv);
     DomainSettings domainsettings(settings,0);
     Domain<double_t> domain(domainsettings,false);
+    Grid grid(settings,settings.levels);
 
     cout << "Created domain" << endl;
     const double_t omega = 2.0/3.0;

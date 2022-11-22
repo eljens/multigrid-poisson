@@ -12,6 +12,7 @@ using std::ostream;
 
 class Settings {
     public:
+        uint_t levels = 1;
         uint_t dims[3] = {3,3,3};
         uint_t maxiter = 100;
         double_t tolerance = 1e-6;
