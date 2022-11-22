@@ -44,6 +44,8 @@ class Array {
 		void print(Settings & settings,const char * str) const;
 
         void print_halo(Settings & settings,const char * str) const;
+
+        void add(const Array<T> & arr);
 };
 
 template <class T>
@@ -91,8 +93,24 @@ void Array<T>::allocator(){
 
 template<class T>
 void Array<T>::init_zero(){
+    #pragma omp parallel for schedule(static,CHUNK_SIZE)
 	for(uint_t i = 0;i<this->size;i++){
         this->at[i] = 0.0;
+    }
+}
+
+template<class T>
+void Array<T>::add(const Array<T> & arr){
+    if (!(arr.size == this->size)){
+        cerr << "Array size does not match in Array<T>.add()" << endl;
+    }
+	#pragma omp parallel for collapse(3) schedule(static,CHUNK_SIZE)
+	for(uint_t i = 0;i<this->shape[0];i++){
+        for(uint_t j = 0;j<this->shape[1];j++){
+            for(uint_t k = 0;k<this->shape[2];k++){
+                this->at[this->idx(i,j,k)] += arr.at[arr.idx(i,j,k)];
+            }
+        }
     }
 }
 

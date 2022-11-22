@@ -41,7 +41,7 @@ void jacobi(Domain<T>& domain,T omega){
     const int zmin = 1-domain.halo.bottom;
     const int zmax = u.shape[2]-1+domain.halo.top;
 
-    #pragma omp target map(hsq,omega) device(u.device) is_device_ptr(udev,vdev,fdev)
+    #pragma omp target device(u.device) is_device_ptr(udev,vdev,fdev) firstprivate(hsq,omega)
     {
         #pragma omp teams distribute parallel for collapse(3) schedule(static,8)
         for (int_t i = xmin;i<xmax;i++){

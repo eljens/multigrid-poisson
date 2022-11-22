@@ -28,6 +28,8 @@ class DeviceArray :
 			void to_host();
 
 			void init_zero();
+
+			void add(const DeviceArray<T> & arr);
 };
 
 template <class T>
@@ -86,11 +88,35 @@ void DeviceArray<T>::init_zero(){
 	}
 	else {
 		const uint_t _dev = this->device;
-		#pragma omp target device(_dev) is_device_ptr(this->devptr)
+		const uint_t _size = this->size;
+		T * _devptr = this->devptr;
+		#pragma omp target device(_dev) is_device_ptr(_devptr) firstprivate(_size)
 		{
 			#pragma omp teams distribute parallel for schedule(static,CHUNK_SIZE)
-			for(uint_t i = 0;i<this->size;i++){
-				this->devptr[i] = 0.0;
+			for(uint_t i = 0;i<_size;i++){
+				_devptr[i] = 0.0;
+			}
+		}
+	}
+}
+
+template<class T>
+void DeviceArray<T>::add(const DeviceArray<T> & arr){
+	if (!(this->on_device)){
+		Array<T>::add(arr);
+	}
+	else {
+		const uint_t _dev = this->device;
+		T * arrdev = arr.devptr;
+		#pragma omp target device(_dev) is_device_ptr(this->devptr,arrdev)
+		{
+			#pragma omp teams distribute parallel for schedule(static,CHUNK_SIZE)
+			for(uint_t i = 0;i<this->shape[0];i++){
+				for(uint_t j = 0;j<this->shape[1];j++){
+					for(uint_t k = 0;k<this->shape[2];k++){
+						this->devptr[this->idx(i,j,k)] += arrdev[arr.idx(i,j,k)];
+					}
+				}
 			}
 		}
 	}

@@ -20,6 +20,7 @@ class Settings {
         int_t dev = omp_get_default_device();
         double_t h = 0.01; 
         double_t origin[3] = {0.5, -0.5, -1.25};
+        bool print_result = false;
 
         Settings();
 

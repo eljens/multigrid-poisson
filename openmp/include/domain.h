@@ -12,6 +12,7 @@
 #include "halo.h"
 #include "restriction.h"
 #include "prolongation.h"
+#include "vcycle.h"
 
 using std::cout;
 using std::swap;
@@ -29,7 +30,6 @@ template <class T>
 class Domain
 {
 	private:
-		Settings & settings;
 		Halo halo;
 
 		// Granting access to Jacobi
@@ -39,10 +39,13 @@ class Domain
 
 		void init_f(funptr ffun);
 
+		bool is_initialized;
+
 	protected:
 		void write_bc_to(DeviceArray<T> & uarr);
 		
 	public:
+		Settings settings;
 		DeviceArray<T> * u;
 		DeviceArray<T> * uprev;
 		DeviceArray<T> * f;
@@ -54,11 +57,17 @@ class Domain
 		Boundary<T> * top;
 		Boundary<T> * bottom;
 
+		Domain() : is_initialized(false), settings() {
+
+		}
+
 		Domain(Settings & _settings,bool is_dirichlet);
 
 		~Domain();
 
 		void init(funptr ufun,funptr ffun,funptr dudxfun,funptr dudyfun);
+
+		void init_zero();
 
 		void to_device();
 
@@ -75,10 +84,10 @@ class Domain
 
 template<class T>
 Domain<T>::Domain(Settings & _settings,bool is_dirichlet) : 
-	settings(_settings), halo(!is_dirichlet,!is_dirichlet,!is_dirichlet,!is_dirichlet,0,0)
+	halo(!is_dirichlet,!is_dirichlet,!is_dirichlet,!is_dirichlet,0,0),is_initialized(true),settings(_settings)
 {
-	cout << "Created domain with settings " << endl;
-	cout << settings;
+	//cout << "Created domain with settings " << endl;
+	//cout << settings;
 	this->u = new DeviceArray<T>(settings,halo);
 	this->uprev = new DeviceArray<T>(settings,halo);
 	this->f = new DeviceArray<T>(settings,halo);
@@ -102,16 +111,18 @@ Domain<T>::Domain(Settings & _settings,bool is_dirichlet) :
 
 template<class T>
 Domain<T>::~Domain(){
-	delete this->u;
-	delete this->uprev;
-	delete this->f;
-	delete this->r;
-	delete this->north;
-	delete this->south;
-	delete this->east;
-	delete this->west;
-	delete this->top;
-	delete this->bottom;
+	if (is_initialized){
+		delete this->u;
+		delete this->uprev;
+		delete this->f;
+		delete this->r;
+		delete this->north;
+		delete this->south;
+		delete this->east;
+		delete this->west;
+		delete this->top;
+		delete this->bottom;
+	}
 }
 
 template<class T>
@@ -123,6 +134,20 @@ void Domain<T>::init(funptr ufun,funptr ffun,funptr dudxfun,funptr dudyfun){
 	this->top->init(ufun,dudxfun,dudyfun,this->settings);
 	this->bottom->init(ufun,dudxfun,dudyfun,this->settings);
 	this->init_f(ffun);
+	this->uprev->init_zero();
+	this->uprev->init_zero();
+	this->r->init_zero();
+}
+
+template<class T>
+void Domain<T>::init_zero(){
+	this->north->init_zero();
+	this->south->init_zero();
+	this->east->init_zero();
+	this->west->init_zero();
+	this->top->init_zero();
+	this->bottom->init_zero();
+	this->f->init_zero();
 	this->uprev->init_zero();
 	this->uprev->init_zero();
 	this->r->init_zero();
@@ -154,14 +179,14 @@ void Domain<T>::to_host(){
 
 template<class T>
 void Domain<T>::save(){
-	this->f->print(settings,"results/f.vtk");
+	//this->f->print(settings,"results/f.vtk");
 	this->u->print(settings,"results/u.vtk");
 	this->r->print(settings,"results/r.vtk");
 }
 
 template<class T>
 void Domain<T>::save_halo(){
-	this->f->print_halo(settings,"results/f_halo.vtk");
+	//this->f->print_halo(settings,"results/f_halo.vtk");
 	this->u->print_halo(settings,"results/u_halo.vtk");
 	this->r->print_halo(settings,"results/r_halo.vtk");
 }

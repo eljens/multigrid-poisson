@@ -29,6 +29,14 @@ Settings parser(int argc, char * argv[]){
             set.levels = stoi(argv[i+1]);
             i++;
         }
+        else if ((str.compare("-save") == 0) || (str.compare("-s") == 0)){
+            set.print_result = stoi(argv[i+1]);
+            i++;
+        }
+        else if ((str.compare("-spacing") == 0) || (str.compare("-h") == 0)){
+            set.h = stod(argv[i+1]);
+            i++;
+        }
         else {
             cerr << "Unknown input " << str << endl;
         }
