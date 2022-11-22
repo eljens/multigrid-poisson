@@ -16,6 +16,9 @@ class Neumann :
         void write_to(DeviceArray<T> & uarr, Settings & settings);
 
         void update(DeviceArray<T> & uarr, Settings & settings);
+
+        void restrict(DeviceArray<T> & u, Boundary<T> & boundary,
+                        Settings & settings, Restriction<T> & restriction);
 };
 
 template<class T>
@@ -105,6 +108,93 @@ void Neumann<T>::write_to(DeviceArray<T> & uarr, Settings & settings){
 template<class T>
 void Neumann<T>::update(DeviceArray<T> & uarr, Settings & settings){
     this->write_to(uarr,settings);
+}
+
+template<class T>
+void Neumann<T>::restrict(DeviceArray<T> & u, Boundary<T> & boundary,
+                        Settings & settings, Restriction<T> & restriction){
+    // Needs to be implemented
+    restriction.restrict(boundary,*this);
+    int_t offx = 0;
+    int_t offy = 0;
+    int_t offz = 0;
+
+    int_t ii = 0;
+    int_t jj = 0;
+    int_t kk = 0;
+    int_t iii = 0;
+    int_t jjj = 0;
+    int_t kkk = 0;
+
+    switch (this->location){
+        case EAST:
+            offx = u.shape[0]-1;
+            ii = -1;
+            iii = -2;
+            break;
+        case WEST:
+            offx = 0;
+            ii = 1;
+            iii = 2;
+            break;
+        case NORTH:
+            offy = u.shape[1]-1;
+            jj = -1;
+            jjj = -2;
+            break;
+        case SOUTH:
+            offy=0;
+            jj = 1;
+            jjj = 2;
+            break;
+        case TOP:
+            offz = u.shape[2]-1;
+            kk = -1;
+            kkk = -2;
+            break;
+        case BOTTOM:
+            offz = 0;
+            kk = 1;
+            kkk = 2;
+            break;
+    }
+
+    // Polynomail coefficients
+    //gx1c = gx1 - (-(3/2)*unew(1,:,:)+2*unew(2,:,:)-0.5*unew(3,:,:))./h;
+    //gxnc = gxn - (0.5*unew(end-2,:,:)-2*unew(end-1,:,:)+(3/2)*unew(end,:,:))./h;
+    T c1 = -3.0/2.0;
+    T c2 = 2.0;
+    T c3 = -0.5;
+    switch (this->location){
+        case EAST:
+        case NORTH:
+        case TOP:
+            c1 = 0.5;
+            c2 = -2.0;
+            c3 = 3.0/2.0;
+            break;
+        default:
+            break;
+    }
+
+    // Interpolating the Neumann condition
+    T h = settings.h;
+    T * udev = u.devptr;
+    T * gdev = this->devptr;
+    const T two_h = 2.0*settings.h;
+    #pragma omp target device(this->device) is_device_ptr(udev,gdev)\
+            firstprivate(c1,c2,c3,h,ii,jj,kk,iii,jjj,kkk,two_h)
+    #pragma omp teams distribute parallel for collapse(3) schedule(static,1)
+    for(int_t i = 0;i<this->shape[0];i++){
+        for(int_t j = 0;j<this->shape[1];j++){
+            for(int_t k = 0;k<this->shape[2];k++){
+                gdev[this->idx(i,j,k)] -= 
+                    (c1 * udev[u.idx(i+offx,j+offy,k+offz)] +
+                    c2 * udev[u.idx(i+offx+ii,j+offy+jj,k+offz+kk)] +
+                    c3 * udev[u.idx(i+offx+iii,j+offy+jjj,k+offz+kkk)])/h;
+            }
+        }
+    }
 }
 
 #endif

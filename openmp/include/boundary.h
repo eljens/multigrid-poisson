@@ -6,6 +6,7 @@
 #include "problem_definition.h"
 #include "settings.h"
 #include "halo.h"
+#include "restriction.h"
 
 typedef enum {NORTH,SOUTH,EAST,WEST,TOP,BOTTOM} Location_t;
 
@@ -26,6 +27,9 @@ class Boundary :
         virtual void write_to(DeviceArray<T> & uarr, Settings & settings);
 
         virtual void update(DeviceArray<T> & uarr, Settings & settings);
+
+        virtual void restrict(DeviceArray<T> & u, Boundary<T> & boundary,
+                                Settings & settings, Restriction<T> & restriction);
 };
 
 template<class T>

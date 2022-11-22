@@ -91,12 +91,8 @@ void Array<T>::allocator(){
 
 template<class T>
 void Array<T>::init_zero(){
-	for(int_t i = 0;i<this->shape[0]+this->halo.east+this->halo.west;i++){
-        for(int_t j = 0;j<this->shape[1]+this->halo.north+this->halo.south;j++){
-            for(int_t k = 0;k<this->shape[2]+this->halo.top+this->halo.bottom;k++){
-                this->at[this->idx_halo(i,j,k)] = (T) 0.0;
-            }
-        }
+	for(uint_t i = 0;i<this->size;i++){
+        this->at[i] = 0.0;
     }
 }
 

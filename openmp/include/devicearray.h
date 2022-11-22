@@ -10,6 +10,7 @@ class DeviceArray :
 	public Array<T> {
 		private:
 			void device_allocator();
+			bool on_device = false;
 		protected:
 			uint host = omp_get_initial_device();
 		public:
@@ -25,6 +26,8 @@ class DeviceArray :
 			void to_device();
 
 			void to_host();
+
+			void init_zero();
 };
 
 template <class T>
@@ -55,6 +58,7 @@ void DeviceArray<T>::to_device() {
 	if (res != 0){
 		cerr << "Error on device " << this->device << ": omp_target_memcpy returned " << res << endl;
 	}
+	this->on_device = true;
 }
 
 template <class T>
@@ -63,6 +67,7 @@ void DeviceArray<T>::to_host() {
 	if (res != 0){
 		cerr <<  "Error on device " << this->device << ":omp_target_memcpy returned " << res << endl;
 	}
+	this->on_device = false;
 }
 
 template <class T>
@@ -72,6 +77,23 @@ void DeviceArray<T>::device_allocator() {
 		cerr << "Error allocating DeviceArray on device " << this->device << endl;
 	}
 	#pragma omp target enter data map(to:this->stride[:this->ndims],this->shape[:this->ndims],this->halo) device(this->device)		
+}
+
+template<class T>
+void DeviceArray<T>::init_zero(){
+	if (!(this->on_device)){
+		Array<T>::init_zero();
+	}
+	else {
+		const uint_t _dev = this->device;
+		#pragma omp target device(_dev) is_device_ptr(this->devptr)
+		{
+			#pragma omp teams distribute parallel for schedule(static,CHUNK_SIZE)
+			for(uint_t i = 0;i<this->size;i++){
+				this->devptr[i] = 0.0;
+			}
+		}
+	}
 }
 
 #endif

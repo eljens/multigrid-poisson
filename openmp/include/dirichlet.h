@@ -16,6 +16,9 @@ class Dirichlet :
         void write_to(DeviceArray<T> & uarr, Settings & settings);
 
         void update(DeviceArray<T> & uarr, Settings & settings);
+
+        void restrict(DeviceArray<T> & u, Boundary<T> & boundary,
+                        Settings & settings, Restriction<T> & restriction);
 };
 
 template <class T>
@@ -69,5 +72,13 @@ template<class T>
 void Dirichlet<T>::update(DeviceArray<T> & uarr, Settings & settings){
     // The Dirichlet condition only needs to be computed once
 }
+
+template<class T>
+void Dirichlet<T>::restrict(DeviceArray<T> & u, Boundary<T> & boundary,
+                        Settings & settings, Restriction<T> & restriction){
+    // For a dirichlet type boundary condition the error is always 0
+    // as the solution is exact on this type of boundary by definition.
+    DeviceArray<T>::init_zero();
+};
 
 #endif
