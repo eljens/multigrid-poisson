@@ -26,9 +26,9 @@ Injection<T>::~Injection(){
 
 template<class T>
 void Injection<T>::restrict(DeviceArray<T> & uin,DeviceArray<T> & uout){
-    bool cond0 = ((int_t) (uin.shape[0]-1)/2)+1 == uout.shape[0];
-    bool cond1 = ((int_t) (uin.shape[1]-1)/2)+1 == uout.shape[1];
-    bool cond2 = ((int_t) (uin.shape[2]-1)/2)+1 == uout.shape[2];
+    bool cond0 = ((uint_t) (uin.shape[0]-1)/2)+1 == uout.shape[0];
+    bool cond1 = ((uint_t) (uin.shape[1]-1)/2)+1 == uout.shape[1];
+    bool cond2 = ((uint_t) (uin.shape[2]-1)/2)+1 == uout.shape[2];
     if ((!cond0) || (!cond1) || (!cond2)){
         cerr << "Restriction from domain of size (" << uin.shape[0] << "," << uin.shape[1] << "," << uin.shape[2] << ")";
         cerr << " to (" << uout.shape[0] << "," << uout.shape[1] << "," << uout.shape[2] << ") is incompatible with injection" << endl;

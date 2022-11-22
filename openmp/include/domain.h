@@ -11,6 +11,7 @@
 #include "residual.h"
 #include "halo.h"
 #include "restriction.h"
+#include "prolongation.h"
 
 using std::cout;
 using std::swap;
@@ -67,7 +68,7 @@ class Domain
 
 		void save_halo();
 
-		void save_restriction(Restriction<T> & restriction);
+		void save_restrict_prolong(Restriction<T> & restriction,Prolongation<T> & prolongation);
 
 		void swap_u();
 };
@@ -166,12 +167,17 @@ void Domain<T>::save_halo(){
 }
 
 template<class T>
-void Domain<T>::save_restriction(Restriction<T> & restriction){
+void Domain<T>::save_restrict_prolong(Restriction<T> & restriction,Prolongation<T> & prolongation){
 	DeviceArray<T> u_small(settings.dev,settings.dims[0]/2+1,settings.dims[1]/2+1,settings.dims[2]/2+1);
+	DeviceArray<T> u_large(settings.dev,settings.dims[0],settings.dims[1],settings.dims[2]);
 	u_small.to_device();
+	u_large.to_device();
 	restriction.restrict(*(this->u),u_small);
+	prolongation.prolong(u_small,u_large);
 	u_small.to_host();
+	u_large.to_host();
 	u_small.print(settings,"results/u_restricted.vtk");
+	u_large.print(settings,"results/u_prolonged.vtk");
 }
 
 template<class T>
