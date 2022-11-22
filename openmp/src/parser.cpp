@@ -25,6 +25,10 @@ Settings parser(int argc, char * argv[]){
             set.maxiter = stoi(argv[i+1]);
             i++;
         }
+        else if ((str.compare("-levels") == 0) || (str.compare("-l") == 0)){
+            set.levels = stoi(argv[i+1]);
+            i++;
+        }
         else {
             cerr << "Unknown input " << str << endl;
         }

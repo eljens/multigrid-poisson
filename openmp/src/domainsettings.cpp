@@ -22,6 +22,8 @@ DomainSettings::~DomainSettings() {
 }
 
 ostream& operator<<(ostream& os, const DomainSettings& settings){
-    os << "This is DomainSettings" << endl;
+    os << "DomainSettings:" <<endl;
+    os << "\tDomain size: (" << settings.dims[0] << "," << settings.dims[1] << "," << settings.dims[2] << ")" << endl;
+    os << "\tGridSpacing: " << settings.h << endl;
     return os;
 }
