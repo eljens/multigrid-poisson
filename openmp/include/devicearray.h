@@ -2,7 +2,7 @@
 #define DEVICE_ARRAY
 
 #include "array.h"
-#include "parser.h"
+#include "settings.h"
 #include "halo.h"
 
 template <class T>

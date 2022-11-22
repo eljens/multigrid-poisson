@@ -5,7 +5,7 @@
 #include <iostream>
 #include "omp.h"
 #include "halo.h"
-#include "parser.h"
+#include "settings.h"
 
 #include <iostream>
 #include <stdio.h>
@@ -38,6 +38,8 @@ class Array {
 		inline uint_t idx(uint_t i,uint_t j, uint_t k) const;
 
 		inline uint_t idx_halo(uint_t i,uint_t j, uint_t k) const;
+
+        void init_zero();
 
 		void print(Settings & settings,const char * str) const;
 
@@ -85,6 +87,17 @@ void Array<T>::allocator(){
 	catch (std::bad_alloc&) {
 		cerr << "Memory allocation failed in Array" << endl;
 	}
+}
+
+template<class T>
+void Array<T>::init_zero(){
+	for(int_t i = 0;i<this->shape[0]+this->halo.east+this->halo.west;i++){
+        for(int_t j = 0;j<this->shape[1]+this->halo.north+this->halo.south;j++){
+            for(int_t k = 0;k<this->shape[2]+this->halo.top+this->halo.bottom;k++){
+                this->at[this->idx_halo(i,j,k)] = (T) 0.0;
+            }
+        }
+    }
 }
 
 int is_little_endian(void) {

@@ -2,7 +2,7 @@
 #define TOP3D_DOMAIN
 
 #include "definitions.h"
-#include "parser.h"
+#include "settings.h"
 #include "boundary.h"
 #include "neumann.h"
 #include "dirichlet.h"
@@ -38,7 +38,6 @@ class Domain
 
 		void init_f(funptr ffun);
 
-		void init_u(DeviceArray<T> * uarr);
 	protected:
 		void write_bc_to(DeviceArray<T> & uarr);
 		
@@ -123,9 +122,9 @@ void Domain<T>::init(funptr ufun,funptr ffun,funptr dudxfun,funptr dudyfun){
 	this->top->init(ufun,dudxfun,dudyfun,this->settings);
 	this->bottom->init(ufun,dudxfun,dudyfun,this->settings);
 	this->init_f(ffun);
-	this->init_u(this->u);
-	this->init_u(this->uprev);
-	this->init_u(this->r);
+	this->uprev->init_zero();
+	this->uprev->init_zero();
+	this->r->init_zero();
 }
 
 template<class T>
@@ -200,17 +199,6 @@ void Domain<T>::init_f(funptr ffun){
         for(int_t j = 0;j<this->f->shape[1];j++){
             for(int_t k = 0;k<this->f->shape[2];k++){
                 this->f->at[this->f->idx(i,j,k)] = ffun(x0+((T)i)*h,y0+((T)j)*h,z0+((T)k)*h);
-            }
-        }
-    }
-}
-
-template<class T>
-void Domain<T>::init_u(DeviceArray<T> * uarr){
-	for(int_t i = 0;i<uarr->shape[0]+uarr->halo.east+uarr->halo.west;i++){
-        for(int_t j = 0;j<uarr->shape[1]+uarr->halo.north+uarr->halo.south;j++){
-            for(int_t k = 0;k<uarr->shape[2]+uarr->halo.top+uarr->halo.bottom;k++){
-                uarr->at[uarr->idx_halo(i,j,k)] = (T) 0.0;
             }
         }
     }

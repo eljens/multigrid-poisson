@@ -26,14 +26,20 @@ OBJDIR   = lib
 BINDIR   = bin
 INCLDIR  = include
 
-OBJ = parser.o problem_definition.o
+OBJ = parser.o problem_definition.o settings.o domainsettings.o
 
 all: $(BINDIR)/$(APP)
 
-$(BINDIR)/$(APP): $(APP).cpp $(OBJDIR)/parser.o $(OBJDIR)/problem_definition.o
+$(BINDIR)/$(APP): $(APP).cpp $(OBJDIR)/parser.o $(OBJDIR)/problem_definition.o $(OBJDIR)/settings.o $(OBJDIR)/domainsettings.o
 	$(CXX) $(CFLAGS) -std=c++17 -o $@ $^ $(LIBS)
 
 $(OBJDIR)/parser.o: $(SRCDIR)/parser.cpp
+	$(CXX) $(CFLAGS) -std=c++17 -o $@ -c $<
+
+$(OBJDIR)/settings.o: $(SRCDIR)/settings.cpp
+	$(CXX) $(CFLAGS) -std=c++17 -o $@ -c $<
+
+$(OBJDIR)/domainsettings.o: $(SRCDIR)/domainsettings.cpp
 	$(CXX) $(CFLAGS) -std=c++17 -o $@ -c $<
 
 $(OBJDIR)/problem_definition.o: $(SRCDIR)/problem_definition.cpp

@@ -1,4 +1,5 @@
 #include "include/parser.h"
+#include "include/domainsettings.h"
 #include "include/domain.h"
 #include "include/definitions.h"
 #include "include/problem_definition.h"
@@ -14,7 +15,8 @@ using std::endl;
 
 int main(int argc, char * argv[]){
     Settings settings = parser(argc,argv);
-    Domain<double_t> domain(settings,false);
+    DomainSettings domainsettings(settings,0);
+    Domain<double_t> domain(domainsettings,false);
 
     cout << "Created domain" << endl;
     const double_t omega = 2.0/3.0;

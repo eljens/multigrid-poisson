@@ -4,7 +4,7 @@
 #include "devicearray.h"
 #include "definitions.h"
 #include "problem_definition.h"
-#include "parser.h"
+#include "settings.h"
 #include "halo.h"
 
 typedef enum {NORTH,SOUTH,EAST,WEST,TOP,BOTTOM} Location_t;
