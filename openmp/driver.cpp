@@ -38,10 +38,15 @@ int main(int argc, char * argv[]){
 
     Injection<double_t> injection;
     TrilinearInterpolation<double_t> trilinearinterpolation;
-
+    double_t start = omp_get_wtime();
     for(uint_t i = 0;i<settings.maxiter;i++){
         Vcycle<double_t>(domains,injection,trilinearinterpolation,omega,0,settings.levels);
+        if (i % 20 == 19){
+            cout << "Finished iteration " << i+1 << endl;
+        }
     }
+    cout << endl;
+    cout << "It took " << omp_get_wtime()-start << " seconds to run " <<settings.maxiter << " Vcycles"  <<endl;
 
     residual<double_t>(*domains[0]);
 

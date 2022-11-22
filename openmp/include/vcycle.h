@@ -5,7 +5,7 @@
 #include "jacobi.h"
 #include <iostream>
 
-#define nsmooth 20
+#define nsmooth 5
 
 using std::cout;
 using std::endl;
