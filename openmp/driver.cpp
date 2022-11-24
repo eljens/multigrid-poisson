@@ -46,15 +46,22 @@ int main(int argc, char * argv[]){
     Injection<double_t> injection;
     TrilinearInterpolation<double_t> trilinearinterpolation;
     double_t start = omp_get_wtime();
-    for(uint_t i = 0;i<settings.maxiter;i++){
+    uint_t iter = 0;
+    double_t rel_res = domains[0]->r->infinity_norm() / fnorm;
+    for(iter = 0;iter<settings.maxiter;iter++){
         Vcycle<double_t>(domains,injection,trilinearinterpolation,omega,0,settings.levels);
         residual<double_t>(*domains[0]);
-        double_t rnorm = domains[0]->r->infinity_norm();
-        cout << setw(4) << i+1 << ": Relative residual: " << setw(8) << rnorm/fnorm << endl;
+        double_t norm = domains[0]->r->infinity_norm() / fnorm;
+        cout << setw(4) << iter+1 << ": Relative residual: " << setw(8) << norm << endl;
+        if (std::abs(norm-rel_res) < 1e-5){
+            rel_res = norm;
+            break;
+        }
+        rel_res = norm;
     }
     double_t time_taken = omp_get_wtime()-start;
     cout << endl;
-    cout << "It took " << time_taken << " seconds to run " <<settings.maxiter << " Vcycles"  <<endl;
+    cout << "It took " << time_taken << " seconds to run " << iter << " Vcycles"  <<endl;
 
     residual<double_t>(*domains[0]);
 
@@ -89,12 +96,13 @@ int main(int argc, char * argv[]){
 
     if (settings.write_final_stats){
         ofstream out("results/"+settings.stats_file, ios::app);
-        out << "#    seconds     abs_err domain_size     spacing     maxiter     lengthx      levels" << endl;
+        out << "#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels" << endl;
         out << setw(12) << time_taken;
         out << setw(12) << err;
+        out << setw(12) << rel_res;
         out << setw(12) << settings.dims[0]*settings.dims[1]*settings.dims[2];
         out << setw(12) << settings.h;
-        out << setw(12) << settings.maxiter;
+        out << setw(12) << iter;
         out << setw(12) << settings.lengthx;
         out << setw(12) << settings.levels;
         out << endl;
