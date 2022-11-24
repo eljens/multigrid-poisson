@@ -30,6 +30,8 @@ class DeviceArray :
 			void init_zero();
 
 			void add(const DeviceArray<T> & arr);
+
+			T infinity_norm() const;
 };
 
 template <class T>
@@ -108,18 +110,47 @@ void DeviceArray<T>::add(const DeviceArray<T> & arr){
 	else {
 		const uint_t _dev = this->device;
 		T * arrdev = arr.devptr;
-		#pragma omp target device(_dev) is_device_ptr(this->devptr,arrdev)
+		T * _devptr = this->devptr;
+		const uint_t * _shape = this->shape;
+		#pragma omp target device(_dev) is_device_ptr(_devptr,arrdev)
 		{
-			#pragma omp teams distribute parallel for schedule(static,CHUNK_SIZE)
-			for(uint_t i = 0;i<this->shape[0];i++){
-				for(uint_t j = 0;j<this->shape[1];j++){
-					for(uint_t k = 0;k<this->shape[2];k++){
-						this->devptr[this->idx(i,j,k)] += arrdev[arr.idx(i,j,k)];
+			#pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
+			for(uint_t i = 0;i<_shape[0];i++){
+				for(uint_t j = 0;j<_shape[1];j++){
+					for(uint_t k = 0;k<_shape[2];k++){
+						_devptr[this->idx(i,j,k)] += arrdev[arr.idx(i,j,k)];
 					}
 				}
 			}
 		}
 	}
+}
+
+template<class T>
+T DeviceArray<T>::infinity_norm() const{
+	T res = 0.0;
+	if (!(this->on_device)){
+		res =  Array<T>::infinity_norm();
+		cout << "called Array<T>::infinity_norm()" << endl;
+	}
+	else {
+		const uint_t _dev = this->device;
+		const uint_t * _shape = this->shape;
+		T * _devptr = this->devptr;
+		#pragma omp target device(_dev) is_device_ptr(_devptr) map(always,tofrom:res)
+		{
+			#pragma omp teams distribute parallel for reduction(max:res) collapse(3) schedule(static,CHUNK_SIZE)
+			for(uint_t i = 0;i<_shape[0];i++){
+				for(uint_t j = 0;j<_shape[1];j++){
+					for(uint_t k = 0;k<_shape[2];k++){
+						T abselem = std::abs(_devptr[this->idx(i,j,k)]);
+						res = std::max(abselem,res);
+					}
+				}
+			}
+		}
+	}
+	return res;
 }
 
 #endif

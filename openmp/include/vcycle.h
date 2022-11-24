@@ -5,7 +5,7 @@
 #include "jacobi.h"
 #include <iostream>
 
-#define nsmooth 5
+#define nsmooth 10
 
 using std::cout;
 using std::endl;
@@ -20,8 +20,7 @@ void Vcycle(
     uint_t levels){
     
     // Pre smooting
-    const uint_t _nsmooth = (level == levels-1) ? nsmooth : nsmooth;
-    for(int_t i=0;i<_nsmooth;i++){
+    for(int_t i=0;i<nsmooth;i++){
         jacobi<double_t>(*domains[level],omega);
     }
 
@@ -33,8 +32,8 @@ void Vcycle(
 
     restriction.restrict(*(domains[level]->r),*(domains[level+1]->f));
 
+    //domains[level+1]->u->init_zero();
     domains[level+1]->u->init_zero();
-    domains[level+1]->uprev->init_zero();
 
     // Restricting boundaries
     domains[level+1]->north->restrict(*(domains[level]->u),*(domains[level]->north),(*domains[level]).settings,restriction);
@@ -50,7 +49,7 @@ void Vcycle(
     prolongation.prolong(*(domains[level+1]->u),*(domains[level]->r));
 
     // Interpolate error
-    domains[level]->uprev->add(*(domains[level]->r));
+    domains[level]->u->add(*(domains[level]->r));
 
     // Post smooting
     for(int_t i=0;i<nsmooth;i++){

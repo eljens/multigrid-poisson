@@ -15,6 +15,8 @@ using std::endl;
 
 template <class T>
 void jacobi(Domain<T>& domain,T omega){
+    domain.swap_u();
+
     DeviceArray<T>& u = *domain.u;
     DeviceArray<T>& v = *domain.uprev;
     const DeviceArray<T>& f = *domain.f;
@@ -55,7 +57,7 @@ void jacobi(Domain<T>& domain,T omega){
             }
         }
     }
-    domain.swap_u();
+    //domain.swap_u();
 }
 
 #endif

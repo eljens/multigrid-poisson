@@ -41,11 +41,13 @@ class Array {
 
         void init_zero();
 
-		void print(Settings & settings,const char * str) const;
+        void add(const Array<T> & arr);
+
+        T infinity_norm() const;
+
+        void print(Settings & settings,const char * str) const;
 
         void print_halo(Settings & settings,const char * str) const;
-
-        void add(const Array<T> & arr);
 };
 
 template <class T>
@@ -112,6 +114,21 @@ void Array<T>::add(const Array<T> & arr){
             }
         }
     }
+}
+
+template<class T>
+T Array<T>::infinity_norm() const{
+	T res = 0.0;
+	#pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE) reduction(max:res)
+	for(uint_t i = 0;i<this->shape[0];i++){
+		for(uint_t j = 0;j<this->shape[1];j++){
+			for(uint_t k = 0;k<this->shape[2];k++){
+				T abselem = std::abs(this->at[this->idx(i,j,k)]);
+				res = std::max(res,abselem);
+			}
+		}
+	}
+	return res;
 }
 
 int is_little_endian(void) {

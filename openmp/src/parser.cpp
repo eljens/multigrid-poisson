@@ -33,13 +33,19 @@ Settings parser(int argc, char * argv[]){
             set.print_result = stoi(argv[i+1]);
             i++;
         }
-        else if ((str.compare("-spacing") == 0) || (str.compare("-h") == 0)){
-            set.h = stod(argv[i+1]);
+        else if ((str.compare("-length") == 0)){
+            set.lengthx = stod(argv[i+1]);
+            i++;
+        }
+        else if ((str.compare("-stats") == 0)){
+            set.stats_file = argv[i+1];
+            set.write_final_stats = true;
             i++;
         }
         else {
             cerr << "Unknown input " << str << endl;
         }
     }
+    set.h = set.lengthx/((double_t) set.dims[0] - 1.0);
     return set;
 }

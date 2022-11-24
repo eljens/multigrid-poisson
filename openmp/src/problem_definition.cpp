@@ -1,8 +1,11 @@
 #include "../include/problem_definition.h"
 
-#define kx 5.56
-#define ky 8.0
-#define kz -4.34
+// #define kx 5.56
+// #define ky 8.0
+// #define kz -4.34
+#define kx 3
+#define ky 2
+#define kz 3.56
 
 double_t ufun(double_t x,double_t y,double_t z){
     return sin(kx*x)*sin(ky*y)*sin(kz*z);

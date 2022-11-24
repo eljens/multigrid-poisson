@@ -55,4 +55,5 @@ clean:
 realclean:
 	make clean
 	-rm -rf results/*.vtk
+	-rm -rf results/*.txt
 

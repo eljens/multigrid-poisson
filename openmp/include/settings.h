@@ -18,9 +18,12 @@ class Settings {
         double_t tolerance = 1e-6;
         int_t host = omp_get_initial_device();
         int_t dev = omp_get_default_device();
-        double_t h = 0.01; 
-        double_t origin[3] = {0.5, -0.5, -1.25};
+        double_t lengthx = 3.1415; // Length in x dimension
+        double_t h = 0.33; 
+        double_t origin[3] = {-0.4, 0.21, 1.23};
         bool print_result = false;
+        bool write_final_stats = false;
+        std::string stats_file = "";
 
         Settings();
 

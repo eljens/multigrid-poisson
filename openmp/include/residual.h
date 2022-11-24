@@ -41,7 +41,7 @@ void residual(Domain<T>& domain){
     const int zmin = 1-domain.halo.bottom;
     const int zmax = r.shape[2]-1+domain.halo.top;
 
-    #pragma omp target map(hsq) device(u.device) is_device_ptr(udev,rdev,fdev)
+    #pragma omp target device(u.device) is_device_ptr(udev,rdev,fdev) firstprivate(hsq)
     {
         #pragma omp teams distribute parallel for collapse(3) schedule(static,8)
         for (int_t i = xmin;i<xmax;i++){

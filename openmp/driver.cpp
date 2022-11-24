@@ -10,18 +10,23 @@
 #include "include/grid.h"
 #include "include/vcycle.h"
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <cstdlib>
 #include <cassert>
 
 using std::cout;
 using std::endl;
+using std::ofstream;
+using std::ios;
+using std::setw;
 
 int main(int argc, char * argv[]){
-    bool is_dirichlet = false;
+    bool is_dirichlet = true;
     Settings settings = parser(argc,argv);
     DomainSettings domainsettings(settings,0);
     Grid grid(settings,settings.levels);
-    const double_t omega = 2.0/3.0;
+    const double_t omega = 4.5/5.0;//2.0/3.0;
 
     // Making array of domains
     Domain<double_t> * domains[settings.levels];
@@ -36,17 +41,20 @@ int main(int argc, char * argv[]){
         domains[l]->to_device();
     }
 
+    double_t fnorm = domains[0]->f->infinity_norm();
+
     Injection<double_t> injection;
     TrilinearInterpolation<double_t> trilinearinterpolation;
     double_t start = omp_get_wtime();
     for(uint_t i = 0;i<settings.maxiter;i++){
         Vcycle<double_t>(domains,injection,trilinearinterpolation,omega,0,settings.levels);
-        if (i % 20 == 19){
-            cout << "Finished iteration " << i+1 << endl;
-        }
+        residual<double_t>(*domains[0]);
+        double_t rnorm = domains[0]->r->infinity_norm();
+        cout << setw(4) << i+1 << ": Relative residual: " << setw(8) << rnorm/fnorm << endl;
     }
+    double_t time_taken = omp_get_wtime()-start;
     cout << endl;
-    cout << "It took " << omp_get_wtime()-start << " seconds to run " <<settings.maxiter << " Vcycles"  <<endl;
+    cout << "It took " << time_taken << " seconds to run " <<settings.maxiter << " Vcycles"  <<endl;
 
     residual<double_t>(*domains[0]);
 
@@ -77,6 +85,19 @@ int main(int argc, char * argv[]){
 
     for (uint_t l = 0;l<settings.levels;l++){
         delete domains[l];
+    }
+
+    if (settings.write_final_stats){
+        ofstream out("results/"+settings.stats_file, ios::app);
+        out << "#    seconds     abs_err domain_size     spacing     maxiter     lengthx      levels" << endl;
+        out << setw(12) << time_taken;
+        out << setw(12) << err;
+        out << setw(12) << settings.dims[0]*settings.dims[1]*settings.dims[2];
+        out << setw(12) << settings.h;
+        out << setw(12) << settings.maxiter;
+        out << setw(12) << settings.lengthx;
+        out << setw(12) << settings.levels;
+        out << endl;
     }
 
     cout << "Maximal error: " << err << endl;
