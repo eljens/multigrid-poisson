@@ -22,7 +22,7 @@ using std::ios;
 using std::setw;
 
 int main(int argc, char * argv[]){
-    bool is_dirichlet = true;
+    bool is_dirichlet = false;
     Settings settings = parser(argc,argv);
     DomainSettings domainsettings(settings,0);
     Grid grid(settings,settings.levels);

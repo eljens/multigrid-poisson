@@ -128,7 +128,7 @@ void Neumann<T>::restrict(DeviceArray<T> & u, Boundary<T> & boundary,
 
     switch (this->location){
         case EAST:
-            offx = u.shape[0]-1;
+            offx = ((uint_t) u.shape[0]/2)+1-1;
             ii = -1;
             iii = -2;
             break;
@@ -138,7 +138,7 @@ void Neumann<T>::restrict(DeviceArray<T> & u, Boundary<T> & boundary,
             iii = 2;
             break;
         case NORTH:
-            offy = u.shape[1]-1;
+            offy = ((uint_t) u.shape[1]/2)+1-1;
             jj = -1;
             jjj = -2;
             break;
@@ -148,7 +148,7 @@ void Neumann<T>::restrict(DeviceArray<T> & u, Boundary<T> & boundary,
             jjj = 2;
             break;
         case TOP:
-            offz = u.shape[2]-1;
+            offz = ((uint_t) u.shape[2]/2)+1-1;
             kk = -1;
             kkk = -2;
             break;
@@ -169,29 +169,37 @@ void Neumann<T>::restrict(DeviceArray<T> & u, Boundary<T> & boundary,
         case EAST:
         case NORTH:
         case TOP:
-            c1 = 0.5;
+            c3 = 0.5;
             c2 = -2.0;
-            c3 = 3.0/2.0;
+            c1 = 3.0/2.0;
             break;
         default:
             break;
     }
 
+    // if (this->location == EAST){
+    //     cout << "this->shape: (" << this->shape[0] << "," << this->shape[1] << "," << this->shape[2] << ")" << endl;
+    //     cout << "u-shape:     (" << u.shape[0] << "," << u.shape[1] << "," << u.shape[2] << ")" << endl;
+    //     cout << "Offsets:     (" << offx << "," << offy << "," << offz << ")" << endl;
+    //     cout << c1 << " * u[i] + " << c2 << " * u[i+(" << ii << ")] + " << c3 << " * u[i+(" << iii << ")]" << endl;
+    // }
+
     // Interpolating the Neumann condition
     T h = settings.h;
     T * udev = u.devptr;
     T * gdev = this->devptr;
-    const T two_h = 2.0*settings.h;
-    #pragma omp target device(this->device) is_device_ptr(udev,gdev)\
-            firstprivate(c1,c2,c3,h,ii,jj,kk,iii,jjj,kkk,two_h)
-    #pragma omp teams distribute parallel for collapse(3) schedule(static,1)
-    for(int_t i = 0;i<this->shape[0];i++){
-        for(int_t j = 0;j<this->shape[1];j++){
-            for(int_t k = 0;k<this->shape[2];k++){
+    const uint_t * _shape = this->shape;
+    const uint _device = this->device;
+    #pragma omp target device(_device) is_device_ptr(udev,gdev)\
+            firstprivate(c1,c2,c3,h,ii,jj,kk,iii,jjj,kkk)
+    #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
+    for(int_t i = 0;i<_shape[0];i++){
+        for(int_t j = 0;j<_shape[1];j++){
+            for(int_t k = 0;k<_shape[2];k++){
                 gdev[this->idx(i,j,k)] -= 
-                    (c1 * udev[u.idx(i+offx,j+offy,k+offz)] +
-                    c2 * udev[u.idx(i+offx+ii,j+offy+jj,k+offz+kk)] +
-                    c3 * udev[u.idx(i+offx+iii,j+offy+jjj,k+offz+kkk)])/h;
+                    (c1 * udev[u.idx(2*(i+offx),2*(j+offy),2*(k+offz))] +
+                    c2 * udev[u.idx(2*(i+offx)+ii,2*(j+offy)+jj,2*(k+offz)+kk)] +
+                    c3 * udev[u.idx(2*(i+offx)+iii,2*(j+offy)+jjj,2*(k+offz)+kkk)])/h;
             }
         }
     }
