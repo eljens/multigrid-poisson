@@ -1,4 +1,4 @@
-#include "../include/settings.h"
+#include "settings.h"
 
 Settings::Settings(){
       // Does nothing

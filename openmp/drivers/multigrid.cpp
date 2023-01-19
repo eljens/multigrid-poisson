@@ -1,14 +1,14 @@
-#include "include/parser.h"
-#include "include/domainsettings.h"
-#include "include/domain.h"
-#include "include/definitions.h"
-#include "include/problem_definition.h"
-#include "include/jacobi.h"
-#include "include/residual.h"
-#include "include/injection.h"
-#include "include/trilinearinterpolation.h"
-#include "include/grid.h"
-#include "include/vcycle.h"
+#include "parser.h"
+#include "domainsettings.h"
+#include "domain.h"
+#include "definitions.h"
+#include "problem_definition.h"
+#include "jacobi.h"
+#include "residual.h"
+#include "injection.h"
+#include "trilinearinterpolation.h"
+#include "grid.h"
+#include "vcycle.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -70,10 +70,6 @@ int main(int argc, char * argv[]){
     if (settings.print_result){
         domains[0]->save();
     }
-
-    //domains[0]->save_halo();
-
-    //domains[0]->save_restrict_prolong(injection,trilinearinterpolation);
 
     double_t err = 0.0;
 

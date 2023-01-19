@@ -1,4 +1,4 @@
-APP?=driver
+APP?=multigrid
 
 ifndef GPU_ARCH
 GPU_ARCH = sm_80
@@ -9,51 +9,46 @@ ARCH_PATH=/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/libomptarget/libompt
 
 TARGETFLAGS = -fopenmp --offload-arch=$(GPU_ARCH) --libomptarget-nvptx-bc-path=$(ARCH_PATH)
 
-CFLAGS += -Wall -g -O3 $(TARGETFLAGS)
-CFLAGS += -I/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/runtime/src/
+CXXFLAGS = -Wall -g -O3 -std=c++17 $(TARGETFLAGS)
 
-LIBS = -lm -L/appl/gcc/11.3.0-binutils-2.38/lib64/ -Wl,-rpath,/appl/gcc/11.3.0-binutils-2.38/lib64/
-LIBS += -L/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/runtime/src/ -lomp
-
-#$(info Compiler flags are: $(CFLAGS))
-#$(info Linker flags are: $(LIBS))
-
-CC = /work3/s174515/LLVM/bin/clang
 CXX = /work3/s174515/LLVM/bin/clang++
 
-SRCDIR   = src
-OBJDIR   = lib
-BINDIR   = bin
-INCLDIR  = include
+#### Standard settings which are identical for all compilers
+# Add flags start start with -I here (include path)
+CPPFLAGS = -Iinclude -I/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/runtime/src/
+# Add flags that start with -L here (link path)
+LDFLAGS = -Llib -L/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/runtime/src/ -lomp -L/appl/gcc/11.3.0-binutils-2.38/lib64/ -Wl,-rpath,/appl/gcc/11.3.0-binutils-2.38/lib64/
+# Add flags stat start with -l here (libbrary)
+LDLIBS = -lm -lstdc++ -lpoisson
 
-OBJ = parser.o problem_definition.o settings.o domainsettings.o grid.o
+# Source files
+SRC = $(wildcard src/*.cpp)
 
-all: $(BINDIR)/$(APP)
+# Object files
+OBJ = $(patsubst src/%.cpp,lib/%.o,$(SRC))
 
-$(BINDIR)/$(APP): $(APP).cpp $(OBJDIR)/parser.o $(OBJDIR)/problem_definition.o $(OBJDIR)/settings.o $(OBJDIR)/domainsettings.o $(OBJDIR)/grid.o
-	$(CXX) $(CFLAGS) -std=c++17 -o $@ $^ $(LIBS)
+all: bin/$(APP)
 
-$(OBJDIR)/parser.o: $(SRCDIR)/parser.cpp
-	$(CXX) $(CFLAGS) -std=c++17 -o $@ -c $<
+bin/$(APP): lib/$(APP).o lib/libpoisson.a
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
-$(OBJDIR)/settings.o: $(SRCDIR)/settings.cpp
-	$(CXX) $(CFLAGS) -std=c++17 -o $@ -c $<
+lib/$(APP).o: drivers/$(APP).cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
 
-$(OBJDIR)/domainsettings.o: $(SRCDIR)/domainsettings.cpp
-	$(CXX) $(CFLAGS) -std=c++17 -o $@ -c $<
+lib/libpoisson.a: $(OBJ)
+	ar rcs lib/libpoisson.a $(OBJ)
 
-$(OBJDIR)/grid.o: $(SRCDIR)/grid.cpp
-	$(CXX) $(CFLAGS) -std=c++17 -o $@ -c $<
-
-$(OBJDIR)/problem_definition.o: $(SRCDIR)/problem_definition.cpp
-	$(CXX) $(CFLAGS) -std=c++17 -o $@ -c $<
+lib/%.o: src/%.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
 
 clean:
-	-rm -f $(BINDIR)/$(APP) *.core *.o 
-	-rm -f $(OBJDIR)/*.o
+	-rm -f top3d *.o lib/*.o lib/*.a bin/*
 
-realclean:
-	make clean
-	-rm -rf results/*.vtk
-	-rm -rf results/*.txt
+info:
+	$(info "COMPILER=$(COMPILER)")
+	$(info "CXX=$(CXX)")
+	$(info "CXXFLAGS=$(CXXFLAGS)")
+	$(info "LDFLAGS=$(LDFLAGS)")
+	$(info "LDLIBS=$(LDLIBS)")
+	$(info "DEFS=$(DEFS)")
 

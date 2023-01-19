@@ -1,4 +1,4 @@
-#include "../include/domainsettings.h"
+#include "domainsettings.h"
 
 DomainSettings::DomainSettings() : Settings() {
     // Nothing so far

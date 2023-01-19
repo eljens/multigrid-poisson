@@ -1,4 +1,4 @@
-#include "../include/grid.h"
+#include "grid.h"
 #include <iostream>
 using std::cout;
 
