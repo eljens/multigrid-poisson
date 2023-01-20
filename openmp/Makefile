@@ -27,7 +27,7 @@ SRC = $(wildcard src/*.cpp)
 # Object files
 OBJ = $(patsubst src/%.cpp,lib/%.o,$(SRC))
 
-all: bin/$(APP)
+TARGET?=bin/$(APP)
 
 bin/$(APP): lib/$(APP).o lib/libpoisson.a
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS) $(LDLIBS)
@@ -40,6 +40,9 @@ lib/libpoisson.a: $(OBJ)
 
 lib/%.o: src/%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $<
+
+archive:
+	make TARGET=lib/libpoisson.a
 
 clean:
 	-rm -f top3d *.o lib/*.o lib/*.a bin/*

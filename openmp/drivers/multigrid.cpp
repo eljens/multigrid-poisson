@@ -1,5 +1,4 @@
 #include "parser.h"
-#include "domainsettings.h"
 #include "domain.h"
 #include "definitions.h"
 #include "problem_definition.h"
@@ -24,7 +23,6 @@ using std::setw;
 int main(int argc, char * argv[]){
     bool is_dirichlet = false;
     Settings settings = parser(argc,argv);
-    DomainSettings domainsettings(settings,0);
     Grid grid(settings,settings.levels);
     const double_t omega = 4.5/5.0;//2.0/3.0;
 
@@ -68,7 +66,7 @@ int main(int argc, char * argv[]){
     domains[0]->to_host();
 
     if (settings.print_result){
-        domains[0]->save();
+        domains[0]->save("results/u.vtk");
     }
 
     double_t err = 0.0;

@@ -1,4 +1,8 @@
 #include "domainsettings.h"
+#include <string>
+#include <stdexcept>
+using std::to_string;
+using std::string;
 
 DomainSettings::DomainSettings() : Settings() {
     // Nothing so far
@@ -6,14 +10,20 @@ DomainSettings::DomainSettings() : Settings() {
 
 DomainSettings::DomainSettings(Settings & _settings,const uint_t l) : Settings(_settings) {
     if (l>0){
-        uint_t factor = 2;
-        for(uint_t i=0;i<l-1;i++){
-            factor*=2;
+        uint_t factor = 1;
+        uint_t original_dims[3] = {this->dims[0],this->dims[1],this->dims[2]};
+        this->dims[0] = (this->dims[0] >> l)+1;
+        this->dims[1] = (this->dims[1] >> l)+1;
+        this->dims[2] = (this->dims[2] >> l)+1;
+        this->h *= (double_t) (factor<<l);
+        if ((((this->dims[0]-1) << l)+1 != original_dims[0])
+        || (((this->dims[1]-1) << l)+1 != original_dims[1])
+        || (((this->dims[2]-1) << l)+1 != original_dims[2]))
+        {
+            string errormsg = "Invalid grid of size: ("+to_string(this->dims[0])+",";
+            errormsg += to_string(this->dims[1])+","+to_string(this->dims[2])+")";
+            throw std::invalid_argument(errormsg);
         }
-        this->dims[0] = ((uint_t) this->dims[0]/factor)+1;
-        this->dims[1] = ((uint_t) this->dims[1]/factor)+1;
-        this->dims[2] = ((uint_t) this->dims[2]/factor)+1;
-        this->h *= factor;
     }
 }
 

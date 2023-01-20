@@ -5,6 +5,7 @@ Settings::Settings(){
 }
 
 Settings::Settings(Settings & settings){
+      this->lengthx = settings.lengthx;
       this->dims[0] = settings.dims[0];
       this->dims[1] = settings.dims[1];
       this->dims[2] = settings.dims[2];
@@ -16,6 +17,10 @@ Settings::Settings(Settings & settings){
       this->origin[0] = settings.origin[0];
       this->origin[1] = settings.origin[1];
       this->origin[2] = settings.origin[2];
+      this->levels = settings.levels;
+      this->print_result = settings.print_result;
+      this->write_final_stats = settings.write_final_stats;
+      this->stats_file = settings.stats_file;
 }
 
 Settings::~Settings(){

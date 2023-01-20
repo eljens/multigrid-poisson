@@ -73,7 +73,7 @@ class Domain
 
 		void to_host();
 
-		void save();
+		void save(string filename="u.vtk");
 
 		void save_halo();
 
@@ -178,10 +178,10 @@ void Domain<T>::to_host(){
 }
 
 template<class T>
-void Domain<T>::save(){
+void Domain<T>::save(string filename){
 	//this->f->print(settings,"results/f.vtk");
-	this->u->print(settings,"results/u.vtk");
-	this->r->print(settings,"results/r.vtk");
+	this->u->print(settings,filename.c_str());
+	//this->r->print(settings,"results/r.vtk");
 }
 
 template<class T>
