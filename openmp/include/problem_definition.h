@@ -4,14 +4,15 @@
 #include "definitions.h" 
 #include <cmath>
 
-double_t ufun(double_t x,double_t y,double_t z);
+namespace Poisson{
+    double_t ufun(double_t x,double_t y,double_t z);
 
-double_t ffun(double_t x,double_t y,double_t z);
+    double_t ffun(double_t x,double_t y,double_t z);
 
-double_t dudxfun(double_t x,double_t y,double_t z);
+    double_t dudxfun(double_t x,double_t y,double_t z);
 
-double_t dudyfun(double_t x,double_t y,double_t z);
+    double_t dudyfun(double_t x,double_t y,double_t z);
 
-typedef double_t (*funptr)(double_t x,double_t y,double_t z);
-
+    typedef double_t (*funptr)(double_t x,double_t y,double_t z);
+}
 #endif

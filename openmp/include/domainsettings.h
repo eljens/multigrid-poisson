@@ -6,20 +6,21 @@
 #include "definitions.h"
 #include "settings.h"
 
-using std::cout;
-using std::endl;
-using std::ostream;
+namespace Poisson{
+    using std::cout;
+    using std::endl;
+    using std::ostream;
 
-class DomainSettings :
-    public Settings {
-        public:
-            DomainSettings();
+    class DomainSettings :
+        public Settings {
+            public:
+                DomainSettings();
 
-            DomainSettings(Settings & settings, const uint_t l);
+                DomainSettings(Settings & settings, const uint_t l);
 
-            ~DomainSettings();
-};
+                ~DomainSettings();
+    };
 
-ostream& operator<<(ostream& os, const DomainSettings& settings);
-
+    ostream& operator<<(ostream& os, const DomainSettings& settings);
+}
 #endif

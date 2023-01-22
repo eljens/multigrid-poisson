@@ -10,50 +10,52 @@
 using std::cout;
 using std::endl;
 
-template <class T>
-void Vcycle(
-    Domain<T> * domains[],
-    Restriction<T> & restriction,
-    Prolongation<T> & prolongation,
-    T omega,
-    uint_t level,
-    uint_t levels){
-    
-    // Pre smooting
-    for(int_t i=0;i<nsmooth;i++){
-        jacobi<double_t>(*domains[level],omega);
-    }
+namespace Poisson{
+    template <class T>
+    void Vcycle(
+        Domain<T> * domains[],
+        Restriction<T> & restriction,
+        Prolongation<T> & prolongation,
+        T omega,
+        uint_t level,
+        uint_t levels){
+        
+        // Pre smooting
+        for(int_t i=0;i<nsmooth;i++){
+            jacobi<double_t>(*domains[level],omega);
+        }
 
-    if (level >= levels-1){
-        return;
-    }
+        if (level >= levels-1){
+            return;
+        }
 
-    residual<T>(*domains[level]);
+        residual<T>(*domains[level]);
 
-    restriction.restrict(*(domains[level]->r),*(domains[level+1]->f));
+        restriction.restrict(*(domains[level]->r),*(domains[level+1]->f));
 
-    //domains[level+1]->u->init_zero();
-    domains[level+1]->u->init_zero();
+        //domains[level+1]->u->init_zero();
+        domains[level+1]->u->init_zero();
 
-    // Restricting boundaries
-    domains[level+1]->north->restrict(*(domains[level]->u),*(domains[level]->north),(*domains[level]).settings,restriction);
-    domains[level+1]->south->restrict(*(domains[level]->u),*(domains[level]->south),(*domains[level]).settings,restriction);
-    domains[level+1]->east->restrict(*(domains[level]->u),*(domains[level]->east),(*domains[level]).settings,restriction);
-    domains[level+1]->west->restrict(*(domains[level]->u),*(domains[level]->west),(*domains[level]).settings,restriction);
-    domains[level+1]->top->restrict(*(domains[level]->u),*(domains[level]->top),(*domains[level]).settings,restriction);
-    domains[level+1]->bottom->restrict(*(domains[level]->u),*(domains[level]->bottom),(*domains[level]).settings,restriction);
+        // Restricting boundaries
+        domains[level+1]->north->restrict(*(domains[level]->u),*(domains[level]->north),(*domains[level]).settings,restriction);
+        domains[level+1]->south->restrict(*(domains[level]->u),*(domains[level]->south),(*domains[level]).settings,restriction);
+        domains[level+1]->east->restrict(*(domains[level]->u),*(domains[level]->east),(*domains[level]).settings,restriction);
+        domains[level+1]->west->restrict(*(domains[level]->u),*(domains[level]->west),(*domains[level]).settings,restriction);
+        domains[level+1]->top->restrict(*(domains[level]->u),*(domains[level]->top),(*domains[level]).settings,restriction);
+        domains[level+1]->bottom->restrict(*(domains[level]->u),*(domains[level]->bottom),(*domains[level]).settings,restriction);
 
-    // Recursion
-    Vcycle<T>(domains,restriction,prolongation,omega,level+1,levels);
+        // Recursion
+        Vcycle<T>(domains,restriction,prolongation,omega,level+1,levels);
 
-    prolongation.prolong(*(domains[level+1]->u),*(domains[level]->r));
+        prolongation.prolong(*(domains[level+1]->u),*(domains[level]->r));
 
-    // Interpolate error
-    domains[level]->u->add(*(domains[level]->r));
+        // Interpolate error
+        domains[level]->u->add(*(domains[level]->r));
 
-    // Post smooting
-    for(int_t i=0;i<nsmooth;i++){
-        jacobi<double_t>(*domains[level],omega);
+        // Post smooting
+        for(int_t i=0;i<nsmooth;i++){
+            jacobi<double_t>(*domains[level],omega);
+        }
     }
 }
 

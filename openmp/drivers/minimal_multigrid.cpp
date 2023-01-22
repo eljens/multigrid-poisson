@@ -5,6 +5,9 @@
 
 using std::cout;
 using std::endl;
+using Poisson::PoissonSolver;
+using Poisson::Settings;
+using Poisson::parser;
 
 int main(int argc, char * argv[]){
     bool is_dirichlet = false;
@@ -15,7 +18,7 @@ int main(int argc, char * argv[]){
     solver.verbose(true);
     solver.to_device();
 
-    solver.solve(1e-4,"vcycle");
+    solver.solve(1e-10,"vcycle");
     cout << "It took " << solver.solve_time() << " seconds to run ";
     cout << solver.solve_iterations() << " Vcycles"  <<endl;
     

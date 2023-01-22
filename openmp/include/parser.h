@@ -16,6 +16,8 @@ using std::stoi;
 using std::stod;
 using std::ostream;
 
-Settings parser(int argc, char * argv[]);
+namespace Poisson{
+    Settings parser(int argc, char * argv[]);
+}
 
 #endif

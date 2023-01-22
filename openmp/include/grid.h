@@ -4,14 +4,16 @@
 #include "settings.h"
 #include "domainsettings.h"
 
-class Grid {
-    public:
-        const uint_t levels;
-        DomainSettings * domainsettings;
+namespace Poisson{
+    class Grid {
+        public:
+            const uint_t levels;
+            DomainSettings * domainsettings;
 
-        Grid(Settings & settings,const uint_t _levels);
+            Grid(Settings & settings,const uint_t _levels);
 
-        ~Grid();
-};
+            ~Grid();
+    };
+}
 
 #endif

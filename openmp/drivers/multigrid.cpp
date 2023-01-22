@@ -20,6 +20,22 @@ using std::ofstream;
 using std::ios;
 using std::setw;
 
+using Poisson::Settings;
+using Poisson::Grid;
+using Poisson::Domain;
+using Poisson::Injection;
+using Poisson::TrilinearInterpolation;
+using Poisson::Vcycle;
+using Poisson::residual;
+using Poisson::parser;
+using Poisson::int_t;
+using Poisson::uint_t;
+using Poisson::double_t;
+using Poisson::ufun;
+using Poisson::ffun;
+using Poisson::dudxfun;
+using Poisson::dudyfun;
+
 int main(int argc, char * argv[]){
     bool is_dirichlet = false;
     Settings settings = parser(argc,argv);

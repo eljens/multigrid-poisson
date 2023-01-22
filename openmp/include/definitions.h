@@ -1,14 +1,13 @@
 #ifndef POISSON_DEFINITIONS
 #define POISSON_DEFINITIONS
-
 #include <cstdint>
+namespace Poisson{
+    #define CHUNK_SIZE 8
 
-#define CHUNK_SIZE 8
-
-using double_t = double;
-using float_t = float;
-using uint_t = std::size_t;
-using int_t = long int;
-
+    using double_t = double;
+    using float_t = float;
+    using uint_t = std::size_t;
+    using int_t = long int;
+}
 #endif
 
