@@ -12,7 +12,7 @@ namespace Poisson{
 
             ~Injection();
 
-            void restrict(DeviceArray<T> & uin,DeviceArray<T> & uout);
+            void restrict_to(DeviceArray<T> & uin,DeviceArray<T> & uout);
     };
 
     template<class T>
@@ -26,7 +26,7 @@ namespace Poisson{
     }
 
     template<class T>
-    void Injection<T>::restrict(DeviceArray<T> & uin,DeviceArray<T> & uout){
+    void Injection<T>::restrict_to(DeviceArray<T> & uin,DeviceArray<T> & uout){
         bool cond0 = ((uint_t) (uin.shape[0]-1)/2)+1 == uout.shape[0];
         bool cond1 = ((uint_t) (uin.shape[1]-1)/2)+1 == uout.shape[1];
         bool cond2 = ((uint_t) (uin.shape[2]-1)/2)+1 == uout.shape[2];

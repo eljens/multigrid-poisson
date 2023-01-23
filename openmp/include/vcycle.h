@@ -31,18 +31,18 @@ namespace Poisson{
 
         residual<T>(*domains[level]);
 
-        restriction.restrict(*(domains[level]->r),*(domains[level+1]->f));
+        restriction.restrict_to(*(domains[level]->r),*(domains[level+1]->f));
 
         //domains[level+1]->u->init_zero();
         domains[level+1]->u->init_zero();
 
         // Restricting boundaries
-        domains[level+1]->north->restrict(*(domains[level]->u),*(domains[level]->north),(*domains[level]).settings,restriction);
-        domains[level+1]->south->restrict(*(domains[level]->u),*(domains[level]->south),(*domains[level]).settings,restriction);
-        domains[level+1]->east->restrict(*(domains[level]->u),*(domains[level]->east),(*domains[level]).settings,restriction);
-        domains[level+1]->west->restrict(*(domains[level]->u),*(domains[level]->west),(*domains[level]).settings,restriction);
-        domains[level+1]->top->restrict(*(domains[level]->u),*(domains[level]->top),(*domains[level]).settings,restriction);
-        domains[level+1]->bottom->restrict(*(domains[level]->u),*(domains[level]->bottom),(*domains[level]).settings,restriction);
+        domains[level+1]->north->restrict_to(*(domains[level]->u),*(domains[level]->north),(*domains[level]).settings,restriction);
+        domains[level+1]->south->restrict_to(*(domains[level]->u),*(domains[level]->south),(*domains[level]).settings,restriction);
+        domains[level+1]->east->restrict_to(*(domains[level]->u),*(domains[level]->east),(*domains[level]).settings,restriction);
+        domains[level+1]->west->restrict_to(*(domains[level]->u),*(domains[level]->west),(*domains[level]).settings,restriction);
+        domains[level+1]->top->restrict_to(*(domains[level]->u),*(domains[level]->top),(*domains[level]).settings,restriction);
+        domains[level+1]->bottom->restrict_to(*(domains[level]->u),*(domains[level]->bottom),(*domains[level]).settings,restriction);
 
         // Recursion
         Vcycle<T>(domains,restriction,prolongation,omega,level+1,levels);

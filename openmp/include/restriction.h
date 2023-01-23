@@ -10,7 +10,7 @@ namespace Poisson{
 
             virtual ~Restriction();
 
-            virtual void restrict(DeviceArray<T> & uin,DeviceArray<T> & uout) = 0;
+            virtual void restrict_to(DeviceArray<T> & uin,DeviceArray<T> & uout) = 0;
     };
 
     template<class T>

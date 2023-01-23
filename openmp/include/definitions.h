@@ -10,4 +10,3 @@ namespace Poisson{
     using int_t = long int;
 }
 #endif
-

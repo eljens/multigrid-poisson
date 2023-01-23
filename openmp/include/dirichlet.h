@@ -17,7 +17,7 @@ namespace Poisson{
 
             void update(DeviceArray<T> & uarr, Settings & settings);
 
-            void restrict(DeviceArray<T> & u, Boundary<T> & boundary,
+            void restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction);
     };
 
@@ -74,7 +74,7 @@ namespace Poisson{
     }
 
     template<class T>
-    void Dirichlet<T>::restrict(DeviceArray<T> & u, Boundary<T> & boundary,
+    void Dirichlet<T>::restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction){
         // For a dirichlet type boundary condition the error is always 0
         // as the solution is exact on this type of boundary by definition.

@@ -9,7 +9,7 @@ ARCH_PATH=/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/libomptarget/libompt
 
 TARGETFLAGS = -fopenmp --offload-arch=$(GPU_ARCH) --libomptarget-nvptx-bc-path=$(ARCH_PATH)
 
-CXXFLAGS = -Wall -g -O3 -std=c++17 $(TARGETFLAGS)
+CXXFLAGS = -Wall -g -O3 -std=c++17 -fPIC $(TARGETFLAGS)
 
 CXX = /work3/s174515/LLVM/bin/clang++
 

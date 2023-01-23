@@ -198,7 +198,7 @@ namespace Poisson{
 		DeviceArray<T> u_large(settings.dev,settings.dims[0],settings.dims[1],settings.dims[2]);
 		u_small.to_device();
 		u_large.to_device();
-		restriction.restrict(*(this->u),u_small);
+		restriction.restrict_to(*(this->u),u_small);
 		prolongation.prolong(u_small,u_large);
 		u_small.to_host();
 		u_large.to_host();
@@ -238,4 +238,3 @@ namespace Poisson{
 	}
 }
 #endif
-

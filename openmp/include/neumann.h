@@ -18,7 +18,7 @@ namespace Poisson{
 
             void update(DeviceArray<T> & uarr, Settings & settings);
 
-            void restrict(DeviceArray<T> & u, Boundary<T> & boundary,
+            void restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction);
     };
 
@@ -112,10 +112,10 @@ namespace Poisson{
     }
 
     template<class T>
-    void Neumann<T>::restrict(DeviceArray<T> & u, Boundary<T> & boundary,
+    void Neumann<T>::restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction){
         // Needs to be implemented
-        restriction.restrict(boundary,*this);
+        restriction.restrict_to(boundary,*this);
         int_t offx = 0;
         int_t offy = 0;
         int_t offz = 0;

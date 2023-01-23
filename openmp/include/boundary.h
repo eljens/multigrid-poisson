@@ -29,7 +29,7 @@ namespace Poisson{
 
             virtual void update(DeviceArray<T> & uarr, Settings & settings);
 
-            virtual void restrict(DeviceArray<T> & u, Boundary<T> & boundary,
+            virtual void restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                                     Settings & settings, Restriction<T> & restriction);
     };
 
