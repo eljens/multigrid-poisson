@@ -9,7 +9,7 @@ namespace Poisson{
         // Nothing so far
     }
 
-    DomainSettings::DomainSettings(Settings & _settings,const uint_t l) : Settings(_settings) {
+    DomainSettings::DomainSettings(const Settings & _settings,const uint_t l) : Settings(_settings) {
         if (l>0){
             uint_t factor = 1;
             uint_t original_dims[3] = {this->dims[0],this->dims[1],this->dims[2]};

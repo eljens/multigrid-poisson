@@ -30,8 +30,7 @@ namespace Poisson {
                 i++;
             }
             else if ((str.compare("-save") == 0) || (str.compare("-s") == 0)){
-                set.print_result = stoi(argv[i+1]);
-                i++;
+                set.print_result = true;
             }
             else if ((str.compare("-length") == 0)){
                 set.lengthx = stod(argv[i+1]);

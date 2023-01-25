@@ -4,7 +4,7 @@ namespace Poisson {
             // Does nothing
       }
 
-      Settings::Settings(Settings & settings){
+      Settings::Settings(const Settings & settings){
             this->lengthx = settings.lengthx;
             this->dims[0] = settings.dims[0];
             this->dims[1] = settings.dims[1];
@@ -35,6 +35,7 @@ namespace Poisson {
             os << "\tTolerance " << settings.tolerance << endl;
             os << "\tHost id: " << settings.host << endl;
             os << "\tDevice id: " << settings.host << endl;
+            os << "\tSave result: " << settings.print_result << endl;
             return os;
       }
 }

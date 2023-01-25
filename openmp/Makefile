@@ -13,6 +13,11 @@ CXXFLAGS = -Wall -g -O3 -std=c++17 -fPIC $(TARGETFLAGS)
 
 CXX = /work3/s174515/LLVM/bin/clang++
 
+ifndef PROBLEM
+PROBLEM=1
+endif
+CXXFLAGS+= -DPROBLEM$(PROBLEM)
+
 #### Standard settings which are identical for all compilers
 # Add flags start start with -I here (include path)
 CPPFLAGS = -Iinclude -I/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/runtime/src/

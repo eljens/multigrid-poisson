@@ -21,14 +21,18 @@ namespace Poisson{
             int_t dev = omp_get_default_device();
             double_t lengthx = 3.1415; // Length in x dimension
             double_t h = 0.33; 
+#ifndef PROBLEM2
             double_t origin[3] = {-0.4, 0.21, 1.23};
+#else
+            double_t origin[3] = {-1,-1,-1};
+#endif
             bool print_result = false;
             bool write_final_stats = false;
             std::string stats_file = "";
 
             Settings();
 
-            Settings(Settings & settings);
+            Settings(const Settings & settings);
 
             ~Settings();
     };

@@ -10,7 +10,7 @@ namespace Poisson{
             const uint_t levels;
             DomainSettings * domainsettings;
 
-            Grid(Settings & settings,const uint_t _levels);
+            Grid(const Settings & settings,const uint_t _levels);
 
             ~Grid();
     };

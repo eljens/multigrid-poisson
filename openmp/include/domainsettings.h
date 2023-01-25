@@ -16,7 +16,7 @@ namespace Poisson{
             public:
                 DomainSettings();
 
-                DomainSettings(Settings & settings, const uint_t l);
+                DomainSettings(const Settings & settings, const uint_t l);
 
                 ~DomainSettings();
     };

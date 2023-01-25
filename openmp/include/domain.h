@@ -182,6 +182,7 @@ namespace Poisson{
 	void Domain<T>::save(string filename){
 		//this->f->print(settings,"results/f.vtk");
 		this->u->print(settings,filename.c_str());
+		cout << "Saved " << filename << endl;
 		//this->r->print(settings,"results/r.vtk");
 	}
 

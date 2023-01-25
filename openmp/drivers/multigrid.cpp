@@ -38,9 +38,10 @@ using Poisson::dudyfun;
 
 int main(int argc, char * argv[]){
     bool is_dirichlet = false;
-    Settings settings = parser(argc,argv);
+    const Settings settings = parser(argc,argv);
+    cout << settings << endl;
     Grid grid(settings,settings.levels);
-    const double_t omega = 4.5/5.0;//2.0/3.0;
+    const double_t omega = 4.5/5.0;
 
     // Making array of domains
     Domain<double_t> * domains[settings.levels];
@@ -67,7 +68,7 @@ int main(int argc, char * argv[]){
         residual<double_t>(*domains[0]);
         double_t norm = domains[0]->r->infinity_norm() / fnorm;
         cout << setw(4) << iter+1 << ": Relative residual: " << setw(8) << norm << endl;
-        if (std::abs(norm-rel_res) < 1e-5){
+        if (std::abs(norm-rel_res) < 1e-8){
             rel_res = norm;
             break;
         }
@@ -80,7 +81,6 @@ int main(int argc, char * argv[]){
     residual<double_t>(*domains[0]);
 
     domains[0]->to_host();
-
     if (settings.print_result){
         domains[0]->save("results/u.vtk");
     }
@@ -91,13 +91,18 @@ int main(int argc, char * argv[]){
     for (int_t i = 0;i<domains[0]->u->shape[0];i++){
         for (int_t j = 0;j<domains[0]->u->shape[1];j++){
             for (int_t k = 0;k<domains[0]->u->shape[2];k++){
-                double_t tmp = abs(domains[0]->u->at[domains[0]->u->idx(i,j,k)]
-                    -ufun(settings.origin[0]+((double_t) i)*settings.h,
+                double_t u_true = 
+                    ufun(settings.origin[0]+((double_t) i)*settings.h,
                     settings.origin[1]+((double_t) j)*settings.h,
-                    settings.origin[2]+((double_t) k)*settings.h));
+                    settings.origin[2]+((double_t) k)*settings.h);
+                double tmp = abs(domains[0]->u->at[domains[0]->u->idx(i,j,k)]-u_true);
                 err = std::max(err,tmp);
+                domains[0]->u->at[domains[0]->u->idx(i,j,k)] = u_true;
             }
         }
+    }
+    if (settings.print_result){
+        domains[0]->save("results/u_true.vtk");
     }
 
     for (uint_t l = 0;l<settings.levels;l++){
