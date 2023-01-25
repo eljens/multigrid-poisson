@@ -39,7 +39,6 @@ namespace Poisson {
     }
 
     double_t dudyfun(double_t x,double_t y,double_t z){
-        double_t coshtmp = cosh(x*x*x*y*z);
         return 2.0*x*x*x*y*z;
     }
 }
