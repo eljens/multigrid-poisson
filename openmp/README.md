@@ -73,7 +73,7 @@ u(x,y,x) = \cos(xz^2)\sin(y^3)
 ```
 has the Laplacian
 ```math
-f = \Delta u = ((-4x^2z^2 - 9y^4 - z^4)\sin(y^3) + 6y\cos(y^3))\cos(xz^2) - 2x\sin(xz^2)sin(y^3).
+f = \Delta u = ((-4x^2z^2 - 9y^4 - z^4)\sin(y^3) + 6y\cos(y^3))\cos(xz^2) - 2x\sin(xz^2)\sin(y^3).
 ```
 The Neumann boundary conditions are given by
 ```math
