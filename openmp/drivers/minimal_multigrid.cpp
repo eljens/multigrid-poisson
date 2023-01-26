@@ -18,12 +18,12 @@ int main(int argc, char * argv[]){
     solver.verbose(true);
     solver.to_device();
 
-    solver.solve(1e-10,"vcycle");
+    solver.solve(1e-7,"vcycle");
     cout << "It took " << solver.solve_time() << " seconds to run ";
-    cout << solver.solve_iterations() << " Vcycles"  <<endl;
+    cout << solver.solve_iterations() << " Vcycles"<<endl;
     
     solver.to_host();
-    solver.save("results/u_vcycle.vtk");
+    solver.save_all("results/u_vcycle.vtk","results/f_vcycle.vtk","results/r_vcycle.vtk");
 
     return EXIT_SUCCESS;
 }

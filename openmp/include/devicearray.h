@@ -74,7 +74,7 @@ namespace Poisson{
 		if (res != 0){
 			cerr <<  "Error on device " << this->device << ":omp_target_memcpy returned " << res << endl;
 		}
-		this->on_device = false;
+		//this->on_device = false;
 	}
 
 	template <class T>

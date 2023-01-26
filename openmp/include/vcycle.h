@@ -3,6 +3,7 @@
 
 #include "residual.h"
 #include "jacobi.h"
+#include "gaussseidel.h"
 #include <iostream>
 
 #define nsmooth 10

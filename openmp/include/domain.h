@@ -25,6 +25,9 @@ namespace Poisson{
 	void jacobi(Domain<T>& domain, T omega);
 
 	template <typename T>
+	void gaussseidel(Domain<T>& domain, T omega);
+
+	template <typename T>
 	void residual(Domain<T>& domain);
 
 	template <class T>
@@ -35,6 +38,8 @@ namespace Poisson{
 
 			// Granting access to Jacobi
 			friend void jacobi<T>(Domain<T>& domain, T omega);
+
+			friend void gaussseidel<T>(Domain<T>& domain, T omega);
 
 			friend void residual<T>(Domain<T>& domain);
 
@@ -74,7 +79,9 @@ namespace Poisson{
 
 			void to_host();
 
-			void save(string filename="u.vtk");
+			void save(string ufilename="u.vtk");
+
+			void save_all(string ufilename="u.vtk",string ffilename="f.vtk",string rfilename="u.vtk");
 
 			void save_halo();
 
@@ -179,11 +186,19 @@ namespace Poisson{
 	}
 
 	template<class T>
-	void Domain<T>::save(string filename){
-		//this->f->print(settings,"results/f.vtk");
-		this->u->print(settings,filename.c_str());
-		cout << "Saved " << filename << endl;
-		//this->r->print(settings,"results/r.vtk");
+	void Domain<T>::save(string ufilename){
+		this->u->print(settings,ufilename.c_str());
+		cout << "Saved " << ufilename << endl;
+	}
+
+	template<class T>
+	void Domain<T>::save_all(string ufilename,string ffilename,string rfilename){
+		this->u->print(settings,ufilename.c_str());
+		cout << "Saved " << ufilename << endl;
+		this->f->print(settings,ffilename.c_str());
+		cout << "Saved " << ffilename << endl;
+		this->r->print(settings,rfilename.c_str());
+		cout << "Saved " << rfilename << endl;
 	}
 
 	template<class T>
