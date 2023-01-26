@@ -6,8 +6,6 @@
 #include "gaussseidel.h"
 #include <iostream>
 
-#define nsmooth 10
-
 using std::cout;
 using std::endl;
 
@@ -19,11 +17,20 @@ namespace Poisson{
         Prolongation<T> & prolongation,
         T omega,
         uint_t level,
-        uint_t levels){
+        uint_t levels,
+        string smoother="jacobi",
+        int_t nsmooth = 10){
+
+        const bool use_jacobi = ((smoother.compare("jacobi") == 0) || (smoother.compare("Jacobi") == 0));
         
         // Pre smooting
         for(int_t i=0;i<nsmooth;i++){
-            jacobi<double_t>(*domains[level],omega);
+            if (use_jacobi){
+                jacobi<double_t>(*domains[level],omega);
+            }
+            else {
+                gaussseidel<double_t>(*domains[level],omega);
+            }
         }
 
         if (level >= levels-1){
@@ -55,7 +62,12 @@ namespace Poisson{
 
         // Post smooting
         for(int_t i=0;i<nsmooth;i++){
-            jacobi<double_t>(*domains[level],omega);
+            if (use_jacobi){
+                jacobi<double_t>(*domains[level],omega);
+            }
+            else {
+                gaussseidel<double_t>(*domains[level],omega);
+            }
         }
     }
 }
