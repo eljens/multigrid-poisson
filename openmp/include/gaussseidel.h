@@ -40,7 +40,6 @@ namespace Poisson{
         const int ymax = u.shape[1]-1+domain.halo.north;
         const int zmin = 1-domain.halo.bottom;
         const int zmax = u.shape[2]-1+domain.halo.top;
-
         #pragma omp target device(u.device) is_device_ptr(udev,fdev) firstprivate(hsq,omega)
         {
             // Red Points
@@ -70,7 +69,6 @@ namespace Poisson{
                 }
             }
         }
-        //domain.swap_u();
     }
 }
 #endif

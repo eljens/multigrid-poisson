@@ -11,7 +11,10 @@
 #include <iomanip>
 #include <stdexcept>
 #include <string>
+#include <fstream>
 
+using std::ofstream;
+using std::ios;
 using std::setw;
 using std::cout;
 using std::string;
@@ -40,7 +43,7 @@ namespace Poisson{
             void to_device();
             void to_host();
             void verbose(bool onoff);
-            void solve(const string solver="Vcycle",string smoother="Jacobi",const int_t nsmooth=10,T omega=-1.0);
+            void solve(const string solver="Vcycle",string smoother="Jacobi",const int_t nsmooth=10,T omega=-1.0,string ofile="",double maxtime = 20*60);
             void save(string file_name="u.vtk");
             void save_all(string ufile_name="u.vtk",string ffile_name="f.vtk",string rfile_name="r.vtk");
             T relative_residual();
@@ -129,7 +132,7 @@ namespace Poisson{
     }
 
     template <class T,template<class> class R>
-    void PoissonSolver<T,R>::solve(const string solver,string smoother,const int_t nsmooth,T omega){
+    void PoissonSolver<T,R>::solve(const string solver,string smoother,const int_t nsmooth,T omega,string ofile,double maxtime){
         wtime = omp_get_wtime();
         bool use_vcycle = ((solver.compare("vcycle")==0) || (solver.compare("Vcycle")==0));
         bool use_jacobi = ((solver.compare("jacobi")==0) || (solver.compare("Jacobi")==0));
@@ -158,6 +161,10 @@ namespace Poisson{
         if (is_verbose){
             cout << setw(4) << 0 << ": Initial residual: " << setw(8) << rel_res << endl;
         }
+        ofstream out(ofile,ios::app);
+        if (ofile.compare("")!=0){
+            out << "#    seconds     rel_res" << endl;
+        }
         for(iter = 0;iter<settings.maxiter;iter++){
             if (use_vcycle){
                 Vcycle<T>(this->domains,this->restriction_type,this->trilinearinterpolation,omega,0,settings.levels,smoother,nsmooth);
@@ -170,15 +177,24 @@ namespace Poisson{
             }
             residual<T>(*domains[0]);
             T norm = domains[0]->r->infinity_norm() / fnorm;
+            if (ofile.compare("")!=0){
+                out << setw(12) << omp_get_wtime()-wtime;
+                out << setw(12) << this->relative_residual();
+                out << endl;
+            }
             if (is_verbose){
                 cout << setw(4) << iter+1 << ": Relative residual: " << setw(8) << norm << endl;
             }
-            if (norm > rel_res){
+            if (norm > 2.0*rel_res){
                 rel_res = norm;
                 break;
             }
             else if (std::abs(norm-rel_res) < this->settings.tolerance){
                 rel_res = norm;
+                break;
+            }
+            if ((omp_get_wtime()-wtime) > maxtime ){
+                cout << "WARNING: Solver reached maximum time without converging!" << endl;
                 break;
             }
             rel_res = norm;
