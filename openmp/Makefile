@@ -16,7 +16,10 @@ CXX = /work3/s174515/LLVM/bin/clang++
 ifndef PROBLEM
 PROBLEM=1
 endif
-CXXFLAGS+= -DPROBLEM$(PROBLEM)
+ifndef CHUNK_SIZE
+CHUNK_SIZE=1
+endif
+CXXFLAGS+= -DPROBLEM$(PROBLEM) -DCHUNK_SIZE=$(CHUNK_SIZE)
 
 #### Standard settings which are identical for all compilers
 # Add flags start start with -I here (include path)

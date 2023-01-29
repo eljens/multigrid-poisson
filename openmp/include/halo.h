@@ -21,15 +21,16 @@ namespace Poisson{
             east(_east), west(_west),  north(_north), south(_south), top(_top), bottom(_bottom) {
 
             }
+            // To ensure that the class is trivially copyable, the copy constructor has been commented out 
+            // Halo(Halo & _halo) : 
+            //     east(_halo.east), west(_halo.west), north(_halo.north), south(_halo.south), top(_halo.top), bottom(_halo.bottom) {
 
-            Halo(Halo & _halo) : 
-                east(_halo.east), west(_halo.west), north(_halo.north), south(_halo.south), top(_halo.top), bottom(_halo.bottom) {
+            // }
 
-            }
+            // To ensure that the class is trivially copyable, the destructor has been commented out
+            //~Halo(){
 
-            ~Halo(){
-
-            }
+            //}
     };
 }
 

@@ -2,7 +2,9 @@
 #define POISSON_DEFINITIONS
 #include <cstdint>
 namespace Poisson{
-    #define CHUNK_SIZE 8
+    #ifndef CHUNK_SIZE
+    #define CHUNK_SIZE 1
+    #endif
 
     using double_t = double;
     using float_t = float;

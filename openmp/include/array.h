@@ -17,6 +17,18 @@ using std::cerr;
 using std::endl;
 using std::string;
 namespace Poisson{
+    constexpr uint_t idx(const uint_t i,const uint_t j,const uint_t k,const Halo & _halo,const uint_t (&_stride)[3]) 
+    {
+        uint_t res = (i+_halo.west)*_stride[0] + (j+_halo.south)*_stride[1] + (k+_halo.bottom)*_stride[2];
+        return res;
+    }
+
+    constexpr uint_t idx_halo(const uint_t i,const uint_t j, const uint_t k, const uint_t (&_stride)[3]) 
+    {
+        uint_t res = i*_stride[0] + j*_stride[1] + k*_stride[2];
+        return res;
+    }
+
     template <class T>
     class Array {
         private:
@@ -35,9 +47,9 @@ namespace Poisson{
         
             virtual ~Array();
 
-            inline uint_t idx(uint_t i,uint_t j, uint_t k) const;
+            constexpr uint_t idx(const uint_t i,const uint_t j,const uint_t k) const;
 
-            inline uint_t idx_halo(uint_t i,uint_t j, uint_t k) const;
+            constexpr uint_t idx_halo(const uint_t i,const uint_t j, const uint_t k) const;
 
             void init_zero();
 
@@ -69,19 +81,16 @@ namespace Poisson{
         delete[] this->at;
     }
 
-    #pragma omp declare target
     template <class T>
-    inline uint_t Array<T>::idx(uint_t i,uint_t j, uint_t k) const{
-        uint_t res = (i+this->halo.west)*this->stride[0] + (j+this->halo.south)*this->stride[1] + (k+this->halo.bottom)*this->stride[2];
-        return res;
+    constexpr uint_t Array<T>::idx(const uint_t i,const uint_t j,const uint_t k) const{
+        return Poisson::idx(i,j,k,this->halo,this->stride);
     }
 
+
     template <class T>
-    inline uint_t Array<T>::idx_halo(uint_t i,uint_t j, uint_t k) const {
-        uint_t res = i*this->stride[0] + j*this->stride[1] + k*this->stride[2];
-        return res;
+    constexpr uint_t Array<T>::idx_halo(const uint_t i, const uint_t j, const uint_t k) const {
+        return Poisson::idx_halo(i,j,k,this->stride);
     }
-    #pragma omp end declare target
 
     template <class T>
     void Array<T>::allocator(){

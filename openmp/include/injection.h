@@ -37,14 +37,20 @@ namespace Poisson{
 
         T * indev = uin.devptr;
         T * outdev = uout.devptr;
-
+        // Shape of output array
+        const uint_t (&uoutshape)[3] = uout.shape;
+        const Halo & uouthalo = uout.halo;
+        const uint_t (&uoutstride)[3] = uout.stride;
+        // Shape of input array
+        const Halo & uinhalo = uin.halo;
+        const uint_t (&uinstride)[3] = uin.stride;
         #pragma omp target device(uout.device) is_device_ptr(indev,outdev)
         {
             #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
-            for (int_t i = 0;i<uout.shape[0];i++){
-                for (int_t j = 0;j<uout.shape[1];j++){
-                    for (int_t k = 0;k<uout.shape[2];k++){
-                        outdev[uout.idx(i,j,k)] = indev[uin.idx(2*i,2*j,2*k)];
+            for (int_t i = 0;i<uoutshape[0];i++){
+                for (int_t j = 0;j<uoutshape[1];j++){
+                    for (int_t k = 0;k<uoutshape[2];k++){
+                        outdev[idx(i,j,k,uouthalo,uoutstride)] = indev[idx(2*i,2*j,2*k,uinhalo,uinstride)];
                     }
                 }
             }

@@ -24,7 +24,7 @@ namespace Poisson{
 
 				DeviceArray(Settings & settings, Halo & _halo);
 
-				virtual ~DeviceArray();
+				~DeviceArray();
 
 				void to_device();
 
@@ -118,13 +118,15 @@ namespace Poisson{
 			T * arrdev = arr.devptr;
 			T * _devptr = this->devptr;
 			const uint_t * _shape = this->shape;
+			const Halo & arrhalo = arr.halo;
+        	const uint_t (&arrstride)[3] = arr.stride;
 			#pragma omp target device(_dev) is_device_ptr(_devptr,arrdev)
 			{
 				#pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
 				for(uint_t i = 0;i<_shape[0];i++){
 					for(uint_t j = 0;j<_shape[1];j++){
 						for(uint_t k = 0;k<_shape[2];k++){
-							_devptr[this->idx(i,j,k)] += arrdev[arr.idx(i,j,k)];
+							_devptr[this->idx(i,j,k)] += arrdev[idx(i,j,k,arrhalo,arrstride)];
 						}
 					}
 				}

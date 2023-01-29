@@ -44,16 +44,25 @@ namespace Poisson{
         const int zmin = 1-domain.halo.bottom;
         const int zmax = u.shape[2]-1+domain.halo.top;
 
+        const Halo & uhalo = u.halo;
+        const uint_t (&ustride)[3] = u.stride;
+
+        const Halo & vhalo = v.halo;
+        const uint_t (&vstride)[3] = v.stride;
+
+        const Halo & fhalo = f.halo;
+        const uint_t (&fstride)[3] = f.stride;
+
         #pragma omp target device(u.device) is_device_ptr(udev,vdev,fdev) firstprivate(hsq,omega)
         {
-            #pragma omp teams distribute parallel for collapse(3) schedule(static,8)
+            #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
             for (int_t i = xmin;i<xmax;i++){
                 for (int_t j = ymin;j<ymax;j++){
                     for (int_t k = zmin;k<zmax;k++){
-                        udev[u.idx(i,j,k)] = (1.0-omega)*vdev[v.idx(i,j,k)];
-                        udev[u.idx(i,j,k)] += (omega/6.0)*(vdev[v.idx((i-1),j,k)] + vdev[v.idx((i+1),j,k)]
-                                                +vdev[v.idx(i,(j-1),k)] + vdev[v.idx(i,(j+1),k)]
-                                                +vdev[v.idx(i,j,(k-1))] + vdev[v.idx(i,j,(k+1))] - hsq*fdev[f.idx(i,j,k)]);
+                        udev[idx(i,j,k,uhalo,ustride)] = (1.0-omega)*vdev[idx(i,j,k,vhalo,vstride)];
+                        udev[idx(i,j,k,uhalo,ustride)] += (omega/6.0)*(vdev[idx((i-1),j,k,vhalo,vstride)] + vdev[idx((i+1),j,k,vhalo,vstride)]
+                                                +vdev[idx(i,(j-1),k,vhalo,vstride)] + vdev[idx(i,(j+1),k,vhalo,vstride)]
+                                                +vdev[idx(i,j,(k-1),vhalo,vstride)] + vdev[idx(i,j,(k+1),vhalo,vstride)] - hsq*fdev[idx(i,j,k,fhalo,fstride)]);
                     }
                 }
             }

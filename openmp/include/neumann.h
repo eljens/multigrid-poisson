@@ -93,14 +93,15 @@ namespace Poisson{
         }
         T * udev = uarr.devptr;
         T * gdev = this->devptr;
+        const uint_t (&ustride)[3] = uarr.stride;
         const T two_h = 2.0*settings.h;
         #pragma omp target device(this->device) is_device_ptr(udev,gdev) firstprivate(sign,two_h)
         #pragma omp teams distribute parallel for collapse(3) schedule(static,1)
         for(int_t i = 0;i<this->shape[0];i++){
             for(int_t j = 0;j<this->shape[1];j++){
                 for(int_t k = 0;k<this->shape[2];k++){
-                    udev[uarr.idx_halo(i+offx,j+offy,k+offz)] =
-                        sign*two_h*gdev[this->idx(i,j,k)]+udev[uarr.idx_halo(i+offx+ii,j+offy+jj,k+offz+kk)];
+                    udev[idx_halo(i+offx,j+offy,k+offz,ustride)] =
+                        sign*two_h*gdev[this->idx(i,j,k)]+udev[idx_halo(i+offx+ii,j+offy+jj,k+offz+kk,ustride)];
                 }
             }
         }
@@ -189,6 +190,8 @@ namespace Poisson{
         T h = settings.h;
         T * udev = u.devptr;
         T * gdev = this->devptr;
+        const Halo & uhalo = u.halo;
+        const uint_t (&ustride)[3] = u.stride;
         const uint_t * _shape = this->shape;
         const uint _device = this->device;
         #pragma omp target device(_device) is_device_ptr(udev,gdev)\
@@ -198,9 +201,9 @@ namespace Poisson{
             for(int_t j = 0;j<_shape[1];j++){
                 for(int_t k = 0;k<_shape[2];k++){
                     gdev[this->idx(i,j,k)] -= 
-                        (c1 * udev[u.idx(2*(i+offx),2*(j+offy),2*(k+offz))] +
-                        c2 * udev[u.idx(2*(i+offx)+ii,2*(j+offy)+jj,2*(k+offz)+kk)] +
-                        c3 * udev[u.idx(2*(i+offx)+iii,2*(j+offy)+jjj,2*(k+offz)+kkk)])/h;
+                        (c1 * udev[idx(2*(i+offx),2*(j+offy),2*(k+offz),uhalo,ustride)] +
+                        c2 * udev[idx(2*(i+offx)+ii,2*(j+offy)+jj,2*(k+offz)+kk,uhalo,ustride)] +
+                        c3 * udev[idx(2*(i+offx)+iii,2*(j+offy)+jjj,2*(k+offz)+kkk,uhalo,ustride)])/h;
                 }
             }
         }
