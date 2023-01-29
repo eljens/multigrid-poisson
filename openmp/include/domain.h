@@ -173,7 +173,6 @@ namespace Poisson{
 		this->west->to_device();
 		this->top->to_device();
 		this->bottom->to_device();
-
 		this->write_bc_to(*(this->u));
 		this->write_bc_to(*(this->uprev));
 	}

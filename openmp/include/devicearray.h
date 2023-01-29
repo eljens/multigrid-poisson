@@ -1,7 +1,7 @@
 #ifndef DEVICE_ARRAY
 #define DEVICE_ARRAY
 
-#include <exception>
+#include <stdexcept>
 
 #include "array.h"
 #include "settings.h"
@@ -56,7 +56,12 @@ namespace Poisson{
 	template <class T>
 	DeviceArray<T>::~DeviceArray(){
 		omp_target_free(this->devptr,this->device);
-		#pragma omp target exit data map(delete:this->stride[:this->ndims],this->shape[:this->ndims],this->halo) device(this->device)
+		const uint_t (&_stride)[3] = this->stride;
+		const uint_t (&_shape)[3] = this->shape;
+		const Halo & _halo = this->halo;
+		const uint_t &_ndims = this->ndims;
+		const uint_t _device = this->device;
+		#pragma omp target exit data map(delete:_stride[:_ndims],_shape[:_ndims],_halo) device(_device)
 	}
 
 	template <class T>
@@ -86,7 +91,12 @@ namespace Poisson{
 		if (this->devptr == NULL){
 			cerr << "Error allocating DeviceArray on device " << this->device << endl;
 		}
-		#pragma omp target enter data map(to:this->stride[:this->ndims],this->shape[:this->ndims],this->halo) device(this->device)		
+		const uint_t (&_stride)[3] = this->stride;
+		const uint_t (&_shape)[3] = this->shape;
+		const Halo & _halo = this->halo;
+		const uint_t &_ndims = this->ndims;
+		const uint_t _device = this->device;
+		#pragma omp target enter data map(to:_stride[:_ndims],_shape[:_ndims],_halo) device(_device)
 	}
 
 	template<class T>
@@ -98,7 +108,7 @@ namespace Poisson{
 			const uint_t _dev = this->device;
 			const uint_t _size = this->size;
 			T * _devptr = this->devptr;
-			#pragma omp target device(_dev) is_device_ptr(_devptr) firstprivate(_size)
+			#pragma omp target device(_dev) is_device_ptr(_devptr)
 			{
 				#pragma omp teams distribute parallel for schedule(static,CHUNK_SIZE)
 				for(uint_t i = 0;i<_size;i++){
@@ -118,6 +128,8 @@ namespace Poisson{
 			T * arrdev = arr.devptr;
 			T * _devptr = this->devptr;
 			const uint_t * _shape = this->shape;
+			const Halo & _halo = this->halo;
+        	const uint_t (&_stride)[3] = this->stride;
 			const Halo & arrhalo = arr.halo;
         	const uint_t (&arrstride)[3] = arr.stride;
 			#pragma omp target device(_dev) is_device_ptr(_devptr,arrdev)
@@ -126,7 +138,7 @@ namespace Poisson{
 				for(uint_t i = 0;i<_shape[0];i++){
 					for(uint_t j = 0;j<_shape[1];j++){
 						for(uint_t k = 0;k<_shape[2];k++){
-							_devptr[this->idx(i,j,k)] += arrdev[idx(i,j,k,arrhalo,arrstride)];
+							_devptr[idx(i,j,k,_halo,_stride)] += arrdev[idx(i,j,k,arrhalo,arrstride)];
 						}
 					}
 				}
@@ -144,6 +156,8 @@ namespace Poisson{
 		else {
 			const uint_t _dev = this->device;
 			const uint_t * _shape = this->shape;
+			const Halo & _halo = this->halo;
+        	const uint_t (&_stride)[3] = this->stride;
 			T * _devptr = this->devptr;
 			#pragma omp target device(_dev) is_device_ptr(_devptr) map(always,tofrom:res)
 			{
@@ -151,7 +165,7 @@ namespace Poisson{
 				for(uint_t i = 0;i<_shape[0];i++){
 					for(uint_t j = 0;j<_shape[1];j++){
 						for(uint_t k = 0;k<_shape[2];k++){
-							T abselem = std::abs(_devptr[this->idx(i,j,k)]);
+							T abselem = std::abs(_devptr[idx(i,j,k,_halo,_stride)]);
 							res = std::max(abselem,res);
 						}
 					}

@@ -1,5 +1,6 @@
 #include "grid.h"
 #include <iostream>
+
 using std::cout;
 namespace Poisson {
     Grid::Grid(const Settings & _settings,const uint_t _levels) : 

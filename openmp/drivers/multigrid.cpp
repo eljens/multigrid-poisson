@@ -85,7 +85,7 @@ int main(int argc, char * argv[]){
         domains[0]->save("results/u.vtk");
     }
 
-    double_t err = 0.0;
+    double_t err = -1.0;
 
     #pragma omp parallel for collapse(3) reduction(max:err)
     for (int_t i = 0;i<domains[0]->u->shape[0];i++){
@@ -123,7 +123,7 @@ int main(int argc, char * argv[]){
         out << endl;
     }
 
-    cout << "Maximal error: " << err << endl;
+    cout << "Maximal error: " << setw(8) << err << endl;
 
     return EXIT_SUCCESS;
 }

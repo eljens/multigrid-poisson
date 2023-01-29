@@ -1,17 +1,24 @@
 APP?=multigrid
 
-ifndef GPU_ARCH
-GPU_ARCH = sm_80
-$(info GPU_ARCH is not set and defaults to $(GPU_ARCH))
+#### User must provide a desired compiler
+ifndef COMPILER
+CONFIGFILES = $(wildcard *config/*.mkf)
+COMPILERS = $(patsubst config/%.mkf,%,$(CONFIGFILES))
+$(info The following compilers are supported: $(COMPILERS))
+$(error Please set COMPILER before running make. You can use export COMPILER=<compiler>)
+else
+ifeq ("$(wildcard config/$(COMPILER).mkf)","")
+$(error "config/$(COMPILER).mkf does not exist")
+endif
+include config/$(COMPILER).mkf
 endif
 
-ARCH_PATH=/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/libomptarget/libomptarget-nvptx-$(GPU_ARCH).bc
-
-TARGETFLAGS = -fopenmp --offload-arch=$(GPU_ARCH) --libomptarget-nvptx-bc-path=$(ARCH_PATH)
-
-CXXFLAGS = -Wall -g -O3 -std=c++17 -fPIC $(TARGETFLAGS)
-
-CXX = /work3/s174515/LLVM/bin/clang++
+ifdef GPU
+ifeq ("$(wildcard config/gpu/$(GPU).mkf)","")
+$(error "config/gpu/$(GPU).mkf does not exist")
+endif
+include config/gpu/$(GPU).mkf
+endif
 
 ifndef PROBLEM
 PROBLEM=1
@@ -23,11 +30,11 @@ CXXFLAGS+= -DPROBLEM$(PROBLEM) -DCHUNK_SIZE=$(CHUNK_SIZE)
 
 #### Standard settings which are identical for all compilers
 # Add flags start start with -I here (include path)
-CPPFLAGS = -Iinclude -I/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/runtime/src/
+CPPFLAGS += -Iinclude
 # Add flags that start with -L here (link path)
-LDFLAGS = -Llib -L/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/runtime/src/ -lomp -L/appl/gcc/11.3.0-binutils-2.38/lib64/ -Wl,-rpath,/appl/gcc/11.3.0-binutils-2.38/lib64/
+LDFLAGS += -Llib 
 # Add flags stat start with -l here (libbrary)
-LDLIBS = -lm -lstdc++ -lpoisson
+LDLIBS += -lpoisson -lm -lstdc++
 
 # Source files
 SRC = $(wildcard src/*.cpp)

@@ -128,7 +128,7 @@ namespace Poisson{
     template<class T>
     T Array<T>::infinity_norm() const{
         T res = 0.0;
-        #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE) reduction(max:res)
+        #pragma omp parallel for collapse(3) schedule(static,CHUNK_SIZE) reduction(max:res)
         for(uint_t i = 0;i<this->shape[0];i++){
             for(uint_t j = 0;j<this->shape[1];j++){
                 for(uint_t k = 0;k<this->shape[2];k++){

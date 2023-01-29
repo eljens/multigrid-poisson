@@ -59,12 +59,15 @@ namespace Poisson{
         T * gdev = this->devptr;
         const Halo & uhalo = uarr.halo;
         const uint_t (&ustride)[3] = uarr.stride;
+        const uint_t (&_shape)[3] = this->shape;
+        const uint_t (&_stride)[3] = this->stride;
+        const Halo & _halo = this->halo;
         #pragma omp target device(this->device) is_device_ptr(udev,gdev)
-        #pragma omp teams distribute parallel for collapse(3) schedule(static,1)
-        for(int_t i = 0;i<this->shape[0];i++){
-            for(int_t j = 0;j<this->shape[1];j++){
-                for(int_t k = 0;k<this->shape[2];k++){
-                    udev[idx(i+offx,j+offy,k+offz,uhalo,ustride)] = gdev[this->idx(i,j,k)];
+        #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
+        for(int_t i = 0;i<_shape[0];i++){
+            for(int_t j = 0;j<_shape[1];j++){
+                for(int_t k = 0;k<_shape[2];k++){
+                    udev[idx(i+offx,j+offy,k+offz,uhalo,ustride)] = gdev[idx(i,j,k,_halo,_stride)];
                 }
             }
         }

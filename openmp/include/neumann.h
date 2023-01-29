@@ -95,13 +95,16 @@ namespace Poisson{
         T * gdev = this->devptr;
         const uint_t (&ustride)[3] = uarr.stride;
         const T two_h = 2.0*settings.h;
+        const uint_t (&_shape)[3] = this->shape;
+        const uint_t (&_stride)[3] = this->stride;
+        const Halo & _halo = this->halo;
         #pragma omp target device(this->device) is_device_ptr(udev,gdev) firstprivate(sign,two_h)
-        #pragma omp teams distribute parallel for collapse(3) schedule(static,1)
-        for(int_t i = 0;i<this->shape[0];i++){
-            for(int_t j = 0;j<this->shape[1];j++){
-                for(int_t k = 0;k<this->shape[2];k++){
+        #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
+        for(int_t i = 0;i<_shape[0];i++){
+            for(int_t j = 0;j<_shape[1];j++){
+                for(int_t k = 0;k<_shape[2];k++){
                     udev[idx_halo(i+offx,j+offy,k+offz,ustride)] =
-                        sign*two_h*gdev[this->idx(i,j,k)]+udev[idx_halo(i+offx+ii,j+offy+jj,k+offz+kk,ustride)];
+                        sign*two_h*gdev[idx(i,j,k,_halo,_stride)]+udev[idx_halo(i+offx+ii,j+offy+jj,k+offz+kk,ustride)];
                 }
             }
         }
@@ -193,6 +196,8 @@ namespace Poisson{
         const Halo & uhalo = u.halo;
         const uint_t (&ustride)[3] = u.stride;
         const uint_t * _shape = this->shape;
+        const Halo & _halo = this->halo;
+        const uint_t (&_stride)[3] = this->stride;
         const uint _device = this->device;
         #pragma omp target device(_device) is_device_ptr(udev,gdev)\
                 firstprivate(c1,c2,c3,h,ii,jj,kk,iii,jjj,kkk)
@@ -200,7 +205,7 @@ namespace Poisson{
         for(int_t i = 0;i<_shape[0];i++){
             for(int_t j = 0;j<_shape[1];j++){
                 for(int_t k = 0;k<_shape[2];k++){
-                    gdev[this->idx(i,j,k)] -= 
+                    gdev[idx(i,j,k,_halo,_stride)] -= 
                         (c1 * udev[idx(2*(i+offx),2*(j+offy),2*(k+offz),uhalo,ustride)] +
                         c2 * udev[idx(2*(i+offx)+ii,2*(j+offy)+jj,2*(k+offz)+kk,uhalo,ustride)] +
                         c3 * udev[idx(2*(i+offx)+iii,2*(j+offy)+jjj,2*(k+offz)+kkk,uhalo,ustride)])/h;
