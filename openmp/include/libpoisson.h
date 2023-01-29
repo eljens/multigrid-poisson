@@ -31,8 +31,8 @@ namespace Poisson{
             bool is_dirichlet;
             bool is_verbose = false;
             uint_t iter = 0;
-            T rel_res = 0.0;
-            T wtime = 0.0;
+            double_t rel_res = 0.0;
+            double_t wtime = 0.0;
             void alloc();
         public:
             PoissonSolver(Settings & _settings,bool _is_dirichlet);
@@ -154,7 +154,7 @@ namespace Poisson{
         }
 
         iter = 0;
-        T fnorm = domains[0]->f->infinity_norm();
+        double_t fnorm = domains[0]->f->infinity_norm();
         residual<T>(*domains[0]);
         rel_res = domains[0]->r->infinity_norm() / fnorm;
 
@@ -185,17 +185,19 @@ namespace Poisson{
             if (is_verbose){
                 cout << setw(4) << iter+1 << ": Relative residual: " << setw(8) << norm << endl;
             }
-            if (norm > 2.0*rel_res){
-                rel_res = norm;
-                break;
-            }
-            else if (std::abs(norm-rel_res) < this->settings.tolerance){
-                rel_res = norm;
-                break;
-            }
-            if ((omp_get_wtime()-wtime) > maxtime ){
-                cout << "WARNING: Solver reached maximum time without converging!" << endl;
-                break;
+            if (iter >= settings.miniter){
+                if (norm > 2.0*rel_res){
+                    rel_res = norm;
+                    break;
+                }
+                else if (std::abs(norm-rel_res) < this->settings.tolerance){
+                    rel_res = norm;
+                    break;
+                }
+                if ((omp_get_wtime()-wtime) > maxtime ){
+                    cout << "WARNING: Solver reached maximum time without converging!" << endl;
+                    break;
+                }
             }
             rel_res = norm;
         }

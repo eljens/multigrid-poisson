@@ -16,6 +16,7 @@ namespace Poisson{
             uint_t levels = 1;
             uint_t dims[3] = {3,3,3};
             uint_t maxiter = 100;
+            uint_t miniter = 1;
             double_t tolerance = 1e-6;
             int_t host = omp_get_initial_device();
             int_t dev = omp_get_default_device();

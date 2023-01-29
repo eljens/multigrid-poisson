@@ -10,6 +10,7 @@ namespace Poisson {
             this->dims[1] = settings.dims[1];
             this->dims[2] = settings.dims[2];
             this->maxiter = settings.maxiter;
+            this->miniter = settings.miniter;
             this->tolerance = settings.tolerance;
             this->host = settings.host;
             this->dev = settings.dev;

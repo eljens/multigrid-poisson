@@ -26,10 +26,10 @@ namespace Poisson{
         // Pre smooting
         for(int_t i=0;i<nsmooth;i++){
             if (use_jacobi){
-                jacobi<double_t>(*domains[level],omega);
+                jacobi<T>(*domains[level],omega);
             }
             else {
-                gaussseidel<double_t>(*domains[level],omega);
+                gaussseidel<T>(*domains[level],omega);
             }
         }
 
@@ -63,10 +63,10 @@ namespace Poisson{
         // Post smooting
         for(int_t i=0;i<nsmooth;i++){
             if (use_jacobi){
-                jacobi<double_t>(*domains[level],omega);
+                jacobi<T>(*domains[level],omega);
             }
             else {
-                gaussseidel<double_t>(*domains[level],omega);
+                gaussseidel<T>(*domains[level],omega);
             }
         }
     }
