@@ -4,6 +4,7 @@
 #include "definitions.h"
 #include "domain.h"
 #include "devicearray.h"
+#include "relaxation.h"
 
 #include <iostream>
 
@@ -15,7 +16,16 @@ namespace Poisson{
     using std::endl;
 
     template <class T>
-    void jacobi(Domain<T>& domain,T omega){
+    class Jacobi : 
+        public Relaxation<T> {
+            public:
+                void relax(Domain<T>& domain,T omega);
+                constexpr T default_omega();
+                constexpr bool requires_duplicate_solution();
+    };
+
+    template <class T>
+    void Jacobi<T>::relax(Domain<T>& domain,T omega){
         domain.swap_u();
 
         DeviceArray<T>& u = *domain.u;
@@ -68,6 +78,16 @@ namespace Poisson{
             }
         }
         //domain.swap_u();
+    }
+
+    template <class T>
+    constexpr T Jacobi<T>::default_omega(){
+        return 6.0/7.0;
+    }
+
+    template <class T>
+    constexpr bool Jacobi<T>::requires_duplicate_solution(){
+        return true;
     }
 }
 #endif

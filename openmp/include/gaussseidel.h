@@ -11,11 +11,17 @@ namespace Poisson{
     template <typename T>
     class Domain;
 
-    using std::cout;
-    using std::endl;
+    template <class T>
+    class GaussSeidel : 
+        public Relaxation<T> {
+            public:
+                void relax(Domain<T>& domain,T omega);
+                constexpr T default_omega();
+                constexpr bool requires_duplicate_solution();
+    };
 
     template <class T>
-    void gaussseidel(Domain<T>& domain,T omega){
+    void GaussSeidel<T>::relax(Domain<T>& domain,T omega){
 
         DeviceArray<T>& u = *domain.u;
         const DeviceArray<T>& f = *domain.f;
@@ -76,6 +82,16 @@ namespace Poisson{
                 }
             }
         }
+    }
+
+    template <class T>
+    constexpr T GaussSeidel<T>::default_omega(){
+        return 1.15;
+    }
+
+    template <class T>
+    constexpr bool GaussSeidel<T>::requires_duplicate_solution(){
+        return false;
     }
 }
 #endif

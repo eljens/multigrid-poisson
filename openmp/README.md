@@ -2,16 +2,19 @@
 This project contains a framework for finite difference multigrid methods. The header files in `include` contain class templates for a number of functionalities, the `src` directory contains the source files, and the `drivers` directory contains examples of how to use the solvers.
 
 ## Compilation
+The folder `config/` contains a number of makefiles that set compiler flags, preprocessor flags, etc. for OpenMP target offloading in `clang++`, `g++`, and `nvc++` and flags specific to some common GPU architectures. Note that some version of `nvc++` from the NVIDIA HPC-SDK are not yet compatible with the project.<br><br>
 To compile one of the examples, you may type
-```{bash}
-make GPU_ARCH=<sm_70,sm_80> APP=<minimal_jacobi,minimal_multigrid>
+```bash
+export COMPILER=<g++,clang++,nvc++>
+export GPU=<V100,A100>
+make APP=<multigrid,minimal_multigrid,minimal_jacobi,minimal_gauss_seidel>
 ```
 and an example can for instance be executed with
-```{bash}
+```bash
 ./drivers/minimal_multigrid -x 513 -y 257 -z 129 -l 6 -maxiter 10
 ```
 To compile only the archive, type
-```{bash}
+```bash
 make archive
 ```
 to make the archibe `libpoisson.a`. To use this archive in your project, compile with `-Iinlcude -Llib -lpoisson`.<br><br>
@@ -23,6 +26,52 @@ The most important class templates in this project are probably `array.h` and th
 Saved With Halo            | Saved Without Halo
 :-------------------------:|:-------------------------:
 ![Halo](figures/halo.png)  | ![Ignoring Halo](figures/no_halo.png)
+
+## Making a Solver
+The `PoissonSolver` class is heavily templated. When a solver instance is created, it is given a floating-point type, a restiction type, a prolongation type, and a relaxation type, for example
+```C++
+#include "libpoisson.h"
+Poison::PoissonSolver<
+  Poisson::double_t,
+  Poisson::Injection,
+  Poisson::TrilinearInterpolation,
+  Poisson::GaussSeidel> solver(settings);
+```
+To initialize all the arrays in the solver to zero, use
+```C++
+solver.init_zero();
+```
+Before using the solver to solve the problem, the right-hand side and boundary conditions must be transferred to the device. This can be done with
+```C++
+solver.to_device();
+```
+One can either use a relaxation scheme as the solver
+```C++
+solver.solve("relaxation");
+```
+or a V-cycle with
+```C++
+solver.solve("Vcycle");
+```
+Finally, the result can be mapped back to the host with
+```C++
+solver.to_host();
+```
+
+## Currently Supported Multigrid Components
+The framework supports a number of different relaxation schemes and restriction and prolongation operators.
+- Relaxation: `Poisson::Relaxation`
+  - Jacobi relaxation: `Poisson::Jacobi`
+  - Red-black Gauss-Seidel successive overrelaxation: `Poisson::GaussSeidel`
+- Restriction operator: `Poisson::Restriction`
+  - Injection: `Poisson::Injection`
+  - Full weighting: `Poisson::FullWeighting`
+- Prolongation operator: `Poisson::Prolongation`
+  - Trilinear interpolation: `Poisson::TrilinearInterpolation`
+- Boundary condition: `Poisson::Boundary`
+  - Dirichlet condition: `Poisson::Dirichlet`
+  - Neumann condition: `Poisson::Neumann`
+
 
 ## Test Problems
 To generate a number of test problems, we may consider some function $u$ and find the Laplacian $f=\Delta u$ and the first order derivatives at the boundaries $\frac{\partial u}{\partial x}$ and $\frac{\partial u}{\partial y}$

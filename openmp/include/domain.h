@@ -7,7 +7,6 @@
 #include "neumann.h"
 #include "dirichlet.h"
 #include "problem_definition.h"
-#include "jacobi.h"
 #include "residual.h"
 #include "halo.h"
 #include "restriction.h"
@@ -20,12 +19,15 @@ using std::swap;
 namespace Poisson{
 	template <typename T>
 	class Domain;
+	
+	template <typename T>
+	class Relaxation;
 
 	template <typename T>
-	void jacobi(Domain<T>& domain, T omega);
+	class Jacobi;
 
 	template <typename T>
-	void gaussseidel(Domain<T>& domain, T omega);
+	class GaussSeidel;
 
 	template <typename T>
 	void residual(Domain<T>& domain);
@@ -37,9 +39,11 @@ namespace Poisson{
 			Halo halo;
 
 			// Granting access to Jacobi
-			friend void jacobi<T>(Domain<T>& domain, T omega);
+			friend class Relaxation<T>;
 
-			friend void gaussseidel<T>(Domain<T>& domain, T omega);
+			friend class Jacobi<T>;
+
+			friend class GaussSeidel<T>;
 
 			friend void residual<T>(Domain<T>& domain);
 

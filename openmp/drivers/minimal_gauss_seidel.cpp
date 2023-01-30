@@ -10,12 +10,12 @@ using Poisson::Settings;
 using Poisson::parser;
 using Poisson::Injection;
 using Poisson::TrilinearInterpolation;
-using Poisson::Jacobi;
+using Poisson::GaussSeidel;
 
 int main(int argc, char * argv[]){
     bool is_dirichlet = false;
     Settings settings = parser(argc,argv);
-    PoissonSolver<double_t,Injection,TrilinearInterpolation,Jacobi> solver(settings,is_dirichlet);
+    PoissonSolver<double_t,Injection,TrilinearInterpolation,GaussSeidel> solver(settings,is_dirichlet);
 
     solver.init();
     solver.verbose(true);
@@ -23,10 +23,10 @@ int main(int argc, char * argv[]){
 
     solver.solve("relaxation");
     cout << "It took " << solver.solve_time() << " seconds to run ";
-    cout << solver.solve_iterations() << " Jacobi iterations"  <<endl;
+    cout << solver.solve_iterations() << " Gauss-Seidel iterations"  <<endl;
     
     solver.to_host();
-    solver.save("results/u_jacobi.vtk");
+    solver.save("results/u_gaussseidel.vtk");
 
     return EXIT_SUCCESS;
 }

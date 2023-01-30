@@ -25,6 +25,7 @@ using Poisson::Grid;
 using Poisson::Domain;
 using Poisson::Injection;
 using Poisson::TrilinearInterpolation;
+using Poisson::Jacobi;
 using Poisson::Vcycle;
 using Poisson::residual;
 using Poisson::parser;
@@ -60,11 +61,12 @@ int main(int argc, char * argv[]){
 
     Injection<double_t> injection;
     TrilinearInterpolation<double_t> trilinearinterpolation;
+    Jacobi<double_t> jacobi;
     double_t start = omp_get_wtime();
     uint_t iter = 0;
     double_t rel_res = domains[0]->r->infinity_norm() / fnorm;
     for(iter = 0;iter<settings.maxiter;iter++){
-        Vcycle<double_t>(domains,injection,trilinearinterpolation,omega,0,settings.levels);
+        Vcycle<double_t>(domains,injection,trilinearinterpolation,jacobi,omega,0,settings.levels);
         residual<double_t>(*domains[0]);
         double_t norm = domains[0]->r->infinity_norm() / fnorm;
         cout << setw(4) << iter+1 << ": Relative residual: " << setw(8) << norm << endl;

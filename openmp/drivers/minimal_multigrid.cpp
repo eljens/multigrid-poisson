@@ -9,11 +9,13 @@ using Poisson::PoissonSolver;
 using Poisson::Settings;
 using Poisson::parser;
 using Poisson::Injection;
+using Poisson::TrilinearInterpolation;
+using Poisson::Jacobi;
 
 int main(int argc, char * argv[]){
     bool is_dirichlet = false;
     Settings settings = parser(argc,argv);
-    PoissonSolver<double_t,Injection> solver(settings,is_dirichlet);
+    PoissonSolver<double_t,Injection,TrilinearInterpolation,Jacobi> solver(settings,is_dirichlet);
 
     solver.init();
     solver.verbose(true);
