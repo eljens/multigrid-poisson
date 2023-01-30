@@ -29,7 +29,7 @@ Saved With Halo            | Saved Without Halo
 
 ## Making a Solver
 The `PoissonSolver` class is heavily templated. When a solver instance is created, it is given a floating-point type, a restiction type, a prolongation type, and a relaxation type, for example
-```C++
+```c++
 #include "libpoisson.h"
 Poison::PoissonSolver<
   Poisson::double_t,
@@ -38,23 +38,23 @@ Poison::PoissonSolver<
   Poisson::GaussSeidel> solver(settings);
 ```
 To initialize all the arrays in the solver to zero, use
-```C++
+```c++
 solver.init_zero();
 ```
 Before using the solver to solve the problem, the right-hand side and boundary conditions must be transferred to the device. This can be done with
-```C++
+```c++
 solver.to_device();
 ```
 One can either use a relaxation scheme as the solver
-```C++
+```c++
 solver.solve("relaxation");
 ```
 or a V-cycle with
-```C++
+```c++
 solver.solve("Vcycle");
 ```
 Finally, the result can be mapped back to the host with
-```C++
+```c++
 solver.to_host();
 ```
 
