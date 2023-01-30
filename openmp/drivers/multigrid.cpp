@@ -6,6 +6,7 @@
 #include "residual.h"
 #include "injection.h"
 #include "trilinearinterpolation.h"
+#include "fullweighting.h"
 #include "grid.h"
 #include "vcycle.h"
 #include <iostream>
@@ -42,12 +43,15 @@ int main(int argc, char * argv[]){
     const Settings settings = parser(argc,argv);
     cout << settings << endl;
     Grid grid(settings,settings.levels);
-    const double_t omega = 4.5/5.0;
+    const double_t omega = 6.0/7.0;
+
+    // Selecting relaxation type
+    Poisson::GaussSeidel<double_t> relax;
 
     // Making array of domains
     Domain<double_t> * domains[settings.levels];
     for (uint_t l = 0;l<settings.levels;l++){
-        domains[l] = new Domain<double_t>(grid.domainsettings[l],is_dirichlet);
+        domains[l] = new Domain<double_t>(grid.domainsettings[l],is_dirichlet,relax.requires_duplicate_solution());
         if (l==0){
             domains[l]->init(&ufun,&ffun,&dudxfun,&dudyfun);
         }
@@ -59,14 +63,13 @@ int main(int argc, char * argv[]){
 
     double_t fnorm = domains[0]->f->infinity_norm();
 
-    Injection<double_t> injection;
+    Poisson::FullWeighting<double_t> restriction;
     TrilinearInterpolation<double_t> trilinearinterpolation;
-    Jacobi<double_t> jacobi;
     double_t start = omp_get_wtime();
     uint_t iter = 0;
     double_t rel_res = domains[0]->r->infinity_norm() / fnorm;
     for(iter = 0;iter<settings.maxiter;iter++){
-        Vcycle<double_t>(domains,injection,trilinearinterpolation,jacobi,omega,0,settings.levels);
+        Vcycle<double_t>(domains,restriction,trilinearinterpolation,relax,omega,0,settings.levels);
         residual<double_t>(*domains[0]);
         double_t norm = domains[0]->r->infinity_norm() / fnorm;
         cout << setw(4) << iter+1 << ": Relative residual: " << setw(8) << norm << endl;

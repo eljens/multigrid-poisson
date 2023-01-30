@@ -86,7 +86,7 @@ namespace Poisson{
 
     template <class T>
     constexpr T GaussSeidel<T>::default_omega(){
-        return 1.15;
+        return 1.00;
     }
 
     template <class T>

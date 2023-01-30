@@ -51,6 +51,8 @@ namespace Poisson{
 
 			bool is_initialized;
 
+			const bool requires_duplicate;
+
 		protected:
 			void write_bc_to(DeviceArray<T> & uarr);
 			
@@ -67,11 +69,11 @@ namespace Poisson{
 			Boundary<T> * top;
 			Boundary<T> * bottom;
 
-			Domain() : is_initialized(false), settings() {
+			Domain() : is_initialized(false), requires_duplicate(true), settings(){
 
 			}
 
-			Domain(Settings & _settings,bool is_dirichlet);
+			Domain(Settings & _settings,bool is_dirichlet,bool requires_duplicate);
 
 			~Domain();
 
@@ -95,13 +97,18 @@ namespace Poisson{
 	};
 
 	template<class T>
-	Domain<T>::Domain(Settings & _settings,bool is_dirichlet) : 
-		halo(!is_dirichlet,!is_dirichlet,!is_dirichlet,!is_dirichlet,0,0),is_initialized(true),settings(_settings)
+	Domain<T>::Domain(Settings & _settings,bool is_dirichlet,bool duplicate) : 
+		halo(!is_dirichlet,!is_dirichlet,!is_dirichlet,!is_dirichlet,0,0),is_initialized(true),requires_duplicate(duplicate), settings(_settings)
 	{
 		//cout << "Created domain with settings " << endl;
 		//cout << settings;
 		this->u = new DeviceArray<T>(settings,halo);
-		this->uprev = new DeviceArray<T>(settings,halo);
+		if (requires_duplicate){
+			this->uprev = new DeviceArray<T>(settings,halo);
+		}
+		else {
+			this->uprev = nullptr;
+		}
 		this->f = new DeviceArray<T>(settings,halo);
 		this->r = new DeviceArray<T>(settings,halo);
 
@@ -125,7 +132,9 @@ namespace Poisson{
 	Domain<T>::~Domain(){
 		if (is_initialized){
 			delete this->u;
-			delete this->uprev;
+			if (requires_duplicate){
+				delete this->uprev;
+			}
 			delete this->f;
 			delete this->r;
 			delete this->north;
@@ -146,8 +155,10 @@ namespace Poisson{
 		this->top->init(ufun,dudxfun,dudyfun,this->settings);
 		this->bottom->init(ufun,dudxfun,dudyfun,this->settings);
 		this->init_f(ffun);
-		this->uprev->init_zero();
-		this->uprev->init_zero();
+		if (requires_duplicate){
+			this->uprev->init_zero();
+		}
+		this->u->init_zero();
 		this->r->init_zero();
 	}
 
@@ -160,15 +171,19 @@ namespace Poisson{
 		this->top->init_zero();
 		this->bottom->init_zero();
 		this->f->init_zero();
-		this->uprev->init_zero();
-		this->uprev->init_zero();
+		this->u->init_zero();
+		if (requires_duplicate){
+			this->uprev->init_zero();
+		}
 		this->r->init_zero();
 	}
 
 	template<class T>
 	void Domain<T>::to_device(){
 		this->u->to_device();
-		this->uprev->to_device();
+		if (requires_duplicate){
+			this->uprev->to_device();
+		}
 		this->f->to_device();
 		this->r->to_device();
 		this->north->to_device();
@@ -178,14 +193,18 @@ namespace Poisson{
 		this->top->to_device();
 		this->bottom->to_device();
 		this->write_bc_to(*(this->u));
-		this->write_bc_to(*(this->uprev));
+		if (requires_duplicate){
+			this->write_bc_to(*(this->uprev));
+		}
 	}
 
 	template<class T>
 	void Domain<T>::to_host(){
 		this->r->to_host();
 		this->u->to_host();
-		this->uprev->to_host();
+		if (requires_duplicate){
+			this->uprev->to_host();
+		}
 	}
 
 	template<class T>
@@ -227,7 +246,9 @@ namespace Poisson{
 
 	template<class T>
 	void Domain<T>::swap_u(){
-		swap(this->u,this->uprev);
+		if (requires_duplicate){
+			swap(this->u,this->uprev);
+		}
 	}
 
 	template<class T>

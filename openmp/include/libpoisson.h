@@ -88,7 +88,7 @@ namespace Poisson{
     {
         domains = new Domain<T>*[settings.levels];
         for (uint_t l = 0;l<settings.levels;l++){
-            domains[l] = new Domain<T>(grid.domainsettings[l],is_dirichlet);
+            domains[l] = new Domain<T>(grid.domainsettings[l],is_dirichlet,relaxation.requires_duplicate_solution());
         }
     }
 

@@ -46,7 +46,7 @@ namespace Poisson{
         domains[level+1]->bottom->restrict_to(*(domains[level]->u),*(domains[level]->bottom),(*domains[level]).settings,restriction);
 
         // Recursion
-        Vcycle<T>(domains,restriction,prolongation,relaxation,omega,level+1,levels);
+        Vcycle<T>(domains,restriction,prolongation,relaxation,omega,level+1,levels,nsmooth);
 
         // Interpolate error
         prolongation.prolong(*(domains[level+1]->u),*(domains[level]->r));
