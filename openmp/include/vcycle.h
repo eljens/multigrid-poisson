@@ -32,19 +32,30 @@ namespace Poisson{
 
         // Compute and restrict the defect
         residual<T>(*domains[level]);
+        #pragma omp parallel
+        #pragma omp single nowait
+        {
+            #pragma omp task
         restriction.restrict_to(*(domains[level]->r),*(domains[level+1]->f));
 
         //domains[level+1]->u->init_zero();
+            #pragma omp task
         domains[level+1]->u->init_zero();
 
         // Restricting boundaries
+            #pragma omp task
         domains[level+1]->north->restrict_to(*(domains[level]->u),*(domains[level]->north),(*domains[level]).settings,restriction);
+            #pragma omp task
         domains[level+1]->south->restrict_to(*(domains[level]->u),*(domains[level]->south),(*domains[level]).settings,restriction);
+            #pragma omp task
         domains[level+1]->east->restrict_to(*(domains[level]->u),*(domains[level]->east),(*domains[level]).settings,restriction);
+            #pragma omp task
         domains[level+1]->west->restrict_to(*(domains[level]->u),*(domains[level]->west),(*domains[level]).settings,restriction);
+            #pragma omp task
         domains[level+1]->top->restrict_to(*(domains[level]->u),*(domains[level]->top),(*domains[level]).settings,restriction);
+            #pragma omp task
         domains[level+1]->bottom->restrict_to(*(domains[level]->u),*(domains[level]->bottom),(*domains[level]).settings,restriction);
-
+        }
         // Recursion
         Vcycle<T>(domains,restriction,prolongation,relaxation,omega,level+1,levels,nsmooth);
 
