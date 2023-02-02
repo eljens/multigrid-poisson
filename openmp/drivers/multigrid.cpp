@@ -63,7 +63,7 @@ int main(int argc, char * argv[]){
 
     double_t fnorm = domains[0]->f->infinity_norm();
 
-    Poisson::FullWeighting<double_t> restriction;
+    Poisson::Injection<double_t> restriction;
     TrilinearInterpolation<double_t> trilinearinterpolation;
     double_t start = omp_get_wtime();
     uint_t iter = 0;
