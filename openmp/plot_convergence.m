@@ -20,13 +20,14 @@ loglog(prob2.spacing,prob2.abs_err,'x--','DisplayName',...
     strcat(['Problem 2 $ROC=',num2str(beta2),'$']),'linewidth',2)
 loglog(prob3.spacing,prob3.abs_err,'^--','DisplayName',...
     strcat(['Problem 3 $ROC=',num2str(beta3),'$']),'linewidth',2)
-loglog(prob1.spacing,0.8*prob1.spacing.^2,'k--',...
+loglog(prob1.spacing,80*prob1.spacing.^2,'k--',...
     'DisplayName','$\mathcal{O}(h^2)$','linewidth',2)
 hold off
 grid()
 legend('interpreter','latex','fontsize',14,'location','nw')
 xlabel('$h$','interpreter','latex','fontsize',20)
 ylabel('Absolute Error','interpreter','latex','fontsize',20)
+ylim([5e-8 5])
 set(gca,'FontSize',16)
 saveas(gcf,'./figures/mg_convergence.png')
 fig2pdf(gca,'picmcc/mg_convergence.pdf')
