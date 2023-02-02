@@ -8,7 +8,7 @@
 #include "trilinearinterpolation.h"
 #include "fullweighting.h"
 #include "grid.h"
-#include "vcycle.h"
+#include "fcycle.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -27,7 +27,7 @@ using Poisson::Domain;
 using Poisson::Injection;
 using Poisson::TrilinearInterpolation;
 using Poisson::Jacobi;
-using Poisson::Vcycle;
+using Poisson::Fcycle;
 using Poisson::residual;
 using Poisson::parser;
 using Poisson::int_t;
@@ -46,7 +46,7 @@ int main(int argc, char * argv[]){
     const double_t omega = 6.0/7.0;
 
     // Selecting relaxation type
-    Poisson::GaussSeidel<double_t> relax;
+    Poisson::Jacobi<double_t> relax;
 
     // Making array of domains
     Domain<double_t> * domains[settings.levels];
@@ -69,7 +69,7 @@ int main(int argc, char * argv[]){
     uint_t iter = 0;
     double_t rel_res = domains[0]->r->infinity_norm() / fnorm;
     for(iter = 0;iter<settings.maxiter;iter++){
-        Vcycle<double_t>(domains,restriction,trilinearinterpolation,relax,omega,0,settings.levels);
+        Fcycle<double_t>(domains,restriction,trilinearinterpolation,relax,omega,0,settings.levels,4);
         residual<double_t>(*domains[0]);
         double_t norm = domains[0]->r->infinity_norm() / fnorm;
         cout << setw(4) << iter+1 << ": Relative residual: " << setw(8) << norm << endl;

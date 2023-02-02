@@ -23,7 +23,7 @@ do
     M=$((2*($N-1)+1))
     M=$((2*($M-1)+1))
     M=$((2*($M-1)+1))
-    ./bin/multigrid -x $M -y $N -z $N -maxiter $MAXITER -levels $LEVELS -length 0.5 -stats $FILENAME
+    ./bin/multigrid -x $M -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
     LEVELS=$(($LEVELS + 1))
 done
 done

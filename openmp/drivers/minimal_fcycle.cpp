@@ -23,12 +23,14 @@ int main(int argc, char * argv[]){
     solver.verbose(true);
     solver.to_device();
 
-    solver.solve("vcycle");
+    solver.solve("fcycle",4);
     cout << "It took " << solver.solve_time() << " seconds to run ";
-    cout << solver.solve_iterations() << " Vcycles"<<endl;
+    cout << solver.solve_iterations() << " Fcycles"<<endl;
     
-    solver.to_host();
-    solver.save_all("results/u_vcycle.vtk","results/f_vcycle.vtk","results/r_vcycle.vtk");
+    if (settings.print_result){
+        solver.to_host();
+        solver.save_all("results/u_vcycle.vtk","results/f_vcycle.vtk","results/r_vcycle.vtk");
+    }
 
     return EXIT_SUCCESS;
 }

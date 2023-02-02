@@ -8,6 +8,7 @@
 #include "jacobi.h"
 #include "gaussseidel.h"
 #include "vcycle.h"
+#include "fcycle.h"
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
@@ -28,7 +29,7 @@ namespace Poisson{
             Settings settings;
             Grid grid;
             R<T> restriction_type;
-            P<T> prologation;
+            P<T> prolongation;
             S<T> relaxation;
             bool is_dirichlet;
             bool is_verbose = false;
@@ -137,9 +138,10 @@ namespace Poisson{
     void PoissonSolver<T,R,P,S>::solve(const string solver, const int_t nsmooth,T omega,string ofile,double maxtime){
         wtime = omp_get_wtime();
         bool use_vcycle = ((solver.compare("vcycle")==0) || (solver.compare("Vcycle")==0));
+        bool use_fcycle = ((solver.compare("fcycle")==0) || (solver.compare("Fcycle")==0));
         bool use_relaxation = ((solver.compare("relaxation")==0) || (solver.compare("Relaxation")==0));
-        if (!(use_vcycle || use_relaxation)){
-            throw std::invalid_argument("solver must be \"Relaxation\" or \"Vcycle\" but was \""+solver+"\"");
+        if (!(use_vcycle || use_relaxation || use_fcycle)){
+            throw std::invalid_argument("solver must be \"Relaxation\", \"Vcycle\" of \"Fcycle\" but was \""+solver+"\"");
         }
 
         // Changing Omega dependent on method
@@ -159,7 +161,10 @@ namespace Poisson{
         }
         for(iter = 0;iter<settings.maxiter;iter++){
             if (use_vcycle){
-                Vcycle<T>(this->domains,this->restriction_type,this->prologation,this->relaxation,omega,0,settings.levels,nsmooth);
+                Vcycle<T>(this->domains,this->restriction_type,this->prolongation,this->relaxation,omega,0,settings.levels,nsmooth);
+            }
+            else if (use_fcycle){
+                Fcycle<T>(this->domains,this->restriction_type,this->prolongation,this->relaxation,omega,0,settings.levels,nsmooth);
             }
             else {
                 relaxation.relax(*domains[0],omega);
