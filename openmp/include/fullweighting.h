@@ -61,9 +61,13 @@ namespace Poisson{
             #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
             for (int_t i = 0;i<uoutshape[0];i++){
                 for (int_t j = 0;j<uoutshape[1];j++){
+#ifdef BLOCK_SIZE
                     for (int_t k_block = 0;k_block<uoutshape[2];k_block+=BLOCK_SIZE){
                         #pragma omp simd
                         for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,uoutshape[2]);k++){
+#else
+                    for (int_t k = 0;k<uoutshape[2];k++){
+#endif
                             int_t ii = MIN(uinshape[0]-1,2*i);
                             int_t jj = MIN(uinshape[1]-1,2*j);
                             int_t kk = MIN(uinshape[2]-1,2*k);
@@ -108,7 +112,9 @@ namespace Poisson{
                                     1.0*indev[idx(ii_p1,jj_p1,kk_p1,uinhalo,uinstride)];
 
                             outdev[idx(i,j,k,uouthalo,uoutstride)] = tmp/64.0;
+#ifdef BLOCK_SIZE
                         }
+#endif
                     }
                 }
             }

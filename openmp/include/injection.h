@@ -49,11 +49,17 @@ namespace Poisson{
             #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
             for (int_t i = 0;i<uoutshape[0];i++){
                 for (int_t j = 0;j<uoutshape[1];j++){
+#ifdef BLOCK_SIZE
                     for (int_t k_block = 0;k_block<uoutshape[2];k_block+=BLOCK_SIZE){
                         #pragma omp simd
                         for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,uoutshape[2]);k++){
+#else
+                    for (int_t k = 0;k<uoutshape[2];k++){
+#endif
                             outdev[idx(i,j,k,uouthalo,uoutstride)] = indev[idx(2*i,2*j,2*k,uinhalo,uinstride)];
+#ifdef BLOCK_SIZE
                         }
+#endif
                     }
                 }
             }

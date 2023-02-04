@@ -53,11 +53,17 @@ namespace Poisson{
             #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
             for (int_t i = 0;i<uinshape[0];i++){
                 for (int_t j = 0;j<uinshape[1];j++){
+#ifdef BLOCK_SIZE
                     for (int_t k_block = 0;k_block<uinshape[2];k_block+=BLOCK_SIZE){
                         #pragma omp simd
                         for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,uinshape[2]);k++){
+#else
+                    for (int_t k = 0;k<uinshape[2];k++){
+#endif
                             outdev[idx(2*i,2*j,2*k,uouthalo,uoutstride)] = indev[idx(i,j,k,uinhalo,uinstride)];
+#ifdef BLOCK_SIZE
                         }
+#endif
                     }
                 }
             }
@@ -68,11 +74,17 @@ namespace Poisson{
             #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
             for (int_t i = 1;i<uoutshape[0]-1;i+=2){
                 for (int_t j = 0;j<uoutshape[1];j+=2){
+#ifdef BLOCK_SIZE
                     for (int_t k_block = 0;k_block<uoutshape[2];k_block+=BLOCK_SIZE){
                         #pragma omp simd
                         for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,uoutshape[2]);k+=2){
+#else
+                    for (int_t k = 0;k<uoutshape[2];k+=2){
+#endif
                             outdev[idx(i,j,k,uouthalo,uoutstride)] = 0.5*(outdev[idx(i-1,j,k,uouthalo,uoutstride)]+outdev[idx(i+1,j,k,uouthalo,uoutstride)]);
+#ifdef BLOCK_SIZE
                         }
+#endif
                     }
                 }
             }
@@ -83,11 +95,17 @@ namespace Poisson{
             #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
             for (int_t i = 0;i<uoutshape[0];i++){
                 for (int_t j = 1;j<uoutshape[1]-1;j+=2){
+#ifdef BLOCK_SIZE
                     for (int_t k_block = 0;k_block<uoutshape[2];k_block+=BLOCK_SIZE){
                         #pragma omp simd
                         for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,uoutshape[2]);k+=2){
+#else
+                    for (int_t k = 0;k<uoutshape[2];k+=2){
+#endif
                             outdev[idx(i,j,k,uouthalo,uoutstride)] = 0.5*(outdev[idx(i,j-1,k,uouthalo,uoutstride)]+outdev[idx(i,j+1,k,uouthalo,uoutstride)]);
+#ifdef BLOCK_SIZE
                         }
+#endif
                     }
                 }
             }
@@ -98,11 +116,17 @@ namespace Poisson{
             #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
             for (int_t i = 0;i<uoutshape[0];i++){
                 for (int_t j = 0;j<uoutshape[1];j++){
+#ifdef BLOCK_SIZE
                     for (int_t k_block = 1;k_block<uoutshape[2]-1;k_block+=BLOCK_SIZE){
                         #pragma omp simd
                         for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,uoutshape[2]-1);k+=2){
+#else
+                    for (int_t k = 1;k<uoutshape[2]-1;k+=2){
+#endif
                             outdev[idx(i,j,k,uouthalo,uoutstride)] = 0.5*(outdev[idx(i,j,k-1,uouthalo,uoutstride)]+outdev[idx(i,j,k+1,uouthalo,uoutstride)]);
+#ifdef BLOCK_SIZE
                         }
+#endif
                     }
                 }
             }
