@@ -28,6 +28,10 @@ CHUNK_SIZE=1
 endif
 CXXFLAGS+= -DPROBLEM$(PROBLEM) -DCHUNK_SIZE=$(CHUNK_SIZE)
 
+ifdef BLOCK_SIZE
+CXXFLAGS+= -DBLOCK_SIZE=$(BLOCK_SIZE)
+endif
+
 #### Standard settings which are identical for all compilers
 # Add flags start start with -I here (include path)
 CPPFLAGS += -Iinclude

@@ -68,11 +68,20 @@ namespace Poisson{
             #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
             for (int_t i = xmin;i<xmax;i++){
                 for (int_t j = ymin;j<ymax;j++){
+#ifdef BLOCK_SIZE
+                    for (int_t k_block = zmin;k_block<zmax;k_block+=BLOCK_SIZE){
+                        #pragma omp simd
+                        for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,zmax);k++){
+#else
                     for (int_t k = zmin;k<zmax;k++){
-                        udev[idx(i,j,k,uhalo,ustride)] = (1.0-omega)*vdev[idx(i,j,k,vhalo,vstride)];
-                        udev[idx(i,j,k,uhalo,ustride)] += (omega/6.0)*(vdev[idx((i-1),j,k,vhalo,vstride)] + vdev[idx((i+1),j,k,vhalo,vstride)]
-                                                +vdev[idx(i,(j-1),k,vhalo,vstride)] + vdev[idx(i,(j+1),k,vhalo,vstride)]
-                                                +vdev[idx(i,j,(k-1),vhalo,vstride)] + vdev[idx(i,j,(k+1),vhalo,vstride)] - hsq*fdev[idx(i,j,k,fhalo,fstride)]);
+#endif
+                            udev[idx(i,j,k,uhalo,ustride)] = (1.0-omega)*vdev[idx(i,j,k,vhalo,vstride)];
+                            udev[idx(i,j,k,uhalo,ustride)] += (omega/6.0)*(vdev[idx((i-1),j,k,vhalo,vstride)] + vdev[idx((i+1),j,k,vhalo,vstride)]
+                                                    +vdev[idx(i,(j-1),k,vhalo,vstride)] + vdev[idx(i,(j+1),k,vhalo,vstride)]
+                                                    +vdev[idx(i,j,(k-1),vhalo,vstride)] + vdev[idx(i,j,(k+1),vhalo,vstride)] - hsq*fdev[idx(i,j,k,fhalo,fstride)]);
+#ifdef BLOCK_SIZE
+                        }
+#endif
                     }
                 }
             }

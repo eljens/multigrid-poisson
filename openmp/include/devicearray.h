@@ -137,8 +137,17 @@ namespace Poisson{
 				#pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
 				for(uint_t i = 0;i<_shape[0];i++){
 					for(uint_t j = 0;j<_shape[1];j++){
+#ifdef BLOCK_SIZE
+						for (uint_t k_block = 0;k_block<_shape[2];k_block+=BLOCK_SIZE){
+							#pragma omp simd
+							for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,_shape[2]);k++){
+#else
 						for(uint_t k = 0;k<_shape[2];k++){
-							_devptr[idx(i,j,k,_halo,_stride)] += arrdev[idx(i,j,k,arrhalo,arrstride)];
+#endif
+								_devptr[idx(i,j,k,_halo,_stride)] += arrdev[idx(i,j,k,arrhalo,arrstride)];
+#ifdef BLOCK_SIZE
+							}
+#endif
 						}
 					}
 				}
@@ -164,10 +173,22 @@ namespace Poisson{
 				#pragma omp teams distribute parallel for reduction(max:res) collapse(3) schedule(static,CHUNK_SIZE)
 				for(uint_t i = 0;i<_shape[0];i++){
 					for(uint_t j = 0;j<_shape[1];j++){
+#ifdef BLOCK_SIZE
+						for (uint_t k_block = 0;k_block<_shape[2];k_block+=BLOCK_SIZE){
+							T tmp = 0.0;
+							#pragma omp simd reduction(max:tmp)
+							for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,_shape[2]);k++){
+								T abselem = std::abs(_devptr[idx(i,j,k,_halo,_stride)]);
+								tmp = std::max(abselem,tmp);
+							}
+							res = std::max(res,tmp);
+						}
+#else
 						for(uint_t k = 0;k<_shape[2];k++){
 							T abselem = std::abs(_devptr[idx(i,j,k,_halo,_stride)]);
 							res = std::max(abselem,res);
 						}
+#endif
 					}
 				}
 			}

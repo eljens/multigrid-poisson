@@ -7,7 +7,7 @@ CXX=clang++
 CXXFLAGS = -Wall -g -std=c++17 -O3
 
 # OpenMP related flags
-OMPFLAGS = -fopenmp
+OMPFLAGS = -fopenmp -fopenmp-simd
 CFLAGS += $(OMPFLAGS)
 CXXFLAGS += $(OMPFLAGS)
 LDFLAGS += -L/work3/s174515/LLVM/runtimes/runtimes-bins/openmp/runtime/src/ -lomp -L/appl/gcc/11.3.0-binutils-2.38/lib64/ -Wl,-rpath,/appl/gcc/11.3.0-binutils-2.38/lib64/

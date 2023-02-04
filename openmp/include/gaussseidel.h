@@ -59,11 +59,14 @@ namespace Poisson{
             #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
             for (int_t i = xmin;i<xmax;i++){
                 for (int_t j = ymin;j<ymax;j++){
-                    for (int_t k = zmin;k<zmax;k++){
-                        if (idx(i,j,k,uhalo,ustride) % 2 == 0)
-                        udev[idx(i,j,k,uhalo,ustride)] = (1.0-omega)*udev[idx(i,j,k,uhalo,ustride)] + (omega/6.0)*(udev[idx((i-1),j,k,uhalo,ustride)] + udev[idx((i+1),j,k,uhalo,ustride)]
-                                                +udev[idx(i,(j-1),k,uhalo,ustride)] + udev[idx(i,(j+1),k,uhalo,ustride)]
-                                                +udev[idx(i,j,(k-1),uhalo,ustride)] + udev[idx(i,j,(k+1),uhalo,ustride)] - hsq*fdev[idx(i,j,k,fhalo,fstride)]);
+                    for (int_t k_block = zmin;k_block<zmax;k_block+=BLOCK_SIZE){
+                        #pragma omp simd
+                        for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,zmax);k++){
+                            if (idx(i,j,k,uhalo,ustride) % 2 == 0)
+                            udev[idx(i,j,k,uhalo,ustride)] = (1.0-omega)*udev[idx(i,j,k,uhalo,ustride)] + (omega/6.0)*(udev[idx((i-1),j,k,uhalo,ustride)] + udev[idx((i+1),j,k,uhalo,ustride)]
+                                                    +udev[idx(i,(j-1),k,uhalo,ustride)] + udev[idx(i,(j+1),k,uhalo,ustride)]
+                                                    +udev[idx(i,j,(k-1),uhalo,ustride)] + udev[idx(i,j,(k+1),uhalo,ustride)] - hsq*fdev[idx(i,j,k,fhalo,fstride)]);
+                        }
                     }
                 }
             }
@@ -73,11 +76,14 @@ namespace Poisson{
             #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
             for (int_t i = xmin;i<xmax;i++){
                 for (int_t j = ymin;j<ymax;j++){
-                    for (int_t k = zmin;k<zmax;k++){
-                        if (idx(i,j,k,uhalo,ustride) % 2 == 1)
-                        udev[idx(i,j,k,uhalo,ustride)] = (1.0-omega)*udev[idx(i,j,k,uhalo,ustride)] + (omega/6.0)*(udev[idx((i-1),j,k,uhalo,ustride)] + udev[idx((i+1),j,k,uhalo,ustride)]
-                                                +udev[idx(i,(j-1),k,uhalo,ustride)] + udev[idx(i,(j+1),k,uhalo,ustride)]
-                                                +udev[idx(i,j,(k-1),uhalo,ustride)] + udev[idx(i,j,(k+1),uhalo,ustride)] - hsq*fdev[idx(i,j,k,fhalo,fstride)]);
+                    for (int_t k_block = zmin;k_block<zmax;k_block+=BLOCK_SIZE){
+                        #pragma omp simd
+                        for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,zmax);k++){
+                            if (idx(i,j,k,uhalo,ustride) % 2 == 1)
+                            udev[idx(i,j,k,uhalo,ustride)] = (1.0-omega)*udev[idx(i,j,k,uhalo,ustride)] + (omega/6.0)*(udev[idx((i-1),j,k,uhalo,ustride)] + udev[idx((i+1),j,k,uhalo,ustride)]
+                                                    +udev[idx(i,(j-1),k,uhalo,ustride)] + udev[idx(i,(j+1),k,uhalo,ustride)]
+                                                    +udev[idx(i,j,(k-1),uhalo,ustride)] + udev[idx(i,j,(k+1),uhalo,ustride)] - hsq*fdev[idx(i,j,k,fhalo,fstride)]);
+                        }
                     }
                 }
             }

@@ -1,5 +1,10 @@
 #ifndef POISSON_DEFINITIONS
 #define POISSON_DEFINITIONS
+
+#ifndef MIN
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
 #include <cstdint>
 namespace Poisson{
     #ifndef CHUNK_SIZE

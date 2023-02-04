@@ -17,3 +17,7 @@ CXXFLAGS += $(OMPFLAGS)
 ifndef CHUNK_SIZE
 CHUNK_SIZE=16
 endif
+
+ifndef BLOCK_SIZE
+BLOCK_SIZE=64
+endif
