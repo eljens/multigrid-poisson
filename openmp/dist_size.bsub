@@ -1,0 +1,40 @@
+set -x
+
+MAXITER=30
+export CUDA_VISIBLE_DEVICES=1
+
+source paths/gbar/clang.sh
+source paths/gbar/gcc.sh
+export GPU=A100
+
+#domain size
+M=1025
+N=513
+LEVELS=9
+if false
+then
+export COMPILER=gcc
+FILENAME=gcc_dist_size.txt
+rm -rf results/$FILENAME
+
+for DIST_SIZE in 16 32 64 128 256 512 1024 1536 2048 2560
+do
+    echo "# DIST_SIZE = $DIST_SIZE" >> results/$FILENAME
+    make clean
+    make CHUNK_SIZE=3 DIST_SIZE=$DIST_SIZE BLOCK_SIZE=128
+    ./bin/multigrid -x $M -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
+done
+fi
+
+export COMPILER=clang
+FILENAME=clang_dist_size.txt
+rm -rf results/$FILENAME
+
+for DIST_SIZE in 16 32 64 128 256 512 1024 1536 2048 2560
+do
+    echo "# DIST_SIZE = $DIST_SIZE" >> results/$FILENAME
+    make clean
+    make CHUNK_SIZE=1 DIST_SIZE=$DIST_SIZE
+    ./bin/multigrid -x $M -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
+done
+

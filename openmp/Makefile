@@ -32,6 +32,10 @@ ifdef BLOCK_SIZE
 CXXFLAGS+= -DBLOCK_SIZE=$(BLOCK_SIZE)
 endif
 
+ifdef DIST_SIZE
+CXXFLAGS+= -DDIST_SIZE=$(DIST_SIZE)
+endif
+
 #### Standard settings which are identical for all compilers
 # Add flags start start with -I here (include path)
 CPPFLAGS += -Iinclude

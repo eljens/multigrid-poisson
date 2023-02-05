@@ -15,6 +15,8 @@ export OMP_NUM_THREADS=8
 export COMPILER=gcc
 export GPU=A100
 
+if false
+then
 make clean
 make APP=minimal_vcycle
 
@@ -24,6 +26,11 @@ make clean
 make BLOCK_SIZE=64 APP=minimal_vcycle
 
 TMPDIR=. nv-nsight-cu-cli $SETTINGS -o profilings/gcc_simd $COMMAND
+fi
+make clean
+make CHUNK_SIZE=3 BLOCK_SIZE=128 DIST_SIZE=512 APP=minimal_vcycle
+
+TMPDIR=. nv-nsight-cu-cli $SETTINGS -o profilings/gcc_simd_dist $COMMAND
 
 export PATH=$PATH_
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_

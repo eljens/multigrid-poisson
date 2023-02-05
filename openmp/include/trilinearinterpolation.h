@@ -50,7 +50,7 @@ namespace Poisson{
         #pragma omp target device(uout.device) is_device_ptr(indev,outdev)
         {
             //uf(1:2:end,1:2:end,1:2:end) = uc;
-            #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
+            #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE) dist_schedule(static,DIST_SIZE)
             for (int_t i = 0;i<uinshape[0];i++){
                 for (int_t j = 0;j<uinshape[1];j++){
 #ifdef BLOCK_SIZE
@@ -71,7 +71,7 @@ namespace Poisson{
         #pragma omp target device(uout.device) is_device_ptr(outdev)
         {
             //uf(2:2:end,:,:) = (uf(3:2:end,:,:) + uf(1:2:end-2,:,:))/2;
-            #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
+            #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE) dist_schedule(static,DIST_SIZE)
             for (int_t i = 1;i<uoutshape[0]-1;i+=2){
                 for (int_t j = 0;j<uoutshape[1];j+=2){
 #ifdef BLOCK_SIZE
@@ -92,7 +92,7 @@ namespace Poisson{
         #pragma omp target device(uout.device) is_device_ptr(outdev)
         {
             //uf(:,2:2:end,:) = (uf(:,3:2:end,:) + uf(:,1:2:end-2,:))/2;
-            #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
+            #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE) dist_schedule(static,DIST_SIZE)
             for (int_t i = 0;i<uoutshape[0];i++){
                 for (int_t j = 1;j<uoutshape[1]-1;j+=2){
 #ifdef BLOCK_SIZE
@@ -113,7 +113,7 @@ namespace Poisson{
         #pragma omp target device(uout.device) is_device_ptr(outdev)
         {
             //uf(:,:,2:2:end) = (uf(:,:,3:2:end) + uf(:,:,1:2:end-2))/2;
-            #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
+            #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE) dist_schedule(static,DIST_SIZE)
             for (int_t i = 0;i<uoutshape[0];i++){
                 for (int_t j = 0;j<uoutshape[1];j++){
 #ifdef BLOCK_SIZE

@@ -144,7 +144,7 @@ namespace Poisson{
         	const uint_t (&arrstride)[3] = arr.stride;
 			#pragma omp target device(_dev) is_device_ptr(_devptr,arrdev)
 			{
-				#pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
+				#pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE) dist_schedule(static,DIST_SIZE)
 				for(uint_t i = 0;i<_shape[0];i++){
 					for(uint_t j = 0;j<_shape[1];j++){
 #ifdef BLOCK_SIZE
@@ -180,7 +180,7 @@ namespace Poisson{
 			T * _devptr = this->devptr;
 			#pragma omp target device(_dev) is_device_ptr(_devptr) map(always,tofrom:res)
 			{
-				#pragma omp teams distribute parallel for reduction(max:res) collapse(3) schedule(static,CHUNK_SIZE)
+				#pragma omp teams distribute parallel for reduction(max:res) collapse(3) schedule(static,CHUNK_SIZE) dist_schedule(static,DIST_SIZE)
 				for(uint_t i = 0;i<_shape[0];i++){
 					for(uint_t j = 0;j<_shape[1];j++){
 #ifdef BLOCK_SIZE

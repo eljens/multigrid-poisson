@@ -1,0 +1,30 @@
+# DIST_SIZE = 16
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     20.6615 0.000113566   0.0019498   269748225  0.00306787           7      3.1415           9
+# DIST_SIZE = 32
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     11.7003 0.000113566   0.0019498   269748225  0.00306787           7      3.1415           9
+# DIST_SIZE = 64
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+      7.1849 0.000113566   0.0019498   269748225  0.00306787           7      3.1415           9
+# DIST_SIZE = 128
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     4.99552 0.000113566   0.0019498   269748225  0.00306787           7      3.1415           9
+# DIST_SIZE = 256
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     4.41922 0.000113566   0.0019498   269748225  0.00306787           7      3.1415           9
+# DIST_SIZE = 512
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     4.20331 0.000113566   0.0019498   269748225  0.00306787           7      3.1415           9
+# DIST_SIZE = 1024
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+      4.0755 0.000113566   0.0019498   269748225  0.00306787           7      3.1415           9
+# DIST_SIZE = 1536
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     3.99011 0.000113566   0.0019498   269748225  0.00306787           7      3.1415           9
+# DIST_SIZE = 2048
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     4.04592 0.000113566   0.0019498   269748225  0.00306787           7      3.1415           9
+# DIST_SIZE = 2560
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     4.06586 0.000113566   0.0019498   269748225  0.00306787           7      3.1415           9
