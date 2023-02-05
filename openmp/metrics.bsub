@@ -4,9 +4,9 @@ LD_LIBRARY_PATH_=$LD_LIBRARY_PATH
 
 COMMAND="./bin/minimal_vcycle -x 1025 -y 1025 -z 1025 -maxiter 1 -levels 2 -length 2"
 
-SETTINGS="--section SpeedOfLight --section Occupancy --section ComputeWorkloadAnalysis --section MemoryWorkloadAnalysis --sampling-max-passes 3"
+SETTINGS="--section SpeedOfLight --section Occupancy --section ComputeWorkloadAnalysis --section MemoryWorkloadAnalysis --sampling-max-passes 3 --launch-skip 30 --launch-count 10"
 
-rm -rf profilings/*.ncu-rep
+//rm -rf profilings/*.ncu-rep
 
 source paths/gbar/gcc.sh
 
@@ -14,7 +14,6 @@ export CUDA_VISIBLE_DEVICES=1
 export OMP_NUM_THREADS=8
 export COMPILER=gcc
 export GPU=A100
-
 if false
 then
 make clean
