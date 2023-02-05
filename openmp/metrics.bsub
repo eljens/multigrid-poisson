@@ -1,0 +1,52 @@
+set -x
+PATH_=$PATH
+LD_LIBRARY_PATH_=$LD_LIBRARY_PATH
+
+COMMAND="./bin/minimal_vcycle -x 1025 -y 1025 -z 1025 -maxiter 1 -levels 2 -length 2"
+
+SETTINGS="--section SpeedOfLight --section Occupancy --section ComputeWorkloadAnalysis --section MemoryWorkloadAnalysis --sampling-max-passes 3"
+
+rm -rf profilings/*.ncu-rep
+
+source paths/gbar/gcc.sh
+
+export CUDA_VISIBLE_DEVICES=1
+export OMP_NUM_THREADS=8
+export COMPILER=gcc
+export GPU=A100
+
+make clean
+make APP=minimal_vcycle
+
+TMPDIR=. nv-nsight-cu-cli $SETTINGS -o profilings/gcc $COMMAND
+
+make clean
+make BLOCK_SIZE=64 APP=minimal_vcycle
+
+TMPDIR=. nv-nsight-cu-cli $SETTINGS -o profilings/gcc_simd $COMMAND
+
+export PATH=$PATH_
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_
+module unload cuda
+module unload gcc
+
+exit 0
+
+source paths/gbar/clang.sh
+
+export CUDA_VISIBLE_DEVICES=1
+export OMP_NUM_THREADS=8
+export COMPILER=clang
+export GPU=A100
+
+make clean
+make APP=minimal_vcycle
+
+$COMMAND
+
+TMPDIR=. nv-nsight-cu-cli $SETTINGS -o profilings/clang $COMMAND
+
+make clean
+make BLOCK_SIZE=64 APP=minimal_vcycle
+
+TMPDIR=. nv-nsight-cu-cli $SETTINGS -o profilings/clang_simd $COMMAND

@@ -10,14 +10,10 @@ CXX = $(GCCPATH)g++
 CXXFLAGS = -Wall -Wno-sign-compare -g -O3 -ffast-math -std=c++17
 
 # OpenMP related flags
-OMPFLAGS = -fopenmp -foffload-options="-O3 -ffast-math -lm -flto -funsafe-math-optimizations -finline-functions -latomic"
+OMPFLAGS = -fopenmp -foffload-options="-O3 -ffast-math -lm -flto -funsafe-math-optimizations -finline-functions -latomic -ftree-vectorize"
 CFLAGS += $(OMPFLAGS)
 CXXFLAGS += $(OMPFLAGS)
 
 ifndef CHUNK_SIZE
 CHUNK_SIZE=16
-endif
-
-ifndef BLOCK_SIZE
-BLOCK_SIZE=64
 endif

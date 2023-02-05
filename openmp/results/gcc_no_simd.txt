@@ -1,0 +1,16 @@
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+    0.894139           0   0.0274254         729    0.392688           5      3.1415           3
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     1.52737           0  0.00247821        4913    0.196344           4      3.1415           4
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     3.11544           0  0.00829835       35937   0.0981719           5      3.1415           5
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     5.64443           0  0.00983738      274625   0.0490859           6      3.1415           6
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     8.98087           0  0.00662155     2146689    0.024543           6      3.1415           7
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     23.5903           0  0.00365282    16974593   0.0122715           7      3.1415           8
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     110.696           0  0.00188246   135005697  0.00613574           7      3.1415           9
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels
+     782.616           0 0.000949299  1076890625  0.00306787           7      3.1415          10

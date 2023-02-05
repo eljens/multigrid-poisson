@@ -110,10 +110,20 @@ namespace Poisson{
 			T * _devptr = this->devptr;
 			#pragma omp target device(_dev) is_device_ptr(_devptr)
 			{
+#ifdef BLOCK_SIZE
+				#pragma omp teams distribute parallel for schedule(static,CHUNK_SIZE)
+				for(uint_t i_block = 0;i_block<_size;i_block+=BLOCK_SIZE){
+					#pragma omp simd
+					for(uint_t i = i_block;i<MIN(i_block+BLOCK_SIZE,_size);i++){
+						_devptr[i] = 0.0;
+					}
+				}
+#else
 				#pragma omp teams distribute parallel for schedule(static,CHUNK_SIZE)
 				for(uint_t i = 0;i<_size;i++){
 					_devptr[i] = 0.0;
 				}
+#endif
 			}
 		}
 	}

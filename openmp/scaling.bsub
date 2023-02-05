@@ -1,0 +1,67 @@
+set -x
+PATH_=$PATH
+LD_LIBRARY_PATH_=$LD_LIBRARY_PATH
+
+MAXITER=30
+export CUDA_VISIBLE_DEVICES=1
+
+source paths/gbar/gcc.sh
+export COMPILER=gcc
+export GPU=A100
+
+FILENAME=gcc_no_simd.txt
+rm -rf results/$FILENAME
+make clean
+make CHUNK_SIZE=1
+
+LEVELS=3
+for N in 9 17 33 65 129 257 513 1025
+do
+    ./bin/multigrid -x $N -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
+    LEVELS=$(($LEVELS + 1))
+done
+
+FILENAME=gcc_simd.txt
+rm -rf results/$FILENAME
+make clean
+make CHUNK_SIZE=1 BLOCK_SIZE=128
+
+LEVELS=3
+for N in 9 17 33 65 129 257 513 1025
+do
+    ./bin/multigrid -x $N -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
+    LEVELS=$(($LEVELS + 1))
+done
+
+
+export PATH=$PATH_
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_
+module unload cuda
+module unload gcc
+
+source paths/gbar/clang.sh
+
+export COMPILER=clang
+
+FILENAME=clang_no_simd.txt
+rm -rf results/$FILENAME
+make clean
+make CHUNK_SIZE=1 
+
+LEVELS=3
+for N in 9 17 33 65 129 257 513 1025
+do
+    ./bin/multigrid -x $N -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
+    LEVELS=$(($LEVELS + 1))
+done
+
+FILENAME=clang_simd.txt
+rm -rf results/$FILENAME
+make CHUNK_SIZE=1 BLOCK_SIZE=128
+
+LEVELS=3
+for N in 9 17 33 65 129 257 513 1025
+do
+    ./bin/multigrid -x $N -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
+    LEVELS=$(($LEVELS + 1))
+done
