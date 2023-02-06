@@ -1,97 +1,47 @@
 set -x
-PATH_=$PATH
-LD_LIBRARY_PATH_=$LD_LIBRARY_PATH
-
 MAXITER=30
 export CUDA_VISIBLE_DEVICES=1
 
+source paths/gbar/clang.sh
 source paths/gbar/gcc.sh
-export COMPILER=gcc
 export GPU=A100
 
-if fasle
-then
-FILENAME=gcc_no_simd.txt
-rm -rf results/$FILENAME
-make clean
-make CHUNK_SIZE=1
+for COMPILER in gcc clang; do
+make realclean
+for CYCLE in vcycle fcycle; do
+for OPTIM in 0 1 2; do
+    APP=minimal_$CYCLE
+    FILENAME=$CYCLE/$COMPILER/scaling_$OPTIM.txt
+    rm -rf results/$FILENAME
 
-LEVELS=3
-for N in 9 17 33 65 129 257 513 1025
-do
-    ./bin/multigrid -x $N -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
-    LEVELS=$(($LEVELS + 1))
-done
+    if [ "$COMPILER" = "gcc" ]; then
+        BLOCK_SIZE=194
+        DIST_SIZE=1024
+    else
+        BLOCK_SIZE=4
+        if [ "$CYCLE" = "fcycle" ]; then
+            DIST_SIZE=320
+        else
+            DIST_SIZE=1024
+        fi
+    fi
 
-FILENAME=gcc_simd.txt
-rm -rf results/$FILENAME
-make clean
-make CHUNK_SIZE=1 BLOCK_SIZE=128
+    make clean
+    if [ "$OPTIM" = "0" ]; then
+        make APP=$APP
+    elif [ "$OPTIM" = "1" ]; then
+        make BLOCK_SIZE=$BLOCK_SIZE APP=$APP
+    elif [ "$OPTIM" = "2" ]; then
+        make DIST=static,$DIST_SIZE BLOCK_SIZE=$BLOCK_SIZE APP=$APP
+    fi
 
-LEVELS=3
-for N in 9 17 33 65 129 257 513 1025
-do
-    ./bin/multigrid -x $N -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
-    LEVELS=$(($LEVELS + 1))
-done
-fi
+    LEVELS=2
+    for N in 9 17 33 65 129 257 513 1025
+    do
+        ./bin/$APP -x $N -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
+        LEVELS=$(($LEVELS + 1))
+    done
 
-FILENAME=gcc_simd_dist.txt
-rm -rf results/$FILENAME
-make clean
-make CHUNK_SIZE=3 BLOCK_SIZE=128 DIST_SIZE=512
-
-LEVELS=3
-for N in 9 17 33 65 129 257 513 1025
-do
-    ./bin/multigrid -x $N -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
-    LEVELS=$(($LEVELS + 1))
-done
-
-export PATH=$PATH_
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH_
-module unload cuda
-module unload gcc
-
-source paths/gbar/clang.sh
-
-export COMPILER=clang
-
-if fasle
-then
-FILENAME=clang_no_simd.txt
-rm -rf results/$FILENAME
-make clean
-make CHUNK_SIZE=1 
-
-LEVELS=3
-for N in 9 17 33 65 129 257 513 1025
-do
-    ./bin/multigrid -x $N -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
-    LEVELS=$(($LEVELS + 1))
-done
-
-FILENAME=clang_simd.txt
-rm -rf results/$FILENAME
-make clean
-make CHUNK_SIZE=1 BLOCK_SIZE=128
-
-LEVELS=3
-for N in 9 17 33 65 129 257 513 1025
-do
-    ./bin/multigrid -x $N -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
-    LEVELS=$(($LEVELS + 1))
-done
-fi
-
-FILENAME=clang_dist.txt
-rm -rf results/$FILENAME
-make clean
-make CHUNK_SIZE=1 DIST_SIZE=1536
-
-LEVELS=3
-for N in 9 17 33 65 129 257 513 1025
-do
-    ./bin/multigrid -x $N -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
-    LEVELS=$(($LEVELS + 1))
-done
+done # end optimization
+done #end cycle
+done #end compiler
