@@ -1,0 +1,32 @@
+set -x
+
+MAXITER=3
+export CUDA_VISIBLE_DEVICES=1
+
+source paths/gbar/clang.sh
+source paths/gbar/gcc.sh
+export GPU=A100
+
+#domain size
+N=1025
+LEVELS=9
+
+for COMPILER in gcc clang; do
+make realclean
+for CYCLE in vcycle fcycle; do
+APP=minimal_$CYCLE
+FILENAME=$CYCLE/$COMPILER/block_size.txt
+rm -rf results/$FILENAME
+
+for BLOCK_SIZE in 0 4 8 16 32 64 96 128 160 192 224 256 288 320 512
+do
+    echo "# BLOCK_SIZE = $BLOCK_SIZE" >> results/$FILENAME
+    make clean
+    make APP=$APP BLOCK_SIZE=$BLOCK_SIZE
+    ./bin/$APP -x $N -y $N -z $N -maxiter $MAXITER -levels $LEVELS -stats $FILENAME
+done
+
+done #end cycle
+done #end compiler
+
+

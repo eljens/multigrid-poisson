@@ -111,7 +111,7 @@ namespace Poisson{
 			#pragma omp target device(_dev) is_device_ptr(_devptr)
 			{
 #ifdef BLOCK_SIZE
-				#pragma omp teams distribute parallel for schedule(static,CHUNK_SIZE)
+				#pragma omp teams distribute parallel for SCHEDULE
 				for(uint_t i_block = 0;i_block<_size;i_block+=BLOCK_SIZE){
 					#pragma omp simd
 					for(uint_t i = i_block;i<MIN(i_block+BLOCK_SIZE,_size);i++){
@@ -119,7 +119,7 @@ namespace Poisson{
 					}
 				}
 #else
-				#pragma omp teams distribute parallel for schedule(static,CHUNK_SIZE)
+				#pragma omp teams distribute parallel for SCHEDULE
 				for(uint_t i = 0;i<_size;i++){
 					_devptr[i] = 0.0;
 				}
@@ -144,7 +144,7 @@ namespace Poisson{
         	const uint_t (&arrstride)[3] = arr.stride;
 			#pragma omp target device(_dev) is_device_ptr(_devptr,arrdev)
 			{
-				#pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE) DIST_SCHEDULE
+				#pragma omp teams distribute parallel for collapse(3) SCHEDULE DIST_SCHEDULE
 				for(uint_t i = 0;i<_shape[0];i++){
 					for(uint_t j = 0;j<_shape[1];j++){
 #ifdef BLOCK_SIZE
@@ -180,7 +180,7 @@ namespace Poisson{
 			T * _devptr = this->devptr;
 			#pragma omp target device(_dev) is_device_ptr(_devptr) map(always,tofrom:res)
 			{
-				#pragma omp teams distribute parallel for reduction(max:res) collapse(3) schedule(static,CHUNK_SIZE) DIST_SCHEDULE
+				#pragma omp teams distribute parallel for reduction(max:res) collapse(3) SCHEDULE DIST_SCHEDULE
 				for(uint_t i = 0;i<_shape[0];i++){
 					for(uint_t j = 0;j<_shape[1];j++){
 #ifdef BLOCK_SIZE

@@ -58,7 +58,7 @@ namespace Poisson{
 
         #pragma omp target device(uout.device) is_device_ptr(indev,outdev)
         {
-            #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE) DIST_SCHEDULE
+            #pragma omp teams distribute parallel for collapse(3) SCHEDULE DIST_SCHEDULE
             for (int_t i = 0;i<uoutshape[0];i++){
                 for (int_t j = 0;j<uoutshape[1];j++){
 #ifdef BLOCK_SIZE

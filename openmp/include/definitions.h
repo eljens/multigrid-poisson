@@ -7,12 +7,14 @@
 
 #include <cstdint>
 namespace Poisson{
-    #ifndef CHUNK_SIZE
-    #define CHUNK_SIZE 1
+    #ifdef SCHED
+    #define SCHEDULE schedule(SCHED)
+    #else
+    #define SCHEDULE /**/
     #endif
 
-    #ifdef DIST_SIZE
-    #define DIST_SCHEDULE dist_schedule(static,DIST_SIZE)
+    #ifdef DIST
+    #define DIST_SCHEDULE dist_schedule(DIST)
     #else
     #define DIST_SCHEDULE /**/
     #endif

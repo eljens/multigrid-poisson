@@ -104,7 +104,7 @@ namespace Poisson{
 
     template<class T>
     void Array<T>::init_zero(){
-        #pragma omp parallel for schedule(static,CHUNK_SIZE)
+        #pragma omp parallel for SCHEDULE
         for(uint_t i = 0;i<this->size;i++){
             this->at[i] = 0.0;
         }
@@ -115,7 +115,7 @@ namespace Poisson{
         if (!(arr.size == this->size)){
             cerr << "Array size does not match in Array<T>.add()" << endl;
         }
-        #pragma omp parallel for collapse(3) schedule(static,CHUNK_SIZE)
+        #pragma omp parallel for collapse(3) SCHEDULE
         for(uint_t i = 0;i<this->shape[0];i++){
             for(uint_t j = 0;j<this->shape[1];j++){
                 for(uint_t k = 0;k<this->shape[2];k++){
@@ -128,7 +128,7 @@ namespace Poisson{
     template<class T>
     T Array<T>::infinity_norm() const{
         T res = 0.0;
-        #pragma omp parallel for collapse(3) schedule(static,CHUNK_SIZE) reduction(max:res)
+        #pragma omp parallel for collapse(3) SCHEDULE reduction(max:res)
         for(uint_t i = 0;i<this->shape[0];i++){
             for(uint_t j = 0;j<this->shape[1];j++){
                 for(uint_t k = 0;k<this->shape[2];k++){

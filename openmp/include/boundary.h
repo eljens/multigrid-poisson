@@ -66,7 +66,7 @@ namespace Poisson{
             default:
                 break;
         }
-        #pragma omp parallel for collapse(3) schedule(static,CHUNK_SIZE)
+        #pragma omp parallel for collapse(3) SCHEDULE
         for(int_t i = 0;i<this->shape[0];i++){
             for(int_t j = 0;j<this->shape[1];j++){
                 for(int_t k = 0;k<this->shape[2];k++){

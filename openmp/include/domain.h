@@ -267,7 +267,7 @@ namespace Poisson{
 		const T y0 = settings.origin[1];
 		const T z0 = settings.origin[2];
 		const T h = settings.h;
-		#pragma omp parallel for collapse(3) schedule(static,CHUNK_SIZE)
+		#pragma omp parallel for collapse(3) SCHEDULE
 		for(int_t i = 0;i<this->f->shape[0];i++){
 			for(int_t j = 0;j<this->f->shape[1];j++){
 				for(int_t k = 0;k<this->f->shape[2];k++){

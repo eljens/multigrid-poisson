@@ -23,17 +23,21 @@ endif
 ifndef PROBLEM
 PROBLEM=1
 endif
-ifndef CHUNK_SIZE
-CHUNK_SIZE=1
+
+CXXFLAGS+= -DPROBLEM$(PROBLEM)
+
+ifdef SCHED
+CXXFLAGS+= -DSCHED=$(SCHED)
 endif
-CXXFLAGS+= -DPROBLEM$(PROBLEM) -DCHUNK_SIZE=$(CHUNK_SIZE)
 
 ifdef BLOCK_SIZE
+ifeq ($(shell test $(BLOCK_SIZE) -gt 0; echo $$?),0)
 CXXFLAGS+= -DBLOCK_SIZE=$(BLOCK_SIZE)
 endif
+endif
 
-ifdef DIST_SIZE
-CXXFLAGS+= -DDIST_SIZE=$(DIST_SIZE)
+ifdef DIST
+CXXFLAGS+= -DDIST=$(DIST)
 endif
 
 #### Standard settings which are identical for all compilers
@@ -49,6 +53,10 @@ SRC = $(wildcard src/*.cpp)
 
 # Object files
 OBJ = $(patsubst src/%.cpp,lib/%.o,$(SRC))
+
+# Drivers
+APPS = $(wildcard drivers/*.cpp)
+APPSCLEAN = $(patsubst drivers/%.cpp,lib/%.o,$(APPS))
 
 TARGET?=bin/$(APP)
 
@@ -68,7 +76,10 @@ archive:
 	make TARGET=lib/libpoisson.a
 
 clean:
-	-rm -f top3d *.o lib/*.o lib/*.a bin/*
+	-rm -f bin/* $(APPSCLEAN)
+
+realclean:
+	-rm -f lib/*.o lib/*.a bin/*
 
 info:
 	$(info "COMPILER=$(COMPILER)")

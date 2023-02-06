@@ -99,7 +99,7 @@ namespace Poisson{
         const uint_t (&_stride)[3] = this->stride;
         const Halo & _halo = this->halo;
         #pragma omp target device(this->device) is_device_ptr(udev,gdev) firstprivate(sign,two_h)
-        #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
+        #pragma omp teams distribute parallel for collapse(3) SCHEDULE
         for(int_t i = 0;i<_shape[0];i++){
             for(int_t j = 0;j<_shape[1];j++){
 #ifdef BLOCK_SIZE
@@ -210,7 +210,7 @@ namespace Poisson{
         const uint _device = this->device;
         #pragma omp target device(_device) is_device_ptr(udev,gdev)\
                 firstprivate(c1,c2,c3,h,ii,jj,kk,iii,jjj,kkk)
-        #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE)
+        #pragma omp teams distribute parallel for collapse(3) SCHEDULE
         for(int_t i = 0;i<_shape[0];i++){
             for(int_t j = 0;j<_shape[1];j++){
 #ifdef BLOCK_SIZE
