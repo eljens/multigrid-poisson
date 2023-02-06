@@ -2,6 +2,7 @@
 #include "domainsettings.h"
 #include "libpoisson.h"
 #include <iostream>
+#include <fstream>
 
 using std::cout;
 using std::endl;
@@ -30,6 +31,19 @@ int main(int argc, char * argv[]){
     if (settings.print_result){
         solver.to_host();
         solver.save_all("results/u_vcycle.vtk","results/f_vcycle.vtk","results/r_vcycle.vtk");
+    }
+
+    if (settings.write_final_stats){
+        ofstream out("results/"+settings.stats_file, ios::app);
+        out << "#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels" << endl;
+        out << setw(12) << solver.solve_time();
+        out << setw(12) << solver.relative_residual();
+        out << setw(12) << settings.dims[0]*settings.dims[1]*settings.dims[2];
+        out << setw(12) << settings.h;
+        out << setw(12) << solver.solve_iterations();
+        out << setw(12) << settings.lengthx;
+        out << setw(12) << settings.levels;
+        out << endl;
     }
 
     return EXIT_SUCCESS;

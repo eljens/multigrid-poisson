@@ -17,13 +17,13 @@ using std::cerr;
 using std::endl;
 using std::string;
 namespace Poisson{
-    constexpr uint_t idx(const uint_t i,const uint_t j,const uint_t k,const Halo & _halo,const uint_t (&_stride)[3]) 
+    __attribute__((always_inline)) constexpr uint_t idx(const uint_t i,const uint_t j,const uint_t k,const Halo & _halo,const uint_t (&_stride)[3]) 
     {
         uint_t res = (i+_halo.west)*_stride[0] + (j+_halo.south)*_stride[1] + (k+_halo.bottom)*_stride[2];
         return res;
     }
 
-    constexpr uint_t idx_halo(const uint_t i,const uint_t j, const uint_t k, const uint_t (&_stride)[3]) 
+    __attribute__((always_inline)) constexpr uint_t idx_halo(const uint_t i,const uint_t j, const uint_t k, const uint_t (&_stride)[3]) 
     {
         uint_t res = i*_stride[0] + j*_stride[1] + k*_stride[2];
         return res;
@@ -47,9 +47,9 @@ namespace Poisson{
         
             virtual ~Array();
 
-            constexpr uint_t idx(const uint_t i,const uint_t j,const uint_t k) const;
+            __attribute__((always_inline)) constexpr uint_t idx(const uint_t i,const uint_t j,const uint_t k) const;
 
-            constexpr uint_t idx_halo(const uint_t i,const uint_t j, const uint_t k) const;
+            __attribute__((always_inline)) constexpr uint_t idx_halo(const uint_t i,const uint_t j, const uint_t k) const;
 
             void init_zero();
 

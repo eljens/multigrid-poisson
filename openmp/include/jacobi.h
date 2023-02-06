@@ -63,7 +63,10 @@ namespace Poisson{
         const Halo & fhalo = f.halo;
         const uint_t (&fstride)[3] = f.stride;
 
-        #pragma omp target device(u.device) is_device_ptr(udev,vdev,fdev) firstprivate(hsq,omega)
+        const T one_omega = 1.0-omega;
+        const T omega_sixth = (omega/6.0);
+
+        #pragma omp target device(u.device) is_device_ptr(udev,vdev,fdev)
         {
             #pragma omp teams distribute parallel for collapse(3) schedule(static,CHUNK_SIZE) DIST_SCHEDULE
             for (int_t i = xmin;i<xmax;i++){
@@ -75,8 +78,8 @@ namespace Poisson{
 #else
                     for (int_t k = zmin;k<zmax;k++){
 #endif
-                            udev[idx(i,j,k,uhalo,ustride)] = (1.0-omega)*vdev[idx(i,j,k,vhalo,vstride)];
-                            udev[idx(i,j,k,uhalo,ustride)] += (omega/6.0)*(vdev[idx((i-1),j,k,vhalo,vstride)] + vdev[idx((i+1),j,k,vhalo,vstride)]
+                            udev[idx(i,j,k,uhalo,ustride)] = one_omega*vdev[idx(i,j,k,vhalo,vstride)];
+                            udev[idx(i,j,k,uhalo,ustride)] += omega_sixth*(vdev[idx((i-1),j,k,vhalo,vstride)] + vdev[idx((i+1),j,k,vhalo,vstride)]
                                                     +vdev[idx(i,(j-1),k,vhalo,vstride)] + vdev[idx(i,(j+1),k,vhalo,vstride)]
                                                     +vdev[idx(i,j,(k-1),vhalo,vstride)] + vdev[idx(i,j,(k+1),vhalo,vstride)] - hsq*fdev[idx(i,j,k,fhalo,fstride)]);
 #ifdef BLOCK_SIZE
