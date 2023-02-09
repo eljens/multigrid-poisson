@@ -7,11 +7,11 @@ To compile one of the examples, you may type
 ```bash
 export COMPILER=<g++,clang++,nvc++>
 export GPU=<V100,A100>
-make APP=<multigrid,minimal_multigrid,minimal_jacobi,minimal_gauss_seidel>
+make APP=<multigrid,minimal_fcycle,minimal_vcycle,minimal_jacobi,minimal_gauss_seidel>
 ```
 and an example can for instance be executed with
 ```bash
-./drivers/minimal_multigrid -x 513 -y 257 -z 129 -l 6 -maxiter 10
+./bin/minimal_fcycle -x 513 -y 257 -z 129 -l 6 -maxiter 10
 ```
 To compile only the archive, type
 ```bash
