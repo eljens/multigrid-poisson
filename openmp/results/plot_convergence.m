@@ -1,12 +1,12 @@
 clear all; close all; clc;
-addpath(genpath('../matlab/mixed_3d'))
-addpath(genpath('../../matlab_helpers'))
+addpath(genpath('../../matlab/mixed_3d'))
+addpath(genpath('../../../matlab_helpers'))
 
 %% 
 
-prob1 = parseFile('results/vcycle_problem1.txt');
-prob2 = parseFile('results/vcycle_problem2.txt');
-prob3 = parseFile('results/vcycle_problem3.txt');
+prob1 = parseFile('vcycle_problem1.txt');
+prob2 = parseFile('vcycle_problem2.txt');
+prob3 = parseFile('vcycle_problem3.txt');
 
 [alpha1,beta1] = ols_log_fit(prob1.abs_err(3:end),prob1.spacing(3:end));
 [alpha2,beta2] = ols_log_fit(prob2.abs_err(3:end),prob2.spacing(3:end));
@@ -29,7 +29,7 @@ xlabel('$h$','interpreter','latex','fontsize',20)
 ylabel('Absolute Error','interpreter','latex','fontsize',20)
 ylim([5e-8 5])
 set(gca,'FontSize',16)
-saveas(gcf,'./figures/mg_convergence.png')
+saveas(gcf,'../figures/mg_convergence.png')
 fig2pdf(gca,'picmcc/mg_convergence.pdf')
 
 %% Reading content in file

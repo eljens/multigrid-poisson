@@ -1,8 +1,8 @@
 # Multigrid Methods for the Poisson Equation
-This project contains a framework for finite difference multigrid methods. The header files in `include` contain class templates for a number of functionalities, the `src` directory contains the source files, and the `drivers` directory contains examples of how to use the solvers.
+This project contains a framework for finite difference multigrid methods. The header files in `include` contain class templates for several multigrid components, the `src` directory contains the source files, and the `drivers` directory contains examples of how to use the solvers.
 
 ## Compilation
-The folder `config/` contains a number of makefiles that set compiler flags, preprocessor flags, etc. for OpenMP target offloading in `clang++`, `g++`, and `nvc++` and flags specific to some common GPU architectures. Note that some version of `nvc++` from the NVIDIA HPC-SDK are not yet compatible with the project.<br><br>
+The folder `config/` contains several makefiles that set compiler flags, preprocessor flags, and include flags. For OpenMP target offloading in `clang++`, `g++`, and `nvc++` and flags specific to some common GPU architectures. Note that some versions of `nvc++` from the NVIDIA HPC-SDK are incompatible with the project because they do not comply with the current OpenMP 5.1 standard. Scripts to install OpenMP offloading-enabled compilers can be found in `compilers/`.<br><br>
 To compile one of the examples, you may type
 ```bash
 export COMPILER=<g++,clang++,nvc++>
@@ -17,18 +17,18 @@ To compile only the archive, type
 ```bash
 make archive
 ```
-to make the archibe `libpoisson.a`. To use this archive in your project, compile with `-Iinlcude -Llib -lpoisson`.<br><br>
-One can select between three test problems if one wants to use one of the drivers. The test problems can be selected by compiling with `PROBLEM=1`, `PROBLEM=2`, or, `PROBLEM=3`. 
+to make the archive `libpoisson.a`. To use this archive in your project, compile with `-Iinlcude -Llib -lpoisson`.<br><br>
+One can select between three test problems if one wants to use one of the drivers. The test problems can be selected by compiling with `PROBLEM=1`, `PROBLEM=2`, or `PROBLEM=3`. 
 
 ## The Array Class and the Device Array Class
-The most important class templates in this project are probably `array.h` and the derived template class `devicearray.h`. They contain functions for indexing 3D arrays that abstracts away the halos. Futher, they contain functionality for mapping arrays to GPUs and saving arrays with or without the halos. See for instance the following figure:
+The most important class templates in this project are probably `array.h` and the derived template class `devicearray.h`. They contain functions for indexing 3D arrays that abstract away the halos. Further, they contain functionality for mapping arrays to GPUs and saving arrays with or without the halos. See for instance, the following figure:
 
 Saved With Halo            | Saved Without Halo
 :-------------------------:|:-------------------------:
 ![Halo](figures/halo.png)  | ![Ignoring Halo](figures/no_halo.png)
 
 ## Making a Solver
-The `PoissonSolver` class is heavily templated. When a solver instance is created, it is given a floating-point type, a restiction type, a prolongation type, and a relaxation type, for example
+The `PoissonSolver` class is heavily templated. When a solver instance is created, it is given a floating-point type, a restriction type, a prolongation type, and a relaxation type, for example
 ```c++
 #include "libpoisson.h"
 Poison::PoissonSolver<
@@ -41,7 +41,7 @@ To initialize all the arrays in the solver to zero, use
 ```c++
 solver.init_zero();
 ```
-Before using the solver to solve the problem, the right-hand side and boundary conditions must be transferred to the device. This can be done with
+Before solving the problem, the right-hand side and boundary conditions must be transferred to the device. This can be done with
 ```c++
 solver.to_device();
 ```
@@ -53,13 +53,17 @@ or a V-cycle with
 ```c++
 solver.solve("Vcycle");
 ```
+or an F-cycle, which is recommended, with
+```c++
+solver.solve("Fcycle");
+```
 Finally, the result can be mapped back to the host with
 ```c++
 solver.to_host();
 ```
 
 ## Currently Supported Multigrid Components
-The framework supports a number of different relaxation schemes and restriction and prolongation operators.
+The framework supports different relaxation schemes and restriction and prolongation operators.
 - Relaxation: `Poisson::Relaxation`
   - Jacobi relaxation: `Poisson::Jacobi`
   - Red-black Gauss-Seidel successive overrelaxation: `Poisson::GaussSeidel`
@@ -74,7 +78,7 @@ The framework supports a number of different relaxation schemes and restriction 
 
 
 ## Test Problems
-To generate a number of test problems, we may consider some function $u$ and find the Laplacian $f=\Delta u$ and the first order derivatives at the boundaries $\frac{\partial u}{\partial x}$ and $\frac{\partial u}{\partial y}$
+To generate some problems, we may consider some function $u$ and find the Laplacian $f=\Delta u$ and the first-order derivatives at the boundaries $\frac{\partial u}{\partial x}$ and $\frac{\partial u}{\partial y}$
 ### Test Problem I
 We may consider some trigonometric function
 ```math
@@ -136,7 +140,7 @@ True Solution              | Numerical Solution
 ![Problem III reference solution](figures/problem_3_true.png)  | ![Problem III numerical solution](figures/problem_3.png)
 
 ## Verifying the Order of Accuracy
-From theory, the scheme should be second order convergent. That means that halving the grid spacing should result in a four times smaller maximal absolute error. As it can be seen, the multigrid algorithm has the expected order of convergence for the three test problems. The files used to generate the convergence tests are `convergence.sh` and `plot_convergence.m`.
+From theory, the scheme should be second-order convergent. That means halving the grid spacing should result in a four times smaller maximal absolute error. As can be seen, the multigrid algorithm has the expected order of convergence for the three test problems. The files used to generate the convergence tests are `convergence.sh` and `plot_convergence.m`.
 <p align="center">
   <img src="./figures/mg_convergence.png" width="800" title="Convergence as function of grid spacing.">
 </p>

@@ -13,7 +13,12 @@ endif
 include config/$(COMPILER).mkf
 endif
 
-ifdef GPU
+ifndef GPU
+GPUFILES = $(wildcard *config/gpu/*.mkf)
+GPUS = $(patsubst config/gpu/%.mkf,%,$(GPUFILES))
+$(info The following GPUs are supported: $(GPUS))
+$(error Please set GPU before running make. You can use export GPU=<gpu_name>)
+else
 ifeq ("$(wildcard config/gpu/$(GPU).mkf)","")
 $(error "config/gpu/$(GPU).mkf does not exist")
 endif

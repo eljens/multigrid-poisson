@@ -14,6 +14,8 @@ do
 make clean
 make GPU_ARCH=$arch PROBLEM=$PROB
 
+cd ..
+
 FILENAME=vcycle_problem$PROB.txt
 rm -rf results/$FILENAME
 
