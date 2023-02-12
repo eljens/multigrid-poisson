@@ -1,5 +1,6 @@
 ifeq ("$(CC)","gcc")
-CFLAGS += -foffload=nvptx-none
+CFLAGS += -foffload=nvptx-none -foffload-options=-latomic
+CXXFLAGS += -foffload=nvptx-none -foffload-options=-latomic
 endif
 
 ifeq ("$(CC)","nvc")
