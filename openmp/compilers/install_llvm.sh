@@ -1,4 +1,8 @@
-#git clone https://github.com/llvm/llvm-project.git --depth=1
+git clone https://github.com/llvm/llvm-project.git
+cd llvm-project
+git checkout 710a834c4c822c5c444fc9715785d23959f5c645
+cd ..
+
 module load cmake/3.23.2
 module load gcc/11.3.0-binutils-2.38
 export CC=`which gcc`
