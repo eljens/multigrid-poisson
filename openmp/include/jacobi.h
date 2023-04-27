@@ -89,6 +89,17 @@ namespace Poisson{
                 }
             }
         }
+
+        if (domain.east->is_internal_boundary()){
+            OMPBoundary<T> * omp_east = (OMPBoundary<T> *) domain.east;
+            omp_east->fill_send_buffer(u,domain.settings);
+        }
+
+        if (domain.west->is_internal_boundary()){
+            OMPBoundary<T> * omp_west = (OMPBoundary<T> *) domain.west;
+            omp_west->fill_send_buffer(u,domain.settings);
+        }
+
         //domain.swap_u();
     }
 

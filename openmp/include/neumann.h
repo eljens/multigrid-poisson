@@ -20,6 +20,14 @@ namespace Poisson{
 
             void restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction);
+
+            bool is_internal_boundary();
+
+            void init_zero();
+
+            void to_device();
+
+            void link(Boundary<T> * _boundary);
     };
 
     template<class T>
@@ -92,13 +100,13 @@ namespace Poisson{
                 break;
         }
         T * udev = uarr.devptr;
-        T * gdev = this->devptr;
+        T * gdev = this->arr.devptr;
         const uint_t (&ustride)[3] = uarr.stride;
         const T two_h = 2.0*settings.h;
-        const uint_t (&_shape)[3] = this->shape;
-        const uint_t (&_stride)[3] = this->stride;
-        const Halo & _halo = this->halo;
-        #pragma omp target device(this->device) is_device_ptr(udev,gdev) firstprivate(sign,two_h)
+        const uint_t (&_shape)[3] = this->arr.shape;
+        const uint_t (&_stride)[3] = this->arr.stride;
+        const Halo & _halo = this->arr.halo;
+        #pragma omp target device(this->arr.device) is_device_ptr(udev,gdev) firstprivate(sign,two_h)
         #pragma omp teams distribute parallel for collapse(3) SCHEDULE
         for(int_t i = 0;i<_shape[0];i++){
             for(int_t j = 0;j<_shape[1];j++){
@@ -128,7 +136,7 @@ namespace Poisson{
     void Neumann<T>::restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction){
         // Needs to be implemented
-        restriction.restrict_to(boundary,*this);
+        restriction.restrict_to(boundary.arr,this->arr);
         int_t offx = 0;
         int_t offy = 0;
         int_t offz = 0;
@@ -201,13 +209,13 @@ namespace Poisson{
         // Interpolating the Neumann condition
         T h = settings.h;
         T * udev = u.devptr;
-        T * gdev = this->devptr;
+        T * gdev = this->arr.devptr;
         const Halo & uhalo = u.halo;
         const uint_t (&ustride)[3] = u.stride;
-        const uint_t * _shape = this->shape;
-        const Halo & _halo = this->halo;
-        const uint_t (&_stride)[3] = this->stride;
-        const uint _device = this->device;
+        const uint_t * _shape = this->arr.shape;
+        const Halo & _halo = this->arr.halo;
+        const uint_t (&_stride)[3] = this->arr.stride;
+        const uint _device = this->arr.device;
         #pragma omp target device(_device) is_device_ptr(udev,gdev)\
                 firstprivate(c1,c2,c3,h,ii,jj,kk,iii,jjj,kkk)
         #pragma omp teams distribute parallel for collapse(3) SCHEDULE
@@ -231,6 +239,26 @@ namespace Poisson{
             }
         }
     }
+
+    template<class T>
+    bool Neumann<T>::is_internal_boundary(){
+        return false;
+    };
+
+    template<class T>
+    void Neumann<T>::init_zero(){
+        this->arr.init_zero();
+    };
+
+    template<class T>
+    void Neumann<T>::to_device(){
+        this->arr.to_device();
+    };
+
+    template<class T>
+    void Neumann<T>::link(Boundary<T> * _boundary){
+        // No need to link as it is not an internal boundary
+    };
 }
 
 #endif

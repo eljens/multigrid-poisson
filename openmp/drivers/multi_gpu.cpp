@@ -29,7 +29,7 @@ int main(int argc, char * argv[]){
     solver.verbose(true);
     solver.to_device();
 
-    solver.solve("fcycle",4);
+    solver.solve("vcycle",4);
     cout << "It took " << solver.solve_time() << " seconds to run ";
     cout << solver.solve_iterations() << " Fcycles"<<endl;
 

@@ -12,30 +12,41 @@ namespace Poisson{
     typedef enum {NORTH,SOUTH,EAST,WEST,TOP,BOTTOM} Location_t;
 
     template <class T>
-    class Boundary :
-        public DeviceArray<T> {
+    class Boundary /*: public DeviceArray<T>*/ {
         protected:
+            // The neighbor bounday is only needed for internal boundaries
+            Boundary<T> * neighbor;
             Location_t location;
             void init_by_fun(funptr fun,Settings & settings);
 
             public:
+            DeviceArray<T> arr;
+
             Boundary(int_t device, Location_t location,uint_t i, uint_t j, uint_t k);
 
             virtual ~Boundary();
             
-            virtual void init(funptr ufun,funptr dudxfun,funptr dudyfun,Settings & settings);
+            virtual void init(funptr ufun,funptr dudxfun,funptr dudyfun,Settings & settings) = 0;
 
-            virtual void write_to(DeviceArray<T> & uarr, Settings & settings);
+            virtual void write_to(DeviceArray<T> & uarr, Settings & settings) = 0;
 
-            virtual void update(DeviceArray<T> & uarr, Settings & settings);
+            virtual void update(DeviceArray<T> & uarr, Settings & settings) = 0;
 
             virtual void restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
-                                    Settings & settings, Restriction<T> & restriction);
+                                    Settings & settings, Restriction<T> & restriction) = 0;
+
+            virtual bool is_internal_boundary() = 0;
+
+            virtual void init_zero() = 0;
+
+            virtual void to_device() = 0;
+
+            virtual void link(Boundary<T> * _boundary) = 0;
     };
 
     template<class T>
     Boundary<T>::Boundary(int_t device, Location_t location,uint_t i, uint_t j, uint_t k) :
-        DeviceArray<T>(device,i,j,k) {
+        arr(device,i,j,k) {
         this->location = location;
     }
 
@@ -67,10 +78,10 @@ namespace Poisson{
                 break;
         }
         #pragma omp parallel for collapse(3) SCHEDULE
-        for(int_t i = 0;i<this->shape[0];i++){
-            for(int_t j = 0;j<this->shape[1];j++){
-                for(int_t k = 0;k<this->shape[2];k++){
-                    this->at[this->idx(i,j,k)] = fun(x0+(((double_t)i)+offx)*h,y0+(((double_t)j)+offy)*h,z0+(((double_t)k)+offz)*h);
+        for(int_t i = 0;i<this->arr.shape[0];i++){
+            for(int_t j = 0;j<this->arr.shape[1];j++){
+                for(int_t k = 0;k<this->arr.shape[2];k++){
+                    this->arr.at[this->arr.idx(i,j,k)] = fun(x0+(((double_t)i)+offx)*h,y0+(((double_t)j)+offy)*h,z0+(((double_t)k)+offz)*h);
                 }
             }
         }

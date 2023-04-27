@@ -28,6 +28,8 @@ namespace Poisson{
 
 				void to_device();
 
+				void device_to_device(DeviceArray<T> & devarr);
+
 				void to_host();
 
 				void init_zero();
@@ -68,7 +70,16 @@ namespace Poisson{
 	void DeviceArray<T>::to_device() {
 		int_t res = omp_target_memcpy(this->devptr,this->at,(int) this->size*sizeof(T),0,0,(int) this->device,(int) this->host);
 		if (res != 0){
-			cerr << "Error on device " << this->device << ": omp_target_memcpy returned " << res << endl;
+			cerr << "H2D error on device " << this->device << ": omp_target_memcpy returned " << res << endl;
+		}
+		this->on_device = true;
+	}
+
+	template <class T>
+	void DeviceArray<T>::device_to_device(DeviceArray<T> & devarr) {
+		int_t res = omp_target_memcpy(devarr.devptr,this->devptr,(int) this->size*sizeof(T),0,0,(int) devarr.device,(int) this->device);
+		if (res != 0){
+			cerr << "D2D error from device " << this->device << " to " << devarr.device << ": omp_target_memcpy returned " << res << endl;
 		}
 		this->on_device = true;
 	}

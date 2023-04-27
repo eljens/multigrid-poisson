@@ -19,6 +19,14 @@ namespace Poisson{
 
             void restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction);
+
+            bool is_internal_boundary();
+
+            void init_zero();
+
+            void to_device();
+
+            void link(Boundary<T> * _boundary);
     };
 
     template <class T>
@@ -56,13 +64,13 @@ namespace Poisson{
                 break;
         }
         T * udev = uarr.devptr;
-        T * gdev = this->devptr;
+        T * gdev = this->arr.devptr;
         const Halo & uhalo = uarr.halo;
         const uint_t (&ustride)[3] = uarr.stride;
-        const uint_t (&_shape)[3] = this->shape;
-        const uint_t (&_stride)[3] = this->stride;
-        const Halo & _halo = this->halo;
-        #pragma omp target device(this->device) is_device_ptr(udev,gdev)
+        const uint_t (&_shape)[3] = this->arr.shape;
+        const uint_t (&_stride)[3] = this->arr.stride;
+        const Halo & _halo = this->arr.halo;
+        #pragma omp target device(this->arr.device) is_device_ptr(udev,gdev)
         #pragma omp teams distribute parallel for collapse(3) SCHEDULE
         for(int_t i = 0;i<_shape[0];i++){
             for(int_t j = 0;j<_shape[1];j++){
@@ -92,7 +100,27 @@ namespace Poisson{
                             Settings & settings, Restriction<T> & restriction){
         // For a dirichlet type boundary condition the error is always 0
         // as the solution is exact on this type of boundary by definition.
-        DeviceArray<T>::init_zero();
+        this->arr.init_zero();
+    };
+
+    template<class T>
+    bool Dirichlet<T>::is_internal_boundary(){
+        return false;
+    };
+
+    template<class T>
+    void Dirichlet<T>::init_zero(){
+        this->arr.init_zero();
+    };
+
+    template<class T>
+    void Dirichlet<T>::to_device(){
+        this->arr.to_device();
+    };
+
+    template<class T>
+    void Dirichlet<T>::link(Boundary<T> * _boundary){
+        // No need to link as it is not an internal boundary
     };
 }
 #endif

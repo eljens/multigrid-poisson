@@ -93,8 +93,14 @@ namespace Poisson{
         for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
             domains[gpuid] = new Domain<T>*[settings.levels];
             for (uint_t l = 0;l<settings.levels;l++){
-                domains[gpuid][l] = new Domain<T>(grid.domainsettings[l],is_dirichlet,relaxation.requires_duplicate_solution());
+                grid.domainsettings[l].dev = gpuid;
+                domains[gpuid][l] = new Domain<T>(grid.domainsettings[l],is_dirichlet,relaxation.requires_duplicate_solution(),gpuid,num_devices);
+                // Naive slab decomposition in x dimension 
                 grid.domainsettings[l].origin[0] += grid.domainsettings[l].lengthx;
+                if (gpuid > 0){
+                    domains[gpuid][l]->west->link(domains[gpuid-1][l]->east);
+                    domains[gpuid-1][l]->east->link(domains[gpuid][l]->west);
+                }
             }
         }
     }
@@ -181,18 +187,18 @@ namespace Poisson{
         for(iter = 0;iter<settings.maxiter;iter++){
             if (use_vcycle){
                 for (uint_t gpuid = 0; gpuid < num_devices; gpuid++){
-                    Vcycle<T>(this->domains[gpuid],this->restriction_type,this->prolongation,this->relaxation,omega,0,settings.levels,nsmooth);
+                    Vcycle<T>(this->domains,this->restriction_type,this->prolongation,this->relaxation,omega,0,settings.levels,num_devices,nsmooth);
                 }
             }
             else if (use_fcycle){
-                for (uint_t gpuid = 0; gpuid < num_devices; gpuid++){
-                    Fcycle<T>(this->domains[gpuid],this->restriction_type,this->prolongation,this->relaxation,omega,0,settings.levels,nsmooth);
-                }
+                //for (uint_t gpuid = 0; gpuid < num_devices; gpuid++){
+                //    Fcycle<T>(this->domains[gpuid],this->restriction_type,this->prolongation,this->relaxation,omega,0,settings.levels,nsmooth);
+                //}
             }
             else {
-                for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
-                    relaxation.relax(*domains[gpuid][0],omega);
-                }
+                //for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
+                //    relaxation.relax(*domains[gpuid][0],omega);
+                //}
             }
             for (uint_t gpuid = 0; gpuid < num_devices; gpuid++){
                 residual<T>(*domains[gpuid][0]);
