@@ -123,9 +123,18 @@ namespace Poisson{
     template <class T,template<class> class R,template<class> class P,template<class> class S>
     void PoissonSolver<T,R,P,S>::init_zero()
     {
-        for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
-            for (uint_t l = 0;l<settings.levels;l++){
-                domains[gpuid][l]->init_zero();
+        #pragma omp parallel
+        {
+            #pragma omp single nowait
+            {
+                for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
+                    for (uint_t l = 0;l<settings.levels;l++){
+                        #pragma omp task
+                        {
+                            domains[gpuid][l]->init_zero();
+                        }
+                    }
+                }
             }
         }
     }
@@ -133,9 +142,18 @@ namespace Poisson{
     template <class T,template<class> class R,template<class> class P,template<class> class S>
     void PoissonSolver<T,R,P,S>::to_device()
     {
-        for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
-            for (uint_t l = 0;l<settings.levels;l++){
-                domains[gpuid][l]->to_device();
+        #pragma omp parallel
+        {
+            #pragma omp single nowait
+            {
+                for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
+                    for (uint_t l = 0;l<settings.levels;l++){
+                        #pragma omp task
+                        {
+                            domains[gpuid][l]->to_device();
+                        }
+                    }
+                }
             }
         }
     }
@@ -143,8 +161,19 @@ namespace Poisson{
     template <class T,template<class> class R,template<class> class P,template<class> class S>
     void PoissonSolver<T,R,P,S>::to_host()
     {
-        for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
-            domains[gpuid][0]->to_host();
+        #pragma omp parallel
+        {
+            #pragma omp single nowait
+            {
+                for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
+                    for (uint_t l = 0;l<settings.levels;l++){
+                        #pragma omp task
+                        {
+                            domains[gpuid][l]->to_host();
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -170,11 +199,38 @@ namespace Poisson{
         iter = 0;
         double_t fnorm = 0.0;
         double_t rnorm = 0.0;
-        for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
-            fnorm += domains[gpuid][0]->f->infinity_norm();
-            residual<T>(*domains[gpuid][0]);
-            rnorm += domains[gpuid][0]->r->infinity_norm();
+
+        // Calculating initial relative residual
+        #pragma omp parallel reduction(+:fnorm) reduction(+:rnorm)
+        {
+            #pragma omp single nowait
+            {
+                #pragma omp taskgroup task_reduction(+:rnorm) task_reduction(+:fnorm)
+                {
+                    for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
+
+                        #pragma omp task default(none) shared(domains) firstprivate(gpuid) depend(inout:domains[gpuid][0]->f) in_reduction(+:fnorm)
+                        {
+                            double_t fnorm_task = domains[gpuid][0]->f->infinity_norm();
+                            #pragma omp atomic
+                            fnorm += fnorm_task;
+                        }
+                        #pragma omp task depend(out:domains[gpuid][0]->r)
+                        {
+                            residual<T>(*domains[gpuid][0]);
+                        }
+
+                        #pragma omp task default(none) shared(domains) firstprivate(gpuid) depend(in:domains[gpuid][0]->r) in_reduction(+:rnorm)
+                        {
+                            double_t rnorm_task = domains[gpuid][0]->r->infinity_norm();
+                            #pragma omp atomic
+                            rnorm += rnorm_task;
+                        }
+                    }
+                }
+            }
         }
+
         rel_res = rnorm / fnorm;
 
         if (is_verbose){
@@ -200,12 +256,27 @@ namespace Poisson{
                 //    relaxation.relax(*domains[gpuid][0],omega);
                 //}
             }
-            for (uint_t gpuid = 0; gpuid < num_devices; gpuid++){
-                residual<T>(*domains[gpuid][0]);
-            }
             T norm = 0.0;
-            for (uint_t gpuid = 0; gpuid < num_devices; gpuid++){
-                norm += domains[gpuid][0]->r->infinity_norm();
+            #pragma omp parallel
+            {
+                #pragma omp single nowait
+                {
+                    #pragma omp taskgroup task_reduction(+:norm)
+                    {
+                        for (uint_t gpuid = 0; gpuid < num_devices; gpuid++){
+                            #pragma omp task default(none) shared(domains) firstprivate(gpuid) depend(out:domains[gpuid][0]->r)
+                            {
+                                residual<T>(*domains[gpuid][0]);
+                            }
+                            #pragma omp task default(none) shared(domains) firstprivate(gpuid) depend(in:domains[gpuid][0]->r) in_reduction(+:norm)
+                            {   
+                                double_t norm_task = domains[gpuid][0]->r->infinity_norm();
+                                #pragma omp atomic
+                                norm += norm_task;
+                            }
+                        }
+                    }
+                }
             }
             norm /= fnorm;
             if (ofile.compare("")!=0){
