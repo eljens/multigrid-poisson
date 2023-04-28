@@ -23,13 +23,18 @@ namespace Poisson{
         int_t nsmooth = 10){
         
         // Pre smooting
-        for(int_t i=0;i<nsmooth;i++){
-            #pragma omp parallel
+        
+        #pragma omp parallel
+        {
             #pragma omp single nowait
             {
-                for (int_t gpuid = 0; gpuid < num_devices;gpuid++){
-                    #pragma omp task
-                    relaxation.relax(*domains[gpuid][level],omega);
+                for(int_t i=0;i<nsmooth;i++){
+                    #pragma omp taskgroup
+                    {
+                        for (int_t gpuid = 0; gpuid < num_devices;gpuid++){
+                            relaxation.relax(*domains[gpuid][level],omega);
+                        }
+                    }
                 }
             }
         }
@@ -91,13 +96,17 @@ namespace Poisson{
         }
 
         // Post smooting
-        for(int_t i=0;i<nsmooth;i++){
-            #pragma omp parallel
+        #pragma omp parallel
+        {
             #pragma omp single nowait
             {
-                for (int_t gpuid = 0; gpuid < num_devices;gpuid++){
-                    #pragma omp task
-                    relaxation.relax(*domains[gpuid][level],omega);
+                for(int_t i=0;i<nsmooth;i++){
+                    #pragma omp taskgroup
+                    {
+                        for (int_t gpuid = 0; gpuid < num_devices;gpuid++){
+                            relaxation.relax(*domains[gpuid][level],omega);
+                        }
+                    }
                 }
             }
         }

@@ -23,17 +23,17 @@ namespace Poisson{
         const T hsq = domain.settings.h*domain.settings.h;
 
         // Updating boundaries
-        domain.east->update(u,domain.settings);
-        domain.west->update(u,domain.settings);
-        domain.north->update(u,domain.settings);
-        domain.south->update(u,domain.settings);
-        domain.top->update(u,domain.settings);
-        domain.bottom->update(u,domain.settings);
+        #pragma omp taskgroup
+        {
+            domain.east->update(u,domain.settings);
+            domain.west->update(u,domain.settings);
+            domain.north->update(u,domain.settings);
+            domain.south->update(u,domain.settings);
+            domain.top->update(u,domain.settings);
+            domain.bottom->update(u,domain.settings);
+        }
 
         // Extracting device pointers
-        T * udev = u.devptr;
-        T * rdev = r.devptr;
-        T * fdev = f.devptr;
 
         const int xmin = 1-domain.halo.west;
         const int xmax = r.shape[0]-1+domain.halo.east;
@@ -42,33 +42,38 @@ namespace Poisson{
         const int zmin = 1-domain.halo.bottom;
         const int zmax = r.shape[2]-1+domain.halo.top;
 
-        const Halo & rhalo = r.halo;
-        const uint_t (&rstride)[3] = r.stride;
-
-        const Halo & fhalo = f.halo;
-        const uint_t (&fstride)[3] = f.stride;
-
-        const Halo & uhalo = u.halo;
-        const uint_t (&ustride)[3] = u.stride;
-
-        #pragma omp target device(u.device) is_device_ptr(udev,rdev,fdev) firstprivate(hsq)
+        //#pragma omp task default(none) shared(u,r,f) firstprivate(hsq,xmin,xmax,ymin,ymax,zmin,zmax) depend(in:u) depend(out:r)
         {
-            #pragma omp teams distribute parallel for collapse(3) SCHEDULE DIST_SCHEDULE
-            for (int_t i = xmin;i<xmax;i++){
-                for (int_t j = ymin;j<ymax;j++){
+            T * udev = u.devptr;
+            T * rdev = r.devptr;
+            T * fdev = f.devptr;
+            const Halo & rhalo = r.halo;
+            const uint_t (&rstride)[3] = r.stride;
+
+            const Halo & fhalo = f.halo;
+            const uint_t (&fstride)[3] = f.stride;
+
+            const Halo & uhalo = u.halo;
+            const uint_t (&ustride)[3] = u.stride;
+            #pragma omp target device(u.device) is_device_ptr(udev,rdev,fdev) firstprivate(hsq)
+            {
+                #pragma omp teams distribute parallel for collapse(3) SCHEDULE DIST_SCHEDULE
+                for (int_t i = xmin;i<xmax;i++){
+                    for (int_t j = ymin;j<ymax;j++){
 #ifdef BLOCK_SIZE
-                    for (int_t k_block = zmin;k_block<zmax;k_block+=BLOCK_SIZE){
-                        #pragma omp simd
-                        for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,zmax);k++){
+                        for (int_t k_block = zmin;k_block<zmax;k_block+=BLOCK_SIZE){
+                            #pragma omp simd
+                            for (int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,zmax);k++){
 #else
-                    for (int_t k = zmin;k<zmax;k++){
+                        for (int_t k = zmin;k<zmax;k++){
 #endif
-                            rdev[idx(i,j,k,rhalo,rstride)] = fdev[idx(i,j,k,fhalo,fstride)] - (udev[idx((i-1),j,k,uhalo,ustride)] + udev[idx((i+1),j,k,uhalo,ustride)]
+                                rdev[idx(i,j,k,rhalo,rstride)] = fdev[idx(i,j,k,fhalo,fstride)] - (udev[idx((i-1),j,k,uhalo,ustride)] + udev[idx((i+1),j,k,uhalo,ustride)]
                                                 +udev[idx(i,(j-1),k,uhalo,ustride)] + udev[idx(i,(j+1),k,uhalo,ustride)]
                                                 +udev[idx(i,j,(k-1),uhalo,ustride)] + udev[idx(i,j,(k+1),uhalo,ustride)] - 6.0*udev[idx(i,j,k,uhalo,ustride)])/hsq;
 #ifdef BLOCK_SIZE
-                        }
+                            }
 #endif
+                        }
                     }
                 }
             }

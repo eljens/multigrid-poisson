@@ -22,17 +22,18 @@ namespace Poisson{
                 void relax(Domain<T>& domain,T omega);
                 constexpr T default_omega();
                 constexpr bool requires_duplicate_solution();
+                void relaxation_kernel(Domain<T>& domain,T omega,const int_t xmin,const int_t xmax,const int_t ymin,const int_t ymax,const int_t zmin,const int_t zmax);
     };
 
     template <class T>
     void Jacobi<T>::relax(Domain<T>& domain,T omega){
-        domain.swap_u();
+        //#pragma omp task default(none) shared(domain) depend(inout:*domain.u,*domain.uprev)
+        //{
+            domain.swap_u();
+        //}
 
         DeviceArray<T>& u = *domain.u;
         DeviceArray<T>& v = *domain.uprev;
-        const DeviceArray<T>& f = *domain.f;
-
-        const T hsq = domain.settings.h*domain.settings.h;
 
         // Updating boundaries
         domain.east->update(v,domain.settings);
@@ -43,16 +44,58 @@ namespace Poisson{
         domain.bottom->update(v,domain.settings);
 
         // Jacobi iteration 
+        const int_t xmin = 1-domain.halo.west;
+        const int_t xmax = u.shape[0]-1+domain.halo.east;
+        const int_t ymin = 1-domain.halo.south;
+        const int_t ymax = u.shape[1]-1+domain.halo.north;
+        const int_t zmin = 1-domain.halo.bottom;
+        const int_t zmax = u.shape[2]-1+domain.halo.top;
+
+        #pragma omp task default(none) shared(domain,omega) firstprivate(xmin,xmax,ymin,ymax,zmin,zmax) depend(in:v) depend(out:u)
+        {
+            this->relaxation_kernel(domain,omega,xmin,xmax,ymin,ymax,zmin,zmax);
+        }
+
+        if (domain.east->is_internal_boundary()){
+            OMPBoundary<T> * omp_east = (OMPBoundary<T> *) domain.east;
+            #pragma omp task default(none) shared(u,domain) firstprivate(omp_east) depend(in:u) depend(out:omp_east->send_buffer)
+            {
+                omp_east->fill_send_buffer(u,domain.settings);
+            }
+        }
+
+        if (domain.west->is_internal_boundary()){
+            OMPBoundary<T> * omp_west = (OMPBoundary<T> *) domain.west;
+            #pragma omp task default(none) shared(u,domain) firstprivate(omp_west) depend(in:u) depend(out:omp_west->send_buffer)
+            {
+                omp_west->fill_send_buffer(u,domain.settings);
+            }
+        }
+
+        //domain.swap_u();
+    }
+
+    template <class T>
+    constexpr T Jacobi<T>::default_omega(){
+        return 6.0/7.0;
+    }
+
+    template <class T>
+    constexpr bool Jacobi<T>::requires_duplicate_solution(){
+        return true;
+    }
+
+    template <class T>
+    void Jacobi<T>::relaxation_kernel(Domain<T>& domain,T omega,const int_t xmin,const int_t xmax,const int_t ymin,const int_t ymax,const int_t zmin,const int_t zmax){
+        DeviceArray<T>& u = *domain.u;
+        DeviceArray<T>& v = *domain.uprev;
+        const DeviceArray<T>& f = *domain.f;
+        const T one_omega = 1.0-omega;
+        const T omega_sixth = (omega/6.0);
+        const T hsq = domain.settings.h*domain.settings.h;
         T * udev = u.devptr;
         T * vdev = v.devptr;
         T * fdev = f.devptr;
-
-        const int xmin = 1-domain.halo.west;
-        const int xmax = u.shape[0]-1+domain.halo.east;
-        const int ymin = 1-domain.halo.south;
-        const int ymax = u.shape[1]-1+domain.halo.north;
-        const int zmin = 1-domain.halo.bottom;
-        const int zmax = u.shape[2]-1+domain.halo.top;
 
         const Halo & uhalo = u.halo;
         const uint_t (&ustride)[3] = u.stride;
@@ -62,9 +105,6 @@ namespace Poisson{
 
         const Halo & fhalo = f.halo;
         const uint_t (&fstride)[3] = f.stride;
-
-        const T one_omega = 1.0-omega;
-        const T omega_sixth = (omega/6.0);
 
         #pragma omp target device(u.device) is_device_ptr(udev,vdev,fdev)
         {
@@ -89,28 +129,6 @@ namespace Poisson{
                 }
             }
         }
-
-        if (domain.east->is_internal_boundary()){
-            OMPBoundary<T> * omp_east = (OMPBoundary<T> *) domain.east;
-            omp_east->fill_send_buffer(u,domain.settings);
-        }
-
-        if (domain.west->is_internal_boundary()){
-            OMPBoundary<T> * omp_west = (OMPBoundary<T> *) domain.west;
-            omp_west->fill_send_buffer(u,domain.settings);
-        }
-
-        //domain.swap_u();
-    }
-
-    template <class T>
-    constexpr T Jacobi<T>::default_omega(){
-        return 6.0/7.0;
-    }
-
-    template <class T>
-    constexpr bool Jacobi<T>::requires_duplicate_solution(){
-        return true;
     }
 }
 #endif

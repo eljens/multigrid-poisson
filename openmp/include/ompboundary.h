@@ -6,9 +6,9 @@ namespace Poisson{
     template <class T>
     class OMPBoundary :
         public Boundary<T> {
-            protected:
-                DeviceArray<T> send_buffer;
             public:
+            DeviceArray<T> send_buffer;
+            
             OMPBoundary(int_t device,Location_t location,uint_t i, uint_t j, uint_t k);
 
             virtual ~OMPBoundary();
@@ -159,8 +159,14 @@ namespace Poisson{
     void OMPBoundary<T>::update(DeviceArray<T> & uarr, Settings & settings){
         //cout << "Device is " << this->arr.device << endl;
         OMPBoundary<T> * omp_neighbor = ((OMPBoundary<T> * )this->neighbor);
-        omp_neighbor->send_buffer.device_to_device(this->arr);
-        this->write_to(uarr,settings);
+        #pragma omp task default(none) firstprivate(omp_neighbor) depend(in:omp_neighbor->send_buffer) depend(out:this->arr)
+        {
+            omp_neighbor->send_buffer.device_to_device(this->arr);
+        }
+        #pragma omp task default(none) shared(uarr,settings) depend(in:this->arr) depend(in:uarr)
+        {
+            this->write_to(uarr,settings);
+        }
     }
 
     template<class T>
