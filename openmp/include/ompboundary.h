@@ -172,9 +172,11 @@ namespace Poisson{
     template<class T>
     void OMPBoundary<T>::restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction){
-        // For an internal boundary, the same restriction operation that operates
-        // on the rest of the domain can be used to project the BC to the coarser grid
-        restriction.restrict_to(boundary.arr,this->arr);
+        // The internal boundary can be thought of as a Dirichlet boundary which 
+        // is updated in every iteration of the relaxation method. Hence, its residual
+        // is always zero.
+        this->arr.init_zero();
+        this->send_buffer.init_zero();
     };
 
     template<class T>
@@ -191,7 +193,7 @@ namespace Poisson{
     template<class T>
     void OMPBoundary<T>::to_device(){
         this->arr.to_device();
-        send_buffer.to_device();
+        this->send_buffer.to_device();
     };
 
     template<class T>
