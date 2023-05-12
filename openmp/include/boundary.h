@@ -23,7 +23,7 @@ namespace Poisson{
 
             virtual ~Boundary();
             
-            virtual void init(funptr ufun,funptr dudxfun,funptr dudyfun,Settings & settings);
+            virtual void init(funptr ufun,funptr dudxfun,funptr dudyfun,funptr dudzfun,Settings & settings);
 
             virtual void write_to(DeviceArray<T> & uarr, Settings & settings);
 

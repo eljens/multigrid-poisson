@@ -77,7 +77,7 @@ namespace Poisson{
 
 			~Domain();
 
-			void init(funptr ufun,funptr ffun,funptr dudxfun,funptr dudyfun);
+			void init(funptr ufun,funptr ffun,funptr dudxfun,funptr dudyfun,funptr dudzfun);
 
 			void init_zero();
 
@@ -98,7 +98,7 @@ namespace Poisson{
 
 	template<class T>
 	Domain<T>::Domain(Settings & _settings,bool is_dirichlet,bool duplicate) : 
-		halo(!is_dirichlet,!is_dirichlet,!is_dirichlet,!is_dirichlet,0,0),is_initialized(true),requires_duplicate(duplicate), settings(_settings)
+		halo(!is_dirichlet,!is_dirichlet,0,0,!is_dirichlet,!is_dirichlet),is_initialized(true),requires_duplicate(duplicate), settings(_settings)
 	{
 		//cout << "Created domain with settings " << endl;
 		//cout << settings;
@@ -112,20 +112,20 @@ namespace Poisson{
 		this->f = new DeviceArray<T>(settings,halo);
 		this->r = new DeviceArray<T>(settings,halo);
 
-		this->top = new Dirichlet<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
-		this->bottom = new Dirichlet<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
 		if (is_dirichlet){
 			this->east = new Dirichlet<T>(settings.dev,EAST,1,settings.dims[1],settings.dims[2]);
 			this->west = new Dirichlet<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
-			this->north = new Dirichlet<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
-			this->south = new Dirichlet<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);
+			this->top = new Dirichlet<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
+			this->bottom = new Dirichlet<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
 		}
 		else {
 			this->east = new Neumann<T>(settings.dev,EAST,1,settings.dims[1],settings.dims[2]);
 			this->west = new Neumann<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
-			this->north = new Neumann<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
-			this->south = new Neumann<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);
+			this->top = new Neumann<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
+			this->bottom = new Neumann<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
 		}
+		this->north = new Dirichlet<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
+		this->south = new Dirichlet<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);
 	}
 
 	template<class T>
@@ -147,13 +147,13 @@ namespace Poisson{
 	}
 
 	template<class T>
-	void Domain<T>::init(funptr ufun,funptr ffun,funptr dudxfun,funptr dudyfun){
-		this->north->init(ufun,dudxfun,dudyfun,this->settings);
-		this->south->init(ufun,dudxfun,dudyfun,this->settings);
-		this->east->init(ufun,dudxfun,dudyfun,this->settings);
-		this->west->init(ufun,dudxfun,dudyfun,this->settings);
-		this->top->init(ufun,dudxfun,dudyfun,this->settings);
-		this->bottom->init(ufun,dudxfun,dudyfun,this->settings);
+	void Domain<T>::init(funptr ufun,funptr ffun,funptr dudxfun,funptr dudyfun,funptr dudzfun){
+		this->north->init(ufun,dudxfun,dudyfun,dudzfun,this->settings);
+		this->south->init(ufun,dudxfun,dudyfun,dudzfun,this->settings);
+		this->east->init(ufun,dudxfun,dudyfun,dudzfun,this->settings);
+		this->west->init(ufun,dudxfun,dudyfun,dudzfun,this->settings);
+		this->top->init(ufun,dudxfun,dudyfun,dudzfun,this->settings);
+		this->bottom->init(ufun,dudxfun,dudyfun,dudzfun,this->settings);
 		this->init_f(ffun);
 		if (requires_duplicate){
 			this->uprev->init_zero();
