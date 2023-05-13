@@ -11,6 +11,17 @@
 namespace Poisson{
     typedef enum {NORTH,SOUTH,EAST,WEST,TOP,BOTTOM} Location_t;
 
+    typedef enum {DIRICHLET,NEUMANN} Boundary_t;
+
+    typedef struct BoundaryCondition{
+        Boundary_t north;
+        Boundary_t south;
+        Boundary_t east;
+        Boundary_t west;
+        Boundary_t top;
+        Boundary_t bottom;
+    } BoundaryCondition;
+
     template <class T>
     class Boundary /*: public DeviceArray<T>*/ {
         protected:
@@ -42,6 +53,8 @@ namespace Poisson{
             virtual void to_device() = 0;
 
             virtual void link(Boundary<T> * _boundary) = 0;
+
+            virtual bool is_non_eliminated() = 0;
     };
 
     template<class T>

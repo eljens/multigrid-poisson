@@ -1,4 +1,4 @@
-APP?=multigrid
+APP?=multi_gpu
 
 #### User must provide a desired compiler
 ifndef COMPILER

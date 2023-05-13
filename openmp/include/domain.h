@@ -74,7 +74,7 @@ namespace Poisson{
 
 			}
 
-			Domain(Settings & _settings,bool is_dirichlet,bool requires_duplicate,int_t device=0, int_t num_devices=1);
+			Domain(Settings & _settings,BoundaryCondition & BC,bool requires_duplicate,int_t device=0, int_t num_devices=1);
 
 			~Domain();
 
@@ -98,8 +98,8 @@ namespace Poisson{
 	};
 
 	template<class T>
-	Domain<T>::Domain(Settings & _settings,bool is_dirichlet,bool duplicate,int_t device, int_t num_devices) : 
-		halo(!is_dirichlet,!is_dirichlet,!is_dirichlet,!is_dirichlet,0,0),is_initialized(true),requires_duplicate(duplicate), settings(_settings)
+	Domain<T>::Domain(Settings & _settings,BoundaryCondition & BC,bool duplicate,int_t device, int_t num_devices) : 
+		halo(1,1,1,1,0,0),is_initialized(true),requires_duplicate(duplicate), settings(_settings)
 	{
 		//cout << "Created domain with settings " << endl;
 		//cout << settings;
@@ -113,13 +113,23 @@ namespace Poisson{
 		this->f = new DeviceArray<T>(settings,halo);
 		this->r = new DeviceArray<T>(settings,halo);
 
-		this->top = new Dirichlet<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
-		this->bottom = new Dirichlet<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
+		if (BC.top == DIRICHLET){
+			this->top = new Dirichlet<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
+		}
+		else {
+			this->top = new Neumann<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
+		}
+		if (BC.bottom == DIRICHLET){
+			this->bottom = new Dirichlet<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
+		}
+		else {
+			this->bottom = new Dirichlet<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
+		}
 		if (device<num_devices-1){
 			this->east = new OMPBoundary<T>(settings.dev,EAST,1,settings.dims[1],settings.dims[2]);
 		}
 		else {
-			if (is_dirichlet){
+			if (BC.east == DIRICHLET){
 				this->east = new Dirichlet<T>(settings.dev,EAST,1,settings.dims[1],settings.dims[2]);
 			}
 			else{
@@ -130,19 +140,23 @@ namespace Poisson{
 			this->west = new OMPBoundary<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
 		}
 		else {
-			if (is_dirichlet){
+			if (BC.west == DIRICHLET){
 				this->west = new Dirichlet<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
 			}
 			else{
 				this->west = new Neumann<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
 			}
 		}
-		if (is_dirichlet){
+		if (BC.north == DIRICHLET){
 			this->north = new Dirichlet<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
-			this->south = new Dirichlet<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);
 		}
 		else {
 			this->north = new Neumann<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
+		}
+		if (BC.south == DIRICHLET){
+			this->south = new Dirichlet<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);
+		}
+		else {
 			this->south = new Neumann<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);
 		}
 	}

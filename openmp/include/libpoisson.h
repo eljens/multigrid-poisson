@@ -14,12 +14,15 @@
 #include <stdexcept>
 #include <string>
 #include <fstream>
+#include "boundary.h"
 
 using std::ofstream;
 using std::ios;
 using std::setw;
 using std::cout;
 using std::string;
+using Poisson::DIRICHLET;
+using Poisson::NEUMANN;
 
 namespace Poisson{
     template <class T,template<class> class R,template<class> class P,template<class> class S>
@@ -28,18 +31,18 @@ namespace Poisson{
             uint_t num_devices;
             Domain<T> *** domains;
             Settings settings;
+            BoundaryCondition BC;
             Grid grid;
             R<T> restriction_type;
             P<T> prolongation;
             S<T> relaxation;
-            bool is_dirichlet;
             bool is_verbose = false;
             uint_t iter = 0;
             double_t rel_res = 0.0;
             double_t wtime = 0.0;
             void alloc();
         public:
-            PoissonSolver(uint_t ndev, Settings & _settings,bool _is_dirichlet);
+            PoissonSolver(uint_t ndev, Settings & _settings,BoundaryCondition & _BC);
             PoissonSolver(uint_t ndev, Settings & _settings);
             ~PoissonSolver();
             void init();
@@ -61,15 +64,16 @@ namespace Poisson{
     };
 
     template <class T,template<class> class R,template<class> class P,template<class> class S>
-    PoissonSolver<T,R,P,S>::PoissonSolver(uint_t ndev, Settings & _settings, bool _is_dirichlet) : 
-        num_devices(ndev), settings(_settings), grid(_settings,_settings.levels), is_dirichlet(_is_dirichlet)
+    PoissonSolver<T,R,P,S>::PoissonSolver(uint_t ndev, Settings & _settings, BoundaryCondition & _BC) : 
+        num_devices(ndev), settings(_settings), BC(_BC), grid(_settings,_settings.levels)
     {
         this->alloc();
     }
 
     template <class T,template<class> class R,template<class> class P,template<class> class S>
     PoissonSolver<T,R,P,S>::PoissonSolver(uint_t ndev, Settings & _settings) : 
-        num_devices(ndev), settings(_settings), grid(_settings,_settings.levels), is_dirichlet(false)
+        num_devices(ndev), settings(_settings),
+        BC({NEUMANN,NEUMANN,NEUMANN,NEUMANN,DIRICHLET,DIRICHLET}), grid(_settings,_settings.levels)
     {
         this->alloc();
     }
@@ -94,7 +98,7 @@ namespace Poisson{
             domains[gpuid] = new Domain<T>*[settings.levels];
             for (uint_t l = 0;l<settings.levels;l++){
                 grid.domainsettings[l].dev = gpuid;
-                domains[gpuid][l] = new Domain<T>(grid.domainsettings[l],is_dirichlet,relaxation.requires_duplicate_solution(),gpuid,num_devices);
+                domains[gpuid][l] = new Domain<T>(grid.domainsettings[l],BC,relaxation.requires_duplicate_solution(),gpuid,num_devices);
                 // Naive slab decomposition in x dimension 
                 grid.domainsettings[l].origin[0] += grid.domainsettings[l].lengthx;
                 if (gpuid > 0){

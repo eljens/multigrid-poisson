@@ -27,6 +27,8 @@ namespace Poisson{
             void to_device();
 
             void link(Boundary<T> * _boundary);
+
+            bool is_non_eliminated();
     };
 
     template <class T>
@@ -121,6 +123,11 @@ namespace Poisson{
     template<class T>
     void Dirichlet<T>::link(Boundary<T> * _boundary){
         // No need to link as it is not an internal boundary
+    };
+
+    template<class T>
+    bool Dirichlet<T>::is_non_eliminated(){
+        return false;
     };
 }
 #endif

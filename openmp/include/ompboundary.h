@@ -31,6 +31,8 @@ namespace Poisson{
             void to_device();
 
             void link(Boundary<T> * _neighbor);
+
+            bool is_non_eliminated();
     };
 
     template <class T>
@@ -215,5 +217,10 @@ namespace Poisson{
     void OMPBoundary<T>::link(Boundary<T> * _neighbor){
         this->neighbor = _neighbor;
     }
+
+    template<class T>
+    bool OMPBoundary<T>::is_non_eliminated(){
+        return false;
+    };
 }
 #endif

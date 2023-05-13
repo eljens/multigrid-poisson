@@ -19,13 +19,16 @@ using Poisson::Jacobi;
 using Poisson::DeviceArray;
 using Poisson::int_t;
 using Poisson::uint_t;
+using Poisson::BoundaryCondition;
 
 int main(int argc, char * argv[]){
-    bool is_dirichlet = false;
     uint_t num_devices = omp_get_num_devices();
     Settings settings = parser(argc,argv);
-    settings.miniter = 10;
-    PoissonSolver<double_t,Injection,TrilinearInterpolation,Jacobi> solver(num_devices,settings,is_dirichlet);
+
+    // Defining problem
+    BoundaryCondition BC = {NEUMANN,NEUMANN,NEUMANN,NEUMANN,DIRICHLET,DIRICHLET};
+
+    PoissonSolver<double_t,Injection,TrilinearInterpolation,Jacobi> solver(num_devices,settings,BC);
     solver.init();
     solver.verbose(true);
     solver.to_device();
