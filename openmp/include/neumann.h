@@ -129,7 +129,7 @@ namespace Poisson{
 
     template<class T>
     void Neumann<T>::update(DeviceArray<T> & uarr, Settings & settings){
-        #pragma omp task default(none) shared(uarr,settings) depend(inout:uarr)
+        //#pragma omp task default(none) shared(uarr,settings) depend(inout:uarr)
         {
             this->write_to(uarr,settings);
         }

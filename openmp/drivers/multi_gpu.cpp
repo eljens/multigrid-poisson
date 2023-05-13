@@ -24,16 +24,19 @@ int main(int argc, char * argv[]){
     bool is_dirichlet = false;
     uint_t num_devices = omp_get_num_devices();
     Settings settings = parser(argc,argv);
+    settings.miniter = 10;
     PoissonSolver<double_t,Injection,TrilinearInterpolation,Jacobi> solver(num_devices,settings,is_dirichlet);
     solver.init();
     solver.verbose(true);
     solver.to_device();
 
-    solver.solve("vcycle",4);
+    solver.solve("vcycle",5);
     cout << "It took " << solver.solve_time() << " seconds to run ";
     cout << solver.solve_iterations() << " Fcycles"<<endl;
 
     solver.to_host();
+
+    double_t maxerr = 0.0;
     
     for (int_t gpuid = 0; gpuid < num_devices; gpuid++){
         if (settings.print_result){
@@ -60,9 +63,27 @@ int main(int argc, char * argv[]){
                 }
             }
         }
-
-        cout << "Maximal error: " << setw(8) << err << endl;
+        maxerr = std::max(maxerr,err);
     }
+
+    cout << "Maximal error: " << setw(8) << maxerr << endl;
+
+    if (settings.write_final_stats){
+        ofstream out(settings.stats_file, ios::app);
+        out << "#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels     threads     devices" << endl;
+        out << setw(12) << solver.solve_time();
+        out << setw(12) << maxerr;
+        out << setw(12) << solver.relative_residual();
+        out << setw(12) << settings.dims[0]*settings.dims[1]*settings.dims[2]*omp_get_num_devices();
+        out << setw(12) << settings.h;
+        out << setw(12) << solver.solve_iterations();
+        out << setw(12) << settings.lengthx;
+        out << setw(12) << settings.levels;
+        out << setw(12) << omp_get_max_threads();
+        out << setw(12) << omp_get_num_devices();
+        out << endl;
+    }
+
 
     return EXIT_SUCCESS;
 }

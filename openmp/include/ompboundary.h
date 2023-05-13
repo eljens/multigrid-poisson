@@ -17,7 +17,7 @@ namespace Poisson{
 
             void write_to(DeviceArray<T> & uarr, Settings & settings);
 
-            void fill_send_buffer(DeviceArray<T> & uarr, Settings & settings);
+            void fill_send_buffer(DeviceArray<T> & varr,const DeviceArray<T> & farr, Settings & settings,const T omega);
 
             void update(DeviceArray<T> & uarr, Settings & settings);
 
@@ -81,6 +81,7 @@ namespace Poisson{
         const uint_t (&_shape)[3] = this->arr.shape;
         const uint_t (&_stride)[3] = this->arr.stride;
         const Halo & _halo = this->arr.halo;
+
         #pragma omp target device(this->arr.device) is_device_ptr(udev,gdev)
         #pragma omp teams distribute parallel for collapse(3) SCHEDULE
         for(int_t i = 0;i<_shape[0];i++){
@@ -102,19 +103,19 @@ namespace Poisson{
     };
 
     template<class T>
-    void OMPBoundary<T>::fill_send_buffer(DeviceArray<T> & uarr, Settings & settings){
+    void OMPBoundary<T>::fill_send_buffer(DeviceArray<T> & varr,const DeviceArray<T> & farr, Settings & settings,const T omega){
         int_t offx = 0;
         int_t offy = 0;
         int_t offz = 0;
         switch (this->location){
             case TOP:
-                offz = uarr.shape[2]-2;
+                offz = varr.shape[2]-2;
                 break;
             case NORTH:
-                offy = uarr.shape[1]-2;
+                offy = varr.shape[1]-2;
                 break;
             case EAST:
-                offx = uarr.shape[0]-2;
+                offx = varr.shape[0]-2;
                 break;
             case BOTTOM:
                 offz = 1;
@@ -128,25 +129,39 @@ namespace Poisson{
             default:
                 break;
         }
-        T * udev = uarr.devptr;
+        T * vdev = varr.devptr;
+        T * fdev = farr.devptr;
         T * gdev = this->send_buffer.devptr;
-        const Halo & uhalo = uarr.halo;
-        const uint_t (&ustride)[3] = uarr.stride;
+        const Halo & vhalo = varr.halo;
+        const uint_t (&vstride)[3] = varr.stride;
+        const Halo & fhalo = farr.halo;
+        const uint_t (&fstride)[3] = farr.stride;
         const uint_t (&_shape)[3] = this->send_buffer.shape;
         const uint_t (&_stride)[3] = this->send_buffer.stride;
         const Halo & _halo = this->send_buffer.halo;
-        #pragma omp target device(this->send_buffer.device) is_device_ptr(udev,gdev)
+
+        const T one_omega = 1.0-omega;
+        const T omega_sixth = (omega/6.0);
+        const T hsq = settings.h*settings.h;
+
+        #pragma omp target device(this->send_buffer.device) is_device_ptr(vdev,gdev,fdev)
         #pragma omp teams distribute parallel for collapse(3) SCHEDULE
-        for(int_t i = 0;i<_shape[0];i++){
-            for(int_t j = 0;j<_shape[1];j++){
+        for(int_t ii = 0;ii<_shape[0];ii++){
+            for(int_t jj = 0;jj<_shape[1];jj++){
 #ifdef BLOCK_SIZE
                 for(int_t k_block = 0;k_block<_shape[2];k_block+=BLOCK_SIZE){
                     #pragma omp simd
-                    for(int_t k = k_block;k<MIN(k_block+BLOCK_SIZE,_shape[2]);k++){
+                    for(int_t kk = k_block;kk<MIN(k_block+BLOCK_SIZE,_shape[2]);kk++){
 #else
-                for(int_t k = 0;k<_shape[2];k++){
-#endif
-                        gdev[idx(i,j,k,_halo,_stride)] = udev[idx(i+offx,j+offy,k+offz,uhalo,ustride)];
+                for(int_t kk = 1;kk<_shape[2]-1;kk++){
+#endif                  
+                        int_t i = ii + offx;
+                        int_t j = jj + offy;
+                        int_t k = kk + offz;
+                        gdev[idx(ii,jj,kk,_halo,_stride)] = one_omega*vdev[idx(i,j,k,vhalo,vstride)];
+                        gdev[idx(ii,jj,kk,_halo,_stride)] += omega_sixth*(vdev[idx((i-1),j,k,vhalo,vstride)] + vdev[idx((i+1),j,k,vhalo,vstride)]
+                                                    +vdev[idx(i,(j-1),k,vhalo,vstride)] + vdev[idx(i,(j+1),k,vhalo,vstride)]
+                                                    +vdev[idx(i,j,(k-1),vhalo,vstride)] + vdev[idx(i,j,(k+1),vhalo,vstride)] - hsq*fdev[idx(i,j,k,fhalo,fstride)]);
 #ifdef BLOCK_SIZE
                     }
 #endif
@@ -159,11 +174,11 @@ namespace Poisson{
     void OMPBoundary<T>::update(DeviceArray<T> & uarr, Settings & settings){
         //cout << "Device is " << this->arr.device << endl;
         OMPBoundary<T> * omp_neighbor = ((OMPBoundary<T> * )this->neighbor);
-        #pragma omp task default(none) firstprivate(omp_neighbor) depend(in:omp_neighbor->send_buffer) depend(out:this->arr)
+        //#pragma omp task default(none) firstprivate(omp_neighbor) depend(in:omp_neighbor->send_buffer) depend(out:this->arr)
         {
             omp_neighbor->send_buffer.device_to_device(this->arr);
         }
-        #pragma omp task default(none) shared(uarr,settings) depend(in:this->arr) depend(in:uarr)
+        //#pragma omp task default(none) shared(uarr,settings) depend(in:this->arr) depend(in:uarr)
         {
             this->write_to(uarr,settings);
         }

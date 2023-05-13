@@ -51,24 +51,24 @@ namespace Poisson{
         const int_t zmin = 1-domain.halo.bottom;
         const int_t zmax = u.shape[2]-1+domain.halo.top;
 
-        #pragma omp task default(none) shared(domain,omega) firstprivate(xmin,xmax,ymin,ymax,zmin,zmax) depend(in:v) depend(out:u)
+        //#pragma omp task default(none) shared(domain,omega) firstprivate(xmin,xmax,ymin,ymax,zmin,zmax) depend(in:v) depend(out:u)
         {
             this->relaxation_kernel(domain,omega,xmin,xmax,ymin,ymax,zmin,zmax);
         }
 
         if (domain.east->is_internal_boundary()){
             OMPBoundary<T> * omp_east = (OMPBoundary<T> *) domain.east;
-            #pragma omp task default(none) shared(u,domain) firstprivate(omp_east) depend(in:u) depend(out:omp_east->send_buffer)
+            //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_east) depend(in:v) depend(out:omp_east->send_buffer)
             {
-                omp_east->fill_send_buffer(u,domain.settings);
+                omp_east->fill_send_buffer(v,*domain.f,domain.settings,omega);
             }
         }
 
         if (domain.west->is_internal_boundary()){
             OMPBoundary<T> * omp_west = (OMPBoundary<T> *) domain.west;
-            #pragma omp task default(none) shared(u,domain) firstprivate(omp_west) depend(in:u) depend(out:omp_west->send_buffer)
+            //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_west) depend(in:v) depend(out:omp_west->send_buffer)
             {
-                omp_west->fill_send_buffer(u,domain.settings);
+                omp_west->fill_send_buffer(v,*domain.f,domain.settings,omega);
             }
         }
 
