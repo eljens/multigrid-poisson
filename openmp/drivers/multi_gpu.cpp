@@ -58,9 +58,10 @@ int main(int argc, char * argv[]){
             for (int_t j = 0;j<u.shape[1];j++){
                 for (int_t k = 0;k<u.shape[2];k++){
                     double_t u_true = 
-                        Poisson::ufun(settings.origin[0]+settings.lengthx*gpuid+((double_t) i)*settings.h,
-                        settings.origin[1]+((double_t) j)*settings.h,
-                        settings.origin[2]+((double_t) k)*settings.h);
+                        Poisson::ufun(
+                        settings.origin[0]+((double_t) i)*settings.h/*+gpuid*(settings.dims[0]-1)*settings.h*/,
+                        settings.origin[1]+((double_t) j)*settings.h+gpuid*(settings.dims[1]-1)*settings.h,
+                        settings.origin[2]+((double_t) k)*settings.h/*+gpuid*(settings.dims[2]-1)*settings.h*/);
                     double tmp = abs(u.at[u.idx(i,j,k)]-u_true);
                     err = std::max(err,tmp);
                 }

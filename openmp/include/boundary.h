@@ -13,6 +13,13 @@ namespace Poisson{
 
     typedef enum {DIRICHLET,NEUMANN} Boundary_t;
 
+    bool requires_halo(Boundary_t bound,int idx,int num_devices){
+        if ((idx < num_devices -1) || (idx > 0)) {
+            return true;
+        }
+        return bound != DIRICHLET;
+    }
+
     typedef struct BoundaryCondition{
         Boundary_t north;
         Boundary_t south;
