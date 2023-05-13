@@ -33,8 +33,26 @@ int main(int argc, char * argv[]){
     BC.south = NEUMANN;
     BC.top = DIRICHLET;
     BC.bottom = DIRICHLET;
+    int_t dev_shape[3] = {(int_t) num_devices,1,1};
+    if (num_devices == 8){
+        dev_shape[0] = 2;
+        dev_shape[1] = 2;
+        dev_shape[2] = 2;
+    }
+    if (num_devices == 6){
+        dev_shape[0] = 3;
+        dev_shape[1] = 2;
+        dev_shape[2] = 1;
+    }
+    if (num_devices == 4){
+        dev_shape[0] = 1;
+        dev_shape[1] = 2;
+        dev_shape[2] = 2;
+    }
 
-    PoissonSolver<double_t,Injection,TrilinearInterpolation,Jacobi> solver(num_devices,settings,BC);
+    cout << "MG running on " << omp_get_max_threads() << " threads and " << num_devices << " devices" << endl;
+
+    PoissonSolver<double_t,Injection,TrilinearInterpolation,Jacobi> solver(dev_shape,settings,BC);
     solver.init();
     solver.verbose(true);
     solver.to_device();
@@ -46,34 +64,39 @@ int main(int argc, char * argv[]){
     solver.to_host();
 
     double_t maxerr = 0.0;
-    
-    for (int_t gpuid = 0; gpuid < num_devices; gpuid++){
-        if (settings.print_result){
-            solver.save_all(gpuid,
-                "results/u_"+std::to_string(gpuid)+".vtk",
-                "results/f_"+std::to_string(gpuid)+".vtk",
-                "results/r_"+std::to_string(gpuid)+".vtk");
-        }
-
-        const DeviceArray<double_t> & u = solver.get_solution(gpuid);
-
-        double_t err = 0.0;
-
-        #pragma omp parallel for collapse(3) reduction(max:err)
-        for (int_t i = 0;i<u.shape[0];i++){
-            for (int_t j = 0;j<u.shape[1];j++){
-                for (int_t k = 0;k<u.shape[2];k++){
-                    double_t u_true = 
-                        Poisson::ufun(
-                        settings.origin[0]+((double_t) i)*settings.h/*+gpuid*(settings.dims[0]-1)*settings.h*/,
-                        settings.origin[1]+((double_t) j)*settings.h/*+gpuid*(settings.dims[1]-1)*settings.h*/,
-                        settings.origin[2]+((double_t) k)*settings.h+gpuid*(settings.dims[2]-1)*settings.h);
-                    double tmp = abs(u.at[u.idx(i,j,k)]-u_true);
-                    err = std::max(err,tmp);
+    int_t gpuid = 0;
+    for (int_t ii=0;ii<dev_shape[0];ii++){
+        for (int_t jj=0;jj<dev_shape[1];jj++){
+            for (int_t kk=0;kk<dev_shape[2];kk++){
+                if (settings.print_result){
+                    solver.save_all(gpuid,
+                        "results/u_"+std::to_string(gpuid)+".vtk",
+                        "results/f_"+std::to_string(gpuid)+".vtk",
+                        "results/r_"+std::to_string(gpuid)+".vtk");
                 }
+
+                const DeviceArray<double_t> & u = solver.get_solution(gpuid);
+
+                double_t err = 0.0;
+
+                #pragma omp parallel for collapse(3) reduction(max:err)
+                for (int_t i = 0;i<u.shape[0];i++){
+                    for (int_t j = 0;j<u.shape[1];j++){
+                        for (int_t k = 0;k<u.shape[2];k++){
+                            double_t u_true = 
+                                Poisson::ufun(
+                                settings.origin[0]+((double_t) i)*settings.h+ii*(settings.dims[0]-1)*settings.h,
+                                settings.origin[1]+((double_t) j)*settings.h+jj*(settings.dims[1]-1)*settings.h,
+                                settings.origin[2]+((double_t) k)*settings.h+kk*(settings.dims[2]-1)*settings.h);
+                            double tmp = abs(u.at[u.idx(i,j,k)]-u_true);
+                            err = std::max(err,tmp);
+                        }
+                    }
+                }
+                maxerr = std::max(maxerr,err);
+                gpuid++;
             }
         }
-        maxerr = std::max(maxerr,err);
     }
 
     cout << "Maximal error: " << setw(8) << maxerr << endl;

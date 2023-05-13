@@ -40,10 +40,11 @@ namespace Poisson{
             uint_t iter = 0;
             double_t rel_res = 0.0;
             double_t wtime = 0.0;
+            int_t dev_shape[3];
             void alloc();
         public:
-            PoissonSolver(uint_t ndev, Settings & _settings,BoundaryCondition & _BC);
-            PoissonSolver(uint_t ndev, Settings & _settings);
+            PoissonSolver(int_t _dev_shape[3], Settings & _settings,BoundaryCondition & _BC);
+            PoissonSolver(int_t _dev_shape[3], Settings & _settings);
             ~PoissonSolver();
             void init();
             void init_zero();
@@ -64,17 +65,23 @@ namespace Poisson{
     };
 
     template <class T,template<class> class R,template<class> class P,template<class> class S>
-    PoissonSolver<T,R,P,S>::PoissonSolver(uint_t ndev, Settings & _settings, BoundaryCondition & _BC) : 
-        num_devices(ndev), settings(_settings), BC(_BC), grid(_settings,_settings.levels)
+    PoissonSolver<T,R,P,S>::PoissonSolver(int_t _dev_shape[3], Settings & _settings, BoundaryCondition & _BC) : 
+        num_devices(_dev_shape[0]*_dev_shape[1]*_dev_shape[2]), settings(_settings), BC(_BC), grid(_settings,_settings.levels)
     {
+        dev_shape[0] = _dev_shape[0];
+        dev_shape[1] = _dev_shape[1];
+        dev_shape[2] = _dev_shape[2];
         this->alloc();
     }
 
     template <class T,template<class> class R,template<class> class P,template<class> class S>
-    PoissonSolver<T,R,P,S>::PoissonSolver(uint_t ndev, Settings & _settings) : 
-        num_devices(ndev), settings(_settings),
+    PoissonSolver<T,R,P,S>::PoissonSolver(int_t _dev_shape[3], Settings & _settings) : 
+        num_devices(_dev_shape[0]*_dev_shape[1]*_dev_shape[2]), settings(_settings),
         BC({NEUMANN,NEUMANN,NEUMANN,NEUMANN,DIRICHLET,DIRICHLET}), grid(_settings,_settings.levels)
     {
+        dev_shape[0] = _dev_shape[0];
+        dev_shape[1] = _dev_shape[1];
+        dev_shape[2] = _dev_shape[2];
         this->alloc();
     }
 
@@ -94,28 +101,43 @@ namespace Poisson{
     void PoissonSolver<T,R,P,S>::alloc()
     {
         domains = new Domain<T>**[num_devices];
-        for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
-            domains[gpuid] = new Domain<T>*[settings.levels];
-            for (uint_t l = 0;l<settings.levels;l++){
-                grid.domainsettings[l].dev = gpuid;
-                domains[gpuid][l] = new Domain<T>(grid.domainsettings[l],BC,relaxation.requires_duplicate_solution(),gpuid,num_devices);
-                /*// Naive slab decomposition in x dimension 
-                grid.domainsettings[l].origin[0] += grid.domainsettings[l].lengthx;
-                if (gpuid > 0){
-                    domains[gpuid][l]->west->link(domains[gpuid-1][l]->east);
-                    domains[gpuid-1][l]->east->link(domains[gpuid][l]->west);
-                }*/
-                //Naive slab decomposition in y dimension 
-                /*grid.domainsettings[l].origin[1] += (grid.domainsettings[l].dims[1]-1)*grid.domainsettings[l].h;
-                if (gpuid > 0){
-                    domains[gpuid][l]->south->link(domains[gpuid-1][l]->north);
-                    domains[gpuid-1][l]->north->link(domains[gpuid][l]->south);
-                }*/
-                // Naive slab decomposition in z dimension 
-                grid.domainsettings[l].origin[2] += (grid.domainsettings[l].dims[2]-1)*grid.domainsettings[l].h;
-                if (gpuid > 0){
-                    domains[gpuid][l]->bottom->link(domains[gpuid-1][l]->top);
-                    domains[gpuid-1][l]->top->link(domains[gpuid][l]->bottom);
+        int_t gpuid = 0;
+        Domain<T>** domainprts[dev_shape[0]][dev_shape[1]][dev_shape[2]];
+        double_t origin[3] = {grid.domainsettings[0].origin[0],grid.domainsettings[0].origin[1],grid.domainsettings[0].origin[2]};
+        for (int_t i=0;i<dev_shape[0];i++){
+            for (int_t j=0;j<dev_shape[1];j++){
+                for (int_t k=0;k<dev_shape[2];k++){
+                    domains[gpuid] = new Domain<T>*[settings.levels];
+                    domainprts[i][j][k] = domains[gpuid];
+                    for (uint_t l = 0;l<settings.levels;l++){
+                        grid.domainsettings[l].dev = gpuid;
+                        grid.domainsettings[l].origin[0] = origin[0]+i*(grid.domainsettings[l].dims[0]-1)*grid.domainsettings[l].h;
+                        grid.domainsettings[l].origin[1] = origin[1]+j*(grid.domainsettings[l].dims[1]-1)*grid.domainsettings[l].h;
+                        grid.domainsettings[l].origin[2] = origin[2]+k*(grid.domainsettings[l].dims[2]-1)*grid.domainsettings[l].h;
+                        int_t device[3] = {i,j,k};
+                        domains[gpuid][l] = new Domain<T>(grid.domainsettings[l],BC,relaxation.requires_duplicate_solution(),device,dev_shape);
+                    }
+                    gpuid++;
+                }
+            }
+        }
+        for (int_t i=0;i<dev_shape[0];i++){
+            for (int_t j=0;j<dev_shape[1];j++){
+                for (int_t k=0;k<dev_shape[2];k++){
+                    for (uint_t l = 0;l<settings.levels;l++){
+                        if (i > 0){
+                            domainprts[i][j][k][l]->west->link(domainprts[i-1][j][k][l]->east);
+                            domainprts[i-1][j][k][l]->east->link(domainprts[i][j][k][l]->west);
+                        }
+                        if (j > 0){
+                            domainprts[i][j][k][l]->south->link(domainprts[i][j-1][k][l]->north);
+                            domainprts[i][j-1][k][l]->north->link(domainprts[i][j][k][l]->south);
+                        }
+                        if (k > 0){
+                            domainprts[i][j][k][l]->bottom->link(domainprts[i][j][k-1][l]->top);
+                            domainprts[i][j][k-1][l]->top->link(domainprts[i][j][k][l]->bottom);
+                        }
+                    }
                 }
             }
         }

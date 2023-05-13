@@ -74,7 +74,7 @@ namespace Poisson{
 
 			}
 
-			Domain(Settings & _settings,BoundaryCondition & BC,bool requires_duplicate,int_t device=0, int_t num_devices=1);
+			Domain(Settings & _settings,BoundaryCondition & BC,bool requires_duplicate,int_t device[3], int_t device_shape[3]);
 
 			~Domain();
 
@@ -98,8 +98,14 @@ namespace Poisson{
 	};
 
 	template<class T>
-	Domain<T>::Domain(Settings & _settings,BoundaryCondition & BC,bool duplicate,int_t device, int_t num_devices) : 
-		halo(BC.east!=DIRICHLET,BC.west!=DIRICHLET,BC.north!=DIRICHLET,BC.south!=DIRICHLET,device < num_devices-1,device > 0),
+	Domain<T>::Domain(Settings & _settings,BoundaryCondition & BC,bool duplicate,int_t dev[3], int_t dev_shape[3]) : 
+		halo(
+			BC.east!=DIRICHLET || dev[0] < dev_shape[0]-1,
+			BC.west!=DIRICHLET  || dev[0] > 0,
+			BC.north!=DIRICHLET || dev[1] < dev_shape[1]-1,
+			BC.south!=DIRICHLET  || dev[1] > 0,
+			BC.top!=DIRICHLET || dev[2] < dev_shape[2]-1,
+			BC.bottom!=DIRICHLET || dev[2] > 0),
 		is_initialized(true),requires_duplicate(duplicate), settings(_settings)
 	{
 		//cout << "Created domain with settings " << endl;
@@ -114,7 +120,9 @@ namespace Poisson{
 		this->f = new DeviceArray<T>(settings,halo);
 		this->r = new DeviceArray<T>(settings,halo);
 
-		if (device<num_devices-1){
+		//cout << "Making new domain on device " << dev[0] << "," << dev[1] << "," << dev[2] << endl;
+
+		if (dev[2]<dev_shape[2]-1){
 			this->top = new OMPBoundary<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
 		}
 		else {
@@ -125,7 +133,7 @@ namespace Poisson{
 				this->top = new Neumann<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
 			}
 		}
-		if (device > 0){
+		if (dev[2] > 0){
 			this->bottom = new OMPBoundary<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
 		}
 		else {
@@ -136,7 +144,7 @@ namespace Poisson{
 				this->bottom = new Dirichlet<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
 			}
 		}
-		if (false && (device<num_devices-1)){
+		if (dev[0]<dev_shape[0]-1){
 			this->east = new OMPBoundary<T>(settings.dev,EAST,1,settings.dims[1],settings.dims[2]);
 		}
 		else {
@@ -147,7 +155,7 @@ namespace Poisson{
 				this->east = new Neumann<T>(settings.dev,EAST,1,settings.dims[1],settings.dims[2]);
 			}
 		}
-		if (false && (device > 0)){
+		if (dev[0] > 0){
 			this->west = new OMPBoundary<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
 		}
 		else {
@@ -158,7 +166,7 @@ namespace Poisson{
 				this->west = new Neumann<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
 			}
 		}
-		if (false && (device < num_devices-1)){
+		if (dev[1] < dev_shape[1]-1){
 			this->north = new OMPBoundary<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
 		}
 		else {
@@ -169,7 +177,7 @@ namespace Poisson{
 				this->north = new Neumann<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
 			}
 		}
-		if (false && (device > 0)){
+		if (dev[1] > 0){
 			this->south = new OMPBoundary<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);
 		}
 		else {
