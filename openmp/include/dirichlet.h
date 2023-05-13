@@ -95,6 +95,7 @@ namespace Poisson{
     template<class T>
     void Dirichlet<T>::update(DeviceArray<T> & uarr, Settings & settings){
         // The Dirichlet condition only needs to be computed once
+        //this->write_to(uarr,settings);
     }
 
     template<class T>

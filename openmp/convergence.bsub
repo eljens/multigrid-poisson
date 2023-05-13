@@ -17,7 +17,7 @@ export OMP_WAIT_POLICY=ACTIVE
 export OMP_TARGET_OFFLOAD=MANDATORY
 echo $SLURM_JOB_CPUS_PER_NODE
 
-export CUDA_VISIBLE_DEVICES=0,1,2,3 #,1 #2,3#,4,5,6,7
+export CUDA_VISIBLE_DEVICES=0,1 #,2,3 #,1 #2,3#,4,5,6,7
 
 
 for PROB in 1 2 3;
@@ -28,9 +28,9 @@ do
 	rm -rf $FILENAME
 
 	LEVELS=2
-	for N in 9 17 33 65 129 257 513 1025;
+	for N in 9 17 33 65 129 257 513;# 1025;
 	do	
- 		./bin/multi_gpu -x $N -y $N -z $N -maxiter 40 -levels $LEVELS -stats $FILENAME -length 0.125 -tol 1e-8
+ 		./bin/multi_gpu -x $N -y $N -z $((($N/2)+1)) -maxiter 40 -levels $LEVELS -stats $FILENAME -length 0.125 -tol 1e-8
 		LEVELS=$(($LEVELS + 1))
 	done
 done

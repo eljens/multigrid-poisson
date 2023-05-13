@@ -23,6 +23,7 @@ namespace Poisson{
                 constexpr T default_omega();
                 constexpr bool requires_duplicate_solution();
                 void relaxation_kernel(Domain<T>& domain,T omega,const int_t xmin,const int_t xmax,const int_t ymin,const int_t ymax,const int_t zmin,const int_t zmax);
+                void fill_send_buffer(Domain<T>& domain, const T omega, Location_t loc);
     };
 
     template <class T>
@@ -65,53 +66,12 @@ namespace Poisson{
             this->relaxation_kernel(domain,omega,xmin,xmax,ymin,ymax,zmin,zmax);
         }
 
-        if (domain.east->is_internal_boundary()){
-            OMPBoundary<T> * omp_east = (OMPBoundary<T> *) domain.east;
-            //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_east) depend(in:v) depend(out:omp_east->send_buffer)
-            {
-                omp_east->fill_send_buffer(v,*domain.f,domain.settings,domain,omega);
-            }
-        }
-
-        if (domain.west->is_internal_boundary()){
-            OMPBoundary<T> * omp_west = (OMPBoundary<T> *) domain.west;
-            //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_west) depend(in:v) depend(out:omp_west->send_buffer)
-            {
-                omp_west->fill_send_buffer(v,*domain.f,domain.settings,domain,omega);
-            }
-        }
-
-        if (domain.top->is_internal_boundary()){
-            OMPBoundary<T> * omp_top = (OMPBoundary<T> *) domain.top;
-            //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_east) depend(in:v) depend(out:omp_east->send_buffer)
-            {
-                omp_top->fill_send_buffer(v,*domain.f,domain.settings,domain,omega);
-            }
-        }
-
-        if (domain.bottom->is_internal_boundary()){
-            OMPBoundary<T> * omp_bottom = (OMPBoundary<T> *) domain.bottom;
-            //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_west) depend(in:v) depend(out:omp_west->send_buffer)
-            {
-                omp_bottom->fill_send_buffer(v,*domain.f,domain.settings,domain,omega);
-            }
-        }
-        
-        if (domain.north->is_internal_boundary()){
-            OMPBoundary<T> * omp_north = (OMPBoundary<T> *) domain.north;
-            //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_east) depend(in:v) depend(out:omp_east->send_buffer)
-            {
-                omp_north->fill_send_buffer(v,*domain.f,domain.settings,domain,omega);
-            }
-        }
-
-        if (domain.south->is_internal_boundary()){
-            OMPBoundary<T> * omp_south = (OMPBoundary<T> *) domain.south;
-            //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_west) depend(in:v) depend(out:omp_west->send_buffer)
-            {
-                omp_south->fill_send_buffer(v,*domain.f,domain.settings,domain,omega);
-            }
-        }
+        fill_send_buffer(domain,omega,NORTH);
+        fill_send_buffer(domain,omega,SOUTH);
+        fill_send_buffer(domain,omega,EAST);
+        fill_send_buffer(domain,omega,WEST);
+        fill_send_buffer(domain,omega,TOP);
+        fill_send_buffer(domain,omega,BOTTOM);
 
         //domain.swap_u();
     }
@@ -168,6 +128,39 @@ namespace Poisson{
 #endif
                     }
                 }
+            }
+        }
+    }
+
+    template <class T>
+    void Jacobi<T>::fill_send_buffer(Domain<T>& domain, const T omega, Location_t loc)
+    {
+        Boundary<T> * bound;
+        switch(loc){
+            case NORTH:
+                bound = domain.north;
+                break;
+            case SOUTH:
+                bound = domain.south;
+                break;
+            case EAST:
+                bound = domain.east;
+                break;
+            case WEST:
+                bound = domain.west;
+                break;
+            case TOP:
+                bound = domain.top;
+                break;
+            case BOTTOM:
+                bound = domain.bottom;
+                break;
+        }
+        if (bound->is_internal_boundary()){
+            OMPBoundary<T> * omp_bound = (OMPBoundary<T> *) bound;
+            //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_west) depend(in:v) depend(out:omp_west->send_buffer)
+            {
+                omp_bound->fill_send_buffer(*domain.uprev,*domain.f,domain.settings,domain,omega);
             }
         }
     }

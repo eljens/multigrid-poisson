@@ -26,14 +26,20 @@ int main(int argc, char * argv[]){
     Settings settings = parser(argc,argv);
 
     // Defining problem
-    BoundaryCondition BC = {DIRICHLET,DIRICHLET,DIRICHLET,DIRICHLET,DIRICHLET,DIRICHLET};
+    BoundaryCondition BC;
+    BC.east = NEUMANN;
+    BC.west = NEUMANN;
+    BC.north = NEUMANN;
+    BC.south = NEUMANN;
+    BC.top = DIRICHLET;
+    BC.bottom = DIRICHLET;
 
     PoissonSolver<double_t,Injection,TrilinearInterpolation,Jacobi> solver(num_devices,settings,BC);
     solver.init();
     solver.verbose(true);
     solver.to_device();
 
-    solver.solve("vcycle",5);
+    solver.solve("vcycle",6);
     cout << "It took " << solver.solve_time() << " seconds to run ";
     cout << solver.solve_iterations() << " Fcycles"<<endl;
 
