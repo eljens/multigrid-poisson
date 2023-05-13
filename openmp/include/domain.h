@@ -99,7 +99,8 @@ namespace Poisson{
 
 	template<class T>
 	Domain<T>::Domain(Settings & _settings,BoundaryCondition & BC,bool duplicate,int_t device, int_t num_devices) : 
-		halo(1,1,1,1,0,0),is_initialized(true),requires_duplicate(duplicate), settings(_settings)
+		halo(BC.east!=DIRICHLET,BC.west!=DIRICHLET,BC.north!=DIRICHLET,BC.south!=DIRICHLET,BC.top!=DIRICHLET,BC.bottom!=DIRICHLET),
+		is_initialized(true),requires_duplicate(duplicate), settings(_settings)
 	{
 		//cout << "Created domain with settings " << endl;
 		//cout << settings;

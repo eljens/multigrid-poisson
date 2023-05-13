@@ -44,12 +44,21 @@ namespace Poisson{
         domain.bottom->update(v,domain.settings);
 
         // Jacobi iteration 
-        const int_t xmin = 1-domain.halo.west;
+        /*const int_t xmin = 1-domain.halo.west;
         const int_t xmax = u.shape[0]-1+domain.halo.east;
         const int_t ymin = 1-domain.halo.south;
         const int_t ymax = u.shape[1]-1+domain.halo.north;
         const int_t zmin = 1-domain.halo.bottom;
-        const int_t zmax = u.shape[2]-1+domain.halo.top;
+        const int_t zmax = u.shape[2]-1+domain.halo.top;*/
+
+        const int_t xmin = domain.west->is_non_eliminated();
+        const int_t xmax = u.shape[0]-domain.east->is_non_eliminated();
+        const int_t ymin = domain.south->is_non_eliminated();
+        const int_t ymax = u.shape[1]-domain.north->is_non_eliminated();
+        const int_t zmin = domain.bottom->is_non_eliminated();
+        const int_t zmax = u.shape[2]-domain.top->is_non_eliminated();
+
+        //cout << "Looping over range ("<<xmin<<"-"<<xmax<<","<<ymin<<"-"<<ymax<<","<<zmin<<"-"<<zmax<<")" << endl;
 
         //#pragma omp task default(none) shared(domain,omega) firstprivate(xmin,xmax,ymin,ymax,zmin,zmax) depend(in:v) depend(out:u)
         {

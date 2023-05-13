@@ -127,7 +127,7 @@ namespace Poisson{
 
     template<class T>
     bool Dirichlet<T>::is_non_eliminated(){
-        return false;
+        return true;
     };
 }
 #endif

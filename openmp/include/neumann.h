@@ -62,9 +62,9 @@ namespace Poisson{
 
     template<class T>
     void Neumann<T>::write_to(DeviceArray<T> & uarr, Settings & settings){
-        int_t offx = uarr.halo.west;
-        int_t offy = uarr.halo.south;
-        int_t offz = uarr.halo.bottom;
+        int_t offx = 0;
+        int_t offy = 0;
+        int_t offz = 0;
 
         int_t ii = 0;
         int_t jj = 0;
@@ -74,29 +74,29 @@ namespace Poisson{
 
         switch (this->location){
             case EAST:
-                offx = uarr.shape[0]-1+uarr.halo.east+uarr.halo.west;
+                offx = uarr.shape[0];
                 ii = -2;
                 break;
             case WEST:
-                offx = 0;
+                offx = -1;
                 ii = 2;
                 sign = -1.0;
                 break;
             case NORTH:
-                offy = uarr.shape[1]-1+uarr.halo.north+uarr.halo.south;
+                offy = uarr.shape[1];
                 jj = -2;
                 break;
             case SOUTH:
-                offy=0;
+                offy=-1;
                 sign = -1.0;
                 jj = 2;
                 break;
             case TOP:
-                offz = uarr.shape[2]-1+uarr.halo.top+uarr.halo.bottom;
+                offz = uarr.shape[2];
                 kk = -2;
                 break;
             case BOTTOM:
-                offz = 0;
+                offz = -1;
                 sign = -1.0;
                 kk = 2;
                 break;
@@ -104,6 +104,7 @@ namespace Poisson{
         T * udev = uarr.devptr;
         T * gdev = this->arr.devptr;
         const uint_t (&ustride)[3] = uarr.stride;
+        const Halo & uhalo = uarr.halo;
         const T two_h = 2.0*settings.h;
         const uint_t (&_shape)[3] = this->arr.shape;
         const uint_t (&_stride)[3] = this->arr.stride;
@@ -119,8 +120,8 @@ namespace Poisson{
 #else
                 for(int_t k = 0;k<_shape[2];k++){
 #endif
-                        udev[idx_halo(i+offx,j+offy,k+offz,ustride)] =
-                            sign*two_h*gdev[idx(i,j,k,_halo,_stride)]+udev[idx_halo(i+offx+ii,j+offy+jj,k+offz+kk,ustride)];
+                        udev[idx(i+offx,j+offy,k+offz,uhalo,ustride)] =
+                            sign*two_h*gdev[idx(i,j,k,_halo,_stride)]+udev[idx(i+offx+ii,j+offy+jj,k+offz+kk,uhalo,ustride)];
 #ifdef BLOCK_SIZE
                     }
 #endif

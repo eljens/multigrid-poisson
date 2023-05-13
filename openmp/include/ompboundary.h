@@ -53,33 +53,34 @@ namespace Poisson{
 
     template<class T>
     void OMPBoundary<T>::write_to(DeviceArray<T> & uarr, Settings & settings){
-        int_t offx = uarr.halo.west;
-        int_t offy = uarr.halo.south;
-        int_t offz = uarr.halo.bottom;
+        int_t offx = 0;
+        int_t offy = 0;
+        int_t offz = 0;
 
         switch (this->location){
             case EAST:
-                offx = uarr.shape[0]-1+uarr.halo.east+uarr.halo.west;
+                offx = uarr.shape[0];
                 break;
             case WEST:
-                offx = 0;
+                offx = -1;
                 break;
             case NORTH:
-                offy = uarr.shape[1]-1+uarr.halo.north+uarr.halo.south;
+                offy = uarr.shape[1];
                 break;
             case SOUTH:
-                offy=0;
+                offy = -1;
                 break;
             case TOP:
-                offz = uarr.shape[2]-1+uarr.halo.top+uarr.halo.bottom;
+                offz = uarr.shape[2];
                 break;
             case BOTTOM:
-                offz = 0;
+                offz = -1;
                 break;
         }
         T * udev = uarr.devptr;
         T * gdev = this->arr.devptr;
         const uint_t (&ustride)[3] = uarr.stride;
+        const Halo & uhalo = uarr.halo;
         const uint_t (&_shape)[3] = this->arr.shape;
         const uint_t (&_stride)[3] = this->arr.stride;
         const Halo & _halo = this->arr.halo;
@@ -95,7 +96,7 @@ namespace Poisson{
 #else
                 for(int_t k = 0;k<_shape[2];k++){
 #endif
-                        udev[idx_halo(i+offx,j+offy,k+offz,ustride)] = gdev[idx(i,j,k,_halo,_stride)];
+                        udev[idx(i+offx,j+offy,k+offz,uhalo,ustride)] = gdev[idx(i,j,k,_halo,_stride)];
 #ifdef BLOCK_SIZE
                     }
 #endif
