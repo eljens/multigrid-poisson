@@ -99,7 +99,7 @@ namespace Poisson{
 
 	template<class T>
 	Domain<T>::Domain(Settings & _settings,BoundaryCondition & BC,bool duplicate,int_t device, int_t num_devices) : 
-		halo(BC.east!=DIRICHLET,BC.west!=DIRICHLET,BC.north!=DIRICHLET,BC.south!=DIRICHLET,0,0/*requires_halo(BC.top,device,num_devices),requires_halo(BC.bottom,device,num_devices)*/),
+		halo(BC.east!=DIRICHLET,BC.west!=DIRICHLET,BC.north!=DIRICHLET,BC.south!=DIRICHLET,device < num_devices-1,device > 0),
 		is_initialized(true),requires_duplicate(duplicate), settings(_settings)
 	{
 		//cout << "Created domain with settings " << endl;
@@ -114,7 +114,7 @@ namespace Poisson{
 		this->f = new DeviceArray<T>(settings,halo);
 		this->r = new DeviceArray<T>(settings,halo);
 
-		if (false && (device<num_devices-1)){
+		if (device<num_devices-1){
 			this->top = new OMPBoundary<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
 		}
 		else {
@@ -125,7 +125,7 @@ namespace Poisson{
 				this->top = new Neumann<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
 			}
 		}
-		if (false && (device > 0)){
+		if (device > 0){
 			this->bottom = new OMPBoundary<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
 		}
 		else {
@@ -158,7 +158,7 @@ namespace Poisson{
 				this->west = new Neumann<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
 			}
 		}
-		if (device < num_devices-1){
+		if (false && (device < num_devices-1)){
 			this->north = new OMPBoundary<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
 		}
 		else {
@@ -169,7 +169,7 @@ namespace Poisson{
 				this->north = new Neumann<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
 			}
 		}
-		if (device > 0){
+		if (false && (device > 0)){
 			this->south = new OMPBoundary<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);
 		}
 		else {

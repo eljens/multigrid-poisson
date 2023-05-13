@@ -35,12 +35,12 @@ namespace Poisson{
 
         // Extracting device pointers
 
-        const int xmin = 1-domain.halo.west;
-        const int xmax = r.shape[0]-1+domain.halo.east;
-        const int ymin = 1-domain.halo.south;
-        const int ymax = r.shape[1]-1+domain.halo.north;
-        const int zmin = 1-domain.halo.bottom;
-        const int zmax = r.shape[2]-1+domain.halo.top;
+        const int_t xmin = domain.west->is_non_eliminated();
+        const int_t xmax = u.shape[0]-domain.east->is_non_eliminated();
+        const int_t ymin = domain.south->is_non_eliminated();
+        const int_t ymax = u.shape[1]-domain.north->is_non_eliminated();
+        const int_t zmin = domain.bottom->is_non_eliminated();
+        const int_t zmax = u.shape[2]-domain.top->is_non_eliminated();
 
         //#pragma omp task default(none) shared(u,r,f) firstprivate(hsq,xmin,xmax,ymin,ymax,zmin,zmax) depend(in:u) depend(out:r)
         {

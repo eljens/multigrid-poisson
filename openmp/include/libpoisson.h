@@ -106,17 +106,17 @@ namespace Poisson{
                     domains[gpuid-1][l]->east->link(domains[gpuid][l]->west);
                 }*/
                 //Naive slab decomposition in y dimension 
-                grid.domainsettings[l].origin[1] += (grid.domainsettings[l].dims[1]-1)*grid.domainsettings[l].h;
+                /*grid.domainsettings[l].origin[1] += (grid.domainsettings[l].dims[1]-1)*grid.domainsettings[l].h;
                 if (gpuid > 0){
                     domains[gpuid][l]->south->link(domains[gpuid-1][l]->north);
                     domains[gpuid-1][l]->north->link(domains[gpuid][l]->south);
-                }
-                /*// Naive slab decomposition in z dimension 
+                }*/
+                // Naive slab decomposition in z dimension 
                 grid.domainsettings[l].origin[2] += (grid.domainsettings[l].dims[2]-1)*grid.domainsettings[l].h;
                 if (gpuid > 0){
                     domains[gpuid][l]->bottom->link(domains[gpuid-1][l]->top);
                     domains[gpuid-1][l]->top->link(domains[gpuid][l]->bottom);
-                }*/
+                }
             }
         }
     }

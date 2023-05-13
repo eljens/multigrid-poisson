@@ -3,6 +3,9 @@
 
 #include "boundary.h"
 namespace Poisson{
+	template <typename T>
+	class Domain;
+
     template <class T>
     class OMPBoundary :
         public Boundary<T> {
@@ -17,7 +20,7 @@ namespace Poisson{
 
             void write_to(DeviceArray<T> & uarr, Settings & settings);
 
-            void fill_send_buffer(DeviceArray<T> & varr,const DeviceArray<T> & farr, Settings & settings,const T omega);
+            void fill_send_buffer(DeviceArray<T> & varr,const DeviceArray<T> & farr, Settings & settings,Domain<T> & domain, const T omega);
 
             void update(DeviceArray<T> & uarr, Settings & settings);
 
@@ -106,7 +109,7 @@ namespace Poisson{
     };
 
     template<class T>
-    void OMPBoundary<T>::fill_send_buffer(DeviceArray<T> & varr,const DeviceArray<T> & farr, Settings & settings,const T omega){
+    void OMPBoundary<T>::fill_send_buffer(DeviceArray<T> & varr,const DeviceArray<T> & farr, Settings & settings,Domain<T> & domain, const T omega){
         int_t offx = 0;
         int_t offy = 0;
         int_t offz = 0;
@@ -147,16 +150,37 @@ namespace Poisson{
         const T omega_sixth = (omega/6.0);
         const T hsq = settings.h*settings.h;
 
+        int_t xmin = 0;
+        int_t xmax = _shape[0];
+        if ((this->location != EAST) && (this->location != WEST)){
+            xmin +=domain.west->is_non_eliminated();
+            xmax -=domain.east->is_non_eliminated();
+        }
+
+        int_t ymin = 0;
+        int_t ymax = _shape[1];
+        if ((this->location != NORTH) && (this->location != SOUTH)){
+            ymin +=domain.south->is_non_eliminated();
+            ymax -=domain.north->is_non_eliminated();
+        }
+
+        int_t zmin = 0;
+        int_t zmax = _shape[2];
+        if ((this->location != TOP) && (this->location != BOTTOM)){
+            zmin +=domain.bottom->is_non_eliminated();
+            zmax -=domain.top->is_non_eliminated();
+        }
+
         #pragma omp target device(this->send_buffer.device) is_device_ptr(vdev,gdev,fdev)
         #pragma omp teams distribute parallel for collapse(3) SCHEDULE
-        for(int_t ii = 0;ii<_shape[0];ii++){
-            for(int_t jj = 0;jj<_shape[1];jj++){
+        for(int_t ii = xmin;ii<xmax;ii++){
+            for(int_t jj = ymin;jj<ymax;jj++){
 #ifdef BLOCK_SIZE
-                for(int_t k_block = 0;k_block<_shape[2];k_block+=BLOCK_SIZE){
+                for(int_t k_block = zmin;k_block<zmax;k_block+=BLOCK_SIZE){
                     #pragma omp simd
                     for(int_t kk = k_block;kk<MIN(k_block+BLOCK_SIZE,_shape[2]);kk++){
 #else
-                for(int_t kk = 1;kk<_shape[2]-1;kk++){
+                for(int_t kk = zmin;kk<zmax;kk++){
 #endif                  
                         int_t i = ii + offx;
                         int_t j = jj + offy;

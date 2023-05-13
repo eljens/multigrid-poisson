@@ -26,7 +26,7 @@ int main(int argc, char * argv[]){
     Settings settings = parser(argc,argv);
 
     // Defining problem
-    BoundaryCondition BC = {NEUMANN,NEUMANN,NEUMANN,NEUMANN,DIRICHLET,DIRICHLET};
+    BoundaryCondition BC = {DIRICHLET,DIRICHLET,DIRICHLET,DIRICHLET,DIRICHLET,DIRICHLET};
 
     PoissonSolver<double_t,Injection,TrilinearInterpolation,Jacobi> solver(num_devices,settings,BC);
     solver.init();
@@ -60,8 +60,8 @@ int main(int argc, char * argv[]){
                     double_t u_true = 
                         Poisson::ufun(
                         settings.origin[0]+((double_t) i)*settings.h/*+gpuid*(settings.dims[0]-1)*settings.h*/,
-                        settings.origin[1]+((double_t) j)*settings.h+gpuid*(settings.dims[1]-1)*settings.h,
-                        settings.origin[2]+((double_t) k)*settings.h/*+gpuid*(settings.dims[2]-1)*settings.h*/);
+                        settings.origin[1]+((double_t) j)*settings.h/*+gpuid*(settings.dims[1]-1)*settings.h*/,
+                        settings.origin[2]+((double_t) k)*settings.h+gpuid*(settings.dims[2]-1)*settings.h);
                     double tmp = abs(u.at[u.idx(i,j,k)]-u_true);
                     err = std::max(err,tmp);
                 }

@@ -65,11 +65,11 @@ namespace Poisson{
             this->relaxation_kernel(domain,omega,xmin,xmax,ymin,ymax,zmin,zmax);
         }
 
-        /*if (domain.east->is_internal_boundary()){
+        if (domain.east->is_internal_boundary()){
             OMPBoundary<T> * omp_east = (OMPBoundary<T> *) domain.east;
             //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_east) depend(in:v) depend(out:omp_east->send_buffer)
             {
-                omp_east->fill_send_buffer(v,*domain.f,domain.settings,omega);
+                omp_east->fill_send_buffer(v,*domain.f,domain.settings,domain,omega);
             }
         }
 
@@ -77,15 +77,15 @@ namespace Poisson{
             OMPBoundary<T> * omp_west = (OMPBoundary<T> *) domain.west;
             //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_west) depend(in:v) depend(out:omp_west->send_buffer)
             {
-                omp_west->fill_send_buffer(v,*domain.f,domain.settings,omega);
+                omp_west->fill_send_buffer(v,*domain.f,domain.settings,domain,omega);
             }
-        }*/
+        }
 
-        /*if (domain.top->is_internal_boundary()){
+        if (domain.top->is_internal_boundary()){
             OMPBoundary<T> * omp_top = (OMPBoundary<T> *) domain.top;
             //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_east) depend(in:v) depend(out:omp_east->send_buffer)
             {
-                omp_top->fill_send_buffer(v,*domain.f,domain.settings,omega);
+                omp_top->fill_send_buffer(v,*domain.f,domain.settings,domain,omega);
             }
         }
 
@@ -93,15 +93,15 @@ namespace Poisson{
             OMPBoundary<T> * omp_bottom = (OMPBoundary<T> *) domain.bottom;
             //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_west) depend(in:v) depend(out:omp_west->send_buffer)
             {
-                omp_bottom->fill_send_buffer(v,*domain.f,domain.settings,omega);
+                omp_bottom->fill_send_buffer(v,*domain.f,domain.settings,domain,omega);
             }
-        }*/
+        }
         
         if (domain.north->is_internal_boundary()){
             OMPBoundary<T> * omp_north = (OMPBoundary<T> *) domain.north;
             //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_east) depend(in:v) depend(out:omp_east->send_buffer)
             {
-                omp_north->fill_send_buffer(v,*domain.f,domain.settings,omega);
+                omp_north->fill_send_buffer(v,*domain.f,domain.settings,domain,omega);
             }
         }
 
@@ -109,7 +109,7 @@ namespace Poisson{
             OMPBoundary<T> * omp_south = (OMPBoundary<T> *) domain.south;
             //#pragma omp task default(none) shared(v,domain,omega) firstprivate(omp_west) depend(in:v) depend(out:omp_west->send_buffer)
             {
-                omp_south->fill_send_buffer(v,*domain.f,domain.settings,omega);
+                omp_south->fill_send_buffer(v,*domain.f,domain.settings,domain,omega);
             }
         }
 
