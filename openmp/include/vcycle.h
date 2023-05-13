@@ -24,92 +24,40 @@ namespace Poisson{
         
         // Pre smooting
         
-        #pragma omp parallel
-        {
-            #pragma omp single nowait
-            {
-                for(int_t i=0;i<nsmooth;i++){
-                    #pragma omp taskgroup
-                    {
-                        for (int_t gpuid = 0; gpuid < num_devices;gpuid++){
-                            relaxation.relax(*domains[gpuid][level],omega);
-                        }
-                    }
-                }
-            }
-        }
+        relaxation.relax(domains,omega,nsmooth,level,num_devices);
 
         if (level >= levels-1){
             return;
         }
 
         // Compute and restrict the defect
-        #pragma omp parallel
-        #pragma omp single nowait
-        {
-            for (int_t gpuid = 0; gpuid < num_devices;gpuid++){
-                #pragma omp task default(none) shared(domains,level) firstprivate(gpuid) depend(inout:domains[gpuid][level]->r)
-                {
-                    residual<T>(*domains[gpuid][level]);
-                }
-                #pragma omp task default(none) shared(restriction,domains,level) firstprivate(gpuid) depend(in:domains[gpuid][level]->r) depend(out:domains[gpuid][level+1]->f)
-                {
-                    restriction.restrict_to(*(domains[gpuid][level]->r),*(domains[gpuid][level+1]->f));
-                }
-
-                //domains[level+1]->u->init_zero();
-                #pragma omp task
-                domains[gpuid][level+1]->u->init_zero();
-
-                // Restricting boundaries
-                #pragma omp task
-                domains[gpuid][level+1]->north->restrict_to(*(domains[gpuid][level]->u),*(domains[gpuid][level]->north),(*domains[gpuid][level]).settings,restriction);
-                #pragma omp task
-                domains[gpuid][level+1]->south->restrict_to(*(domains[gpuid][level]->u),*(domains[gpuid][level]->south),(*domains[gpuid][level]).settings,restriction);
-                #pragma omp task
-                domains[gpuid][level+1]->east->restrict_to(*(domains[gpuid][level]->u),*(domains[gpuid][level]->east),(*domains[gpuid][level]).settings,restriction);
-                #pragma omp task
-                domains[gpuid][level+1]->west->restrict_to(*(domains[gpuid][level]->u),*(domains[gpuid][level]->west),(*domains[gpuid][level]).settings,restriction);
-                #pragma omp task
-                domains[gpuid][level+1]->top->restrict_to(*(domains[gpuid][level]->u),*(domains[gpuid][level]->top),(*domains[gpuid][level]).settings,restriction);
-                #pragma omp task
-                domains[gpuid][level+1]->bottom->restrict_to(*(domains[gpuid][level]->u),*(domains[gpuid][level]->bottom),(*domains[gpuid][level]).settings,restriction);
-            }
+        #pragma omp parallel for num_threads(num_devices)
+        for (int_t gpuid = 0; gpuid < num_devices;gpuid++){
+            residual<T>(*domains[gpuid][level]);
+            
+            restriction.restrict_to(*(domains[gpuid][level]->r),*(domains[gpuid][level+1]->f));
+            
+            domains[gpuid][level+1]->u->init_zero();
+            
+            domains[gpuid][level+1]->north->restrict_to(*(domains[gpuid][level]->u),*(domains[gpuid][level]->north),(*domains[gpuid][level]).settings,restriction);
+            domains[gpuid][level+1]->south->restrict_to(*(domains[gpuid][level]->u),*(domains[gpuid][level]->south),(*domains[gpuid][level]).settings,restriction);
+            domains[gpuid][level+1]->east->restrict_to(*(domains[gpuid][level]->u),*(domains[gpuid][level]->east),(*domains[gpuid][level]).settings,restriction);
+            domains[gpuid][level+1]->west->restrict_to(*(domains[gpuid][level]->u),*(domains[gpuid][level]->west),(*domains[gpuid][level]).settings,restriction);
+            domains[gpuid][level+1]->top->restrict_to(*(domains[gpuid][level]->u),*(domains[gpuid][level]->top),(*domains[gpuid][level]).settings,restriction);
+            domains[gpuid][level+1]->bottom->restrict_to(*(domains[gpuid][level]->u),*(domains[gpuid][level]->bottom),(*domains[gpuid][level]).settings,restriction);
         }
         // Recursion
         Vcycle<T>(domains,restriction,prolongation,relaxation,omega,level+1,levels,num_devices,nsmooth);
 
         // Interpolate error
-        #pragma omp parallel
-        #pragma omp single nowait
-        {
-            for (int_t gpuid = 0; gpuid < num_devices;gpuid++){
-                #pragma omp task default(none) shared(prolongation,domains,level) firstprivate(gpuid) depend(in:domains[gpuid][level+1]->u) depend(out:domains[gpuid][level]->r)
-                {
-                    prolongation.prolong(*(domains[gpuid][level+1]->u),*(domains[gpuid][level]->r));
-                }
-                #pragma omp task default(none) shared(domains,level) firstprivate(gpuid) depend(in:domains[gpuid][level]->r) depend(out:domains[gpuid][level]->u)
-                {
-                    domains[gpuid][level]->u->add(*(domains[gpuid][level]->r));
-                }
-            }
+        #pragma omp parallel for num_threads(num_devices)
+        for (int_t gpuid = 0; gpuid < num_devices;gpuid++){
+            prolongation.prolong(*(domains[gpuid][level+1]->u),*(domains[gpuid][level]->r));
+            domains[gpuid][level]->u->add(*(domains[gpuid][level]->r));
         }
 
         // Post smooting
-        #pragma omp parallel
-        {
-            #pragma omp single nowait
-            {
-                for(int_t i=0;i<nsmooth;i++){
-                    #pragma omp taskgroup
-                    {
-                        for (int_t gpuid = 0; gpuid < num_devices;gpuid++){
-                            relaxation.relax(*domains[gpuid][level],omega);
-                        }
-                    }
-                }
-            }
-        }
+        relaxation.relax(domains,omega,nsmooth,level,num_devices);
     }
 }
 
