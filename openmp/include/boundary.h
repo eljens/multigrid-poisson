@@ -51,7 +51,7 @@ namespace Poisson{
 
             virtual void write_to(DeviceArray<T> & uarr, Settings & settings) = 0;
 
-            virtual void update(Domain<T> & domain,bool previous = false) = 0;
+            virtual void update(Domain<T> & domain,bool previous = false, bool fetch_neighbor=true) = 0;
 
             virtual void restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                                     Settings & settings, Restriction<T> & restriction) = 0;

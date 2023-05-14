@@ -31,7 +31,7 @@ namespace Poisson{
 	class GaussSeidel;
 
 	template <typename T>
-	void residual(Domain<T>& domain);
+	void residual(Domain<T>& domain,bool fetch_neighbor);
 
 	template <class T>
 	class Domain
@@ -46,7 +46,7 @@ namespace Poisson{
 
 			friend class GaussSeidel<T>;
 
-			friend void residual<T>(Domain<T>& domain);
+			friend void residual<T>(Domain<T>& domain,bool fetch_neighbor);
 
 			void init_f(funptr ffun);
 

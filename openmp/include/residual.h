@@ -15,7 +15,7 @@ namespace Poisson{
     class Domain;
 
     template <class T>
-    void residual(Domain<T>& domain){
+    void residual(Domain<T>& domain,bool fetch_neighbor=true){
         DeviceArray<T>& u = *domain.u;
         DeviceArray<T>& r = *domain.r;
         const DeviceArray<T>& f = *domain.f;
@@ -25,12 +25,12 @@ namespace Poisson{
         // Updating boundaries
         #pragma omp taskgroup
         {
-            domain.east->update(domain,false);
-            domain.west->update(domain,false);
-            domain.north->update(domain,false);
-            domain.south->update(domain,false);
-            domain.top->update(domain,false);
-            domain.bottom->update(domain,false);
+            domain.east->update(domain,false,fetch_neighbor);
+            domain.west->update(domain,false,fetch_neighbor);
+            domain.north->update(domain,false,fetch_neighbor);
+            domain.south->update(domain,false,fetch_neighbor);
+            domain.top->update(domain,false,fetch_neighbor);
+            domain.bottom->update(domain,false,fetch_neighbor);
         }
 
         // Extracting device pointers

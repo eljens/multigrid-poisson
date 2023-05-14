@@ -255,7 +255,7 @@ namespace Poisson{
                         }
                         #pragma omp task depend(out:domains[gpuid][0]->r)
                         {
-                            residual<T>(*domains[gpuid][0]);
+                            residual<T>(*domains[gpuid][0],false);
                         }
 
                         #pragma omp task default(none) shared(domains) firstprivate(gpuid) depend(in:domains[gpuid][0]->r) in_reduction(+:rnorm)

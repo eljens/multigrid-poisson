@@ -15,7 +15,7 @@ namespace Poisson{
 
             void write_to(DeviceArray<T> & uarr, Settings & settings);
 
-            void update(Domain<T> & domain,bool previous);
+            void update(Domain<T> & domain,bool previous,bool fetch_neighbor);
 
             void restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction);
@@ -93,7 +93,7 @@ namespace Poisson{
     };
 
     template<class T>
-    void Dirichlet<T>::update(Domain<T> & domain,bool previous){
+    void Dirichlet<T>::update(Domain<T> & domain,bool previous,bool fetch_neighbor){
         // The Dirichlet condition only needs to be computed once
         //this->write_to(uarr,settings);
     }

@@ -16,7 +16,7 @@ namespace Poisson{
 
             void write_to(DeviceArray<T> & uarr, Settings & settings);
 
-            void update(Domain<T> & domain,bool previous);
+            void update(Domain<T> & domain,bool previous,bool fetch_neighbor);
 
             void restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction);
@@ -131,7 +131,7 @@ namespace Poisson{
     };
 
     template<class T>
-    void Neumann<T>::update(Domain<T> & domain,bool previous){
+    void Neumann<T>::update(Domain<T> & domain,bool previous, bool fetch_neighbor){
         #pragma omp task default(none) shared(domain) firstprivate(previous) depend(in:domain.uprev->at[0],domain.u->at[0]) depend(out:this->arr.at[0])
         {
             if (previous){
