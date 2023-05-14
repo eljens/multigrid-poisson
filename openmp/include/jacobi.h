@@ -44,24 +44,42 @@ namespace Poisson{
                 }
                 // Applying boundary conditions
                 for (int_t gpuid=0;gpuid<num_devices;gpuid++){
-                    Domain<T> & domain = *domains[gpuid][level];
-                    domain.east->update(domain,true);
-                    domain.west->update(domain,true);
-                    domain.north->update(domain,true);
-                    domain.south->update(domain,true);
-                    domain.top->update(domain,true);
-                    domain.bottom->update(domain,true);
+                    domains[gpuid][level]->east->update(*domains[gpuid][level],true);
+                }
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    domains[gpuid][level]->west->update(*domains[gpuid][level],true);
+                }
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    domains[gpuid][level]->north->update(*domains[gpuid][level],true);
+                }
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    domains[gpuid][level]->south->update(*domains[gpuid][level],true);
+                }
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    domains[gpuid][level]->top->update(*domains[gpuid][level],true);
+                }
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    domains[gpuid][level]->bottom->update(*domains[gpuid][level],true);
                 }
 
                 // Computing halo values
                 for (int_t gpuid=0;gpuid<num_devices;gpuid++){
-                    Domain<T> & domain = *domains[gpuid][level];
-                    fill_send_buffer(domain,omega,EAST);
-                    fill_send_buffer(domain,omega,WEST);
-                    fill_send_buffer(domain,omega,NORTH);
-                    fill_send_buffer(domain,omega,SOUTH);
-                    fill_send_buffer(domain,omega,TOP);
-                    fill_send_buffer(domain,omega,BOTTOM);
+                    fill_send_buffer(*domains[gpuid][level],omega,EAST);
+                }
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    fill_send_buffer(*domains[gpuid][level],omega,WEST);
+                }
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    fill_send_buffer(*domains[gpuid][level],omega,NORTH);
+                }
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    fill_send_buffer(*domains[gpuid][level],omega,SOUTH);
+                }
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    fill_send_buffer(*domains[gpuid][level],omega,TOP);
+                }
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    fill_send_buffer(*domains[gpuid][level],omega,BOTTOM);
                 }
                 // Looping over interior points
                 for (int_t gpuid=0;gpuid<num_devices;gpuid++){
