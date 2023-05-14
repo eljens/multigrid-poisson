@@ -24,7 +24,7 @@ using Poisson::BoundaryCondition;
 int main(int argc, char * argv[]){
     uint_t num_devices = omp_get_num_devices();
     Settings settings = parser(argc,argv);
-
+    settings.miniter = 20;
     // Defining problem
     BoundaryCondition BC;
     BC.east = NEUMANN;
