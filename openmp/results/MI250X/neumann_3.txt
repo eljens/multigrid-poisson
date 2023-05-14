@@ -1,0 +1,14 @@
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels     threads     devices
+     3.92308 4.51852e-05   0.0186316        1000     0.03125          16       0.125           2          63           8
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels     threads     devices
+     5.98869 3.14682e-05   0.0128792        5832    0.015625          15       0.125           3          63           8
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels     threads     devices
+     8.30825 1.03677e-05   0.0066531       39304   0.0078125          15       0.125           4          63           8
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels     threads     devices
+     13.2917 2.57037e-06  0.00334472      287496  0.00390625          19       0.125           5          63           8
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels     threads     devices
+     14.6468  1.0662e-06 9.16301e-06     2197000  0.00195312          17       0.125           6          63           8
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels     threads     devices
+     28.4235 1.54982e-07 0.000840044    17173512 0.000976562          28       0.125           7          63           8
+#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels     threads     devices
+     24.2472 8.99486e-07 9.08594e-06   135796744 0.000488281          20       0.125           8          63           8
