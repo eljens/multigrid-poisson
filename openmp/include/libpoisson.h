@@ -280,9 +280,11 @@ namespace Poisson{
         }
         for(iter = 0;iter<settings.maxiter;iter++){
             if (use_vcycle){
+                double_t vctime = omp_get_wtime();
                 for (uint_t gpuid = 0; gpuid < num_devices; gpuid++){
                     Vcycle<T>(this->domains,this->restriction_type,this->prolongation,this->relaxation,omega,0,settings.levels,num_devices,nsmooth);
                 }
+                cout << "Vcycle took " << omp_get_wtime()-vctime << " seconds" << endl;
             }
             else if (use_fcycle){
                 //for (uint_t gpuid = 0; gpuid < num_devices; gpuid++){

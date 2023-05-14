@@ -25,12 +25,12 @@ namespace Poisson{
         // Updating boundaries
         #pragma omp taskgroup
         {
-            domain.east->update(u,domain.settings);
-            domain.west->update(u,domain.settings);
-            domain.north->update(u,domain.settings);
-            domain.south->update(u,domain.settings);
-            domain.top->update(u,domain.settings);
-            domain.bottom->update(u,domain.settings);
+            domain.east->update(domain,false);
+            domain.west->update(domain,false);
+            domain.north->update(domain,false);
+            domain.south->update(domain,false);
+            domain.top->update(domain,false);
+            domain.bottom->update(domain,false);
         }
 
         // Extracting device pointers

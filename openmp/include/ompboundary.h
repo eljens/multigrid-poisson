@@ -22,7 +22,7 @@ namespace Poisson{
 
             void fill_send_buffer(DeviceArray<T> & varr,const DeviceArray<T> & farr, Settings & settings,Domain<T> & domain, const T omega);
 
-            void update(DeviceArray<T> & uarr, Settings & settings);
+            void update(Domain<T> & domain,bool previous);
 
             void restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction);
@@ -198,16 +198,21 @@ namespace Poisson{
     };
 
     template<class T>
-    void OMPBoundary<T>::update(DeviceArray<T> & uarr, Settings & settings){
+    void OMPBoundary<T>::update(Domain<T> & domain,bool previous){
         //cout << "Device is " << this->arr.device << endl;
         OMPBoundary<T> * omp_neighbor = ((OMPBoundary<T> * )this->neighbor);
-        //#pragma omp task default(none) firstprivate(omp_neighbor) depend(in:omp_neighbor->send_buffer) depend(out:this->arr)
+        #pragma omp task default(none) firstprivate(omp_neighbor) depend(in:omp_neighbor->send_buffer.at[0]) depend(out:this->arr.at[0])
         {
             omp_neighbor->send_buffer.device_to_device(this->arr);
         }
-        //#pragma omp task default(none) shared(uarr,settings) depend(in:this->arr) depend(in:uarr)
+        #pragma omp task default(none) shared(domain) firstprivate(previous) depend(in:this->arr.at[0],domain.uprev->at[0],domain.u->at[0]) depend(out:this->arr.at[0])
         {
-            this->write_to(uarr,settings);
+            if (previous){
+                this->write_to(*domain.uprev,domain.settings);
+            }
+            else {
+                this->write_to(*domain.u,domain.settings);
+            }
         }
     }
 

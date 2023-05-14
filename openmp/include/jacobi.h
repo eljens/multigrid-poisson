@@ -28,44 +28,60 @@ namespace Poisson{
 
     template <class T>
     void Jacobi<T>::relax(Domain<T> *** domains,T omega,int_t nsmooth,int_t level,int_t num_devices){
-        for (int_t s = 0;s<nsmooth;s++){
-            #pragma omp parallel for num_threads(num_devices)
-            for (int_t gpuid=0;gpuid<num_devices;gpuid++){
-                Domain<T> & domain = *domains[gpuid][level];
+        
+        #pragma omp parallel
+        #pragma omp single nowait
+        #pragma omp taskgroup
+        {
+            for (int_t s = 0;s<nsmooth;s++){
+                // Swapping domains
+                //#pragma omp taskgroup
+                {
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    Domain<T> & domain = *domains[gpuid][level];
+                    #pragma omp task default(none) shared(domain) depend(inout:domain.uprev->at[0],domain.u->at[0])
+                    domain.swap_u();
+                }
+                // Applying boundary conditions
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    Domain<T> & domain = *domains[gpuid][level];
+                    domain.east->update(domain,true);
+                    domain.west->update(domain,true);
+                    domain.north->update(domain,true);
+                    domain.south->update(domain,true);
+                    domain.top->update(domain,true);
+                    domain.bottom->update(domain,true);
+                }
 
-                domain.swap_u();
+                // Computing halo values
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    Domain<T> & domain = *domains[gpuid][level];
+                    fill_send_buffer(domain,omega,EAST);
+                    fill_send_buffer(domain,omega,WEST);
+                    fill_send_buffer(domain,omega,NORTH);
+                    fill_send_buffer(domain,omega,SOUTH);
+                    fill_send_buffer(domain,omega,TOP);
+                    fill_send_buffer(domain,omega,BOTTOM);
+                }
+                // Looping over interior points
+                for (int_t gpuid=0;gpuid<num_devices;gpuid++){
+                    Domain<T> & domain = *domains[gpuid][level];
+                    DeviceArray<T>& u = *domain.u;
 
-                DeviceArray<T>& v = *domain.uprev;
-
-                // Updating boundaries
-                domain.east->update(v,domain.settings);
-                domain.west->update(v,domain.settings);
-                domain.north->update(v,domain.settings);
-                domain.south->update(v,domain.settings);
-                domain.top->update(v,domain.settings);
-                domain.bottom->update(v,domain.settings);
-            }
-
-            #pragma omp parallel for num_threads(num_devices)
-            for (int_t gpuid=0;gpuid<num_devices;gpuid++){
-                Domain<T> & domain = *domains[gpuid][level];
-                DeviceArray<T>& u = *domain.u;
-
-                const int_t xmin = domain.west->is_non_eliminated();
-                const int_t xmax = u.shape[0]-domain.east->is_non_eliminated();
-                const int_t ymin = domain.south->is_non_eliminated();
-                const int_t ymax = u.shape[1]-domain.north->is_non_eliminated();
-                const int_t zmin = domain.bottom->is_non_eliminated();
-                const int_t zmax = u.shape[2]-domain.top->is_non_eliminated();
-
-                this->relaxation_kernel(domain,omega,xmin,xmax,ymin,ymax,zmin,zmax);
-
-                fill_send_buffer(domain,omega,NORTH);
-                fill_send_buffer(domain,omega,SOUTH);
-                fill_send_buffer(domain,omega,EAST);
-                fill_send_buffer(domain,omega,WEST);
-                fill_send_buffer(domain,omega,TOP);
-                fill_send_buffer(domain,omega,BOTTOM);
+                    const int_t xmin = domain.west->is_non_eliminated();
+                    const int_t xmax = u.shape[0]-domain.east->is_non_eliminated();
+                    const int_t ymin = domain.south->is_non_eliminated();
+                    const int_t ymax = u.shape[1]-domain.north->is_non_eliminated();
+                    const int_t zmin = domain.bottom->is_non_eliminated();
+                    const int_t zmax = u.shape[2]-domain.top->is_non_eliminated();
+                    #pragma omp task default(none) shared(domain,omega)\
+                    firstprivate(xmin,xmax,ymin,ymax,zmin,zmax)\
+                    depend(inout:domain.u->at[0],domain.uprev->at[0]) \
+                    depend(in:domain.east->arr.at[0],domain.west->arr.at[0],domain.north->arr.at[0],\
+                    domain.south->arr.at[0],domain.top->arr.at[0],domain.bottom->arr.at[0])
+                    this->relaxation_kernel(domain,omega,xmin,xmax,ymin,ymax,zmin,zmax);
+                }
+                }
             }
         }
     }
@@ -152,7 +168,9 @@ namespace Poisson{
         }
         if (bound->is_internal_boundary()){
             OMPBoundary<T> * omp_bound = (OMPBoundary<T> *) bound;
-            omp_bound->fill_send_buffer(*domain.uprev,*domain.f,domain.settings,domain,omega);        }
+            #pragma omp task default(none) shared(domain,omega) firstprivate(omp_bound) depend(in:bound->arr.at[0]) depend(out:omp_bound->send_buffer.at[0])
+            omp_bound->fill_send_buffer(*domain.uprev,*domain.f,domain.settings,domain,omega);        
+        }
     }
 }
 #endif
