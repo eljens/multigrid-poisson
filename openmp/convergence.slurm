@@ -23,14 +23,16 @@ export ROCR_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 for PROB in 1 2 3;
 do
 	make realclean; make APP=multi_gpu PROBLEM=$PROB
-
-	FILENAME=results/$GPU/problem_$PROB.txt
+	make APP=multi_gpu_dirichlet
+	FILENAME=results/$GPU/neumann_$PROB.txt
+	FILENAME1=results/$GPU/dirichlet_$PROB.txt
 	rm -rf $FILENAME
 
 	LEVELS=2
 	for N in 9 17 33 65 129 257 513;# 1025;
 	do	
- 		./bin/multi_gpu -x $((($N/2)+1)) -y $((($N/2)+1)) -z $((($N/2)+1)) -maxiter 40 -levels $LEVELS -stats $FILENAME -length 0.125 -tol 1e-8
+ 		./bin/multi_gpu -x $((($N/2)+1)) -y $((($N/2)+1)) -z $((($N/2)+1)) -maxiter 30 -levels $LEVELS -stats $FILENAME -length 0.125 -tol 1e-5 #1e-8
+ 		./bin/multi_gpu_dirichlet -x $((($N/2)+1)) -y $((($N/2)+1)) -z $((($N/2)+1)) -maxiter 30 -levels $LEVELS -stats $FILENAME1 -length 0.125 -tol 1e-5 #1e-8		
 		LEVELS=$(($LEVELS + 1))
 	done
 done
