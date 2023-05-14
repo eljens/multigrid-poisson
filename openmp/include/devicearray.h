@@ -205,10 +205,13 @@ namespace Poisson{
 							res = std::max(res,tmp);
 						}
 #else
-						for(uint_t k = 0;k<_shape[2];k++){
-							T abselem = std::abs(_devptr[idx(i,j,k,_halo,_stride)]);
-							res = std::max(abselem,res);
-						}
+                                                for (uint_t k_block = 0;k_block<_shape[2];k_block+=2){
+                                                        T tmp = 0.0;
+                                                        #pragma omp simd reduction(max:tmp)
+                                                        for (int_t k = k_block;k<MIN(k_block+2,_shape[2]);k++){                                                                T abselem = std::abs(_devptr[idx(i,j,k,_halo,_stride)]);                                                                tmp = std::max(abselem,tmp);
+                                                        }
+                                                        res = std::max(res,tmp);
+                                                }
 #endif
 					}
 				}
