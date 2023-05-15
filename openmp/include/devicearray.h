@@ -77,11 +77,21 @@ namespace Poisson{
 
 	template <class T>
 	void DeviceArray<T>::device_to_device(DeviceArray<T> & devarr) {
+#ifdef PEER2PEER
 		int_t res = omp_target_memcpy(devarr.devptr,this->devptr,(int) this->size*sizeof(T),0,0,(int) devarr.device,(int) this->device);
 		if (res != 0){
 			cerr << "D2D error from device " << this->device << " to " << devarr.device << ": omp_target_memcpy returned " << res << endl;
 		}
-		this->on_device = true;
+#else
+		int_t res = omp_target_memcpy(this->at,this->devptr,(int) this->size*sizeof(T),0,0,this->host,(int) this->device);
+		if (res != 0){
+			cerr << "D2H error from device " << this->device << " to " << this->host << ": omp_target_memcpy returned " << res << endl;
+		}
+		res = omp_target_memcpy(devarr.devptr,this->at,(int) this->size*sizeof(T),0,0,(int) devarr.device,this->host);
+		if (res != 0){
+			cerr << "H2D error from host " << this->host << " to " << devarr.device << ": omp_target_memcpy returned " << res << endl;
+		}
+#endif
 	}
 
 	template <class T>

@@ -41,6 +41,12 @@ CXXFLAGS+= -DBLOCK_SIZE=$(BLOCK_SIZE)
 endif
 endif
 
+ifdef PEER2PEER
+ifeq ($(shell test $(PEER2PEER) -gt 0; echo $$?),0)
+CXXFLAGS+= -DPEER2PEER
+endif
+endif
+
 ifdef DIST
 CXXFLAGS+= -DDIST=$(DIST)
 endif
@@ -81,7 +87,7 @@ archive:
 	make TARGET=lib/libpoisson.a
 
 clean:
-	-rm -f bin/* $(APPSCLEAN)
+	-rm -f $(patsubst drivers/%.cpp,bin/%,$(APPS)) $(APPSCLEAN)
 
 realclean:
 	-rm -f lib/*.o lib/*.a bin/*
