@@ -51,6 +51,11 @@ ifdef DIST
 CXXFLAGS+= -DDIST=$(DIST)
 endif
 
+ifdef SAVEP2P
+CXXFLAGS+= -DSAVEP2P='$(SAVEP2P)'
+endif
+
+
 #### Standard settings which are identical for all compilers
 # Add flags start start with -I here (include path)
 CPPFLAGS += -Iinclude

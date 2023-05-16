@@ -1,6 +1,6 @@
 #ifndef DEVICE_ARRAY
 #define DEVICE_ARRAY
-
+#include <fstream>
 #include <stdexcept>
 
 #include "array.h"
@@ -77,6 +77,9 @@ namespace Poisson{
 
 	template <class T>
 	void DeviceArray<T>::device_to_device(DeviceArray<T> & devarr) {
+#ifdef SAVEP2P
+		double_t tstart = omp_get_wtime();
+#endif
 #ifdef PEER2PEER
 		int_t res = omp_target_memcpy(devarr.devptr,this->devptr,(int) this->size*sizeof(T),0,0,(int) devarr.device,(int) this->device);
 		if (res != 0){
@@ -91,6 +94,12 @@ namespace Poisson{
 		if (res != 0){
 			cerr << "H2D error from host " << this->host << " to " << devarr.device << ": omp_target_memcpy returned " << res << endl;
 		}
+#endif
+#ifdef SAVEP2P
+		tstart = omp_get_wtime()-tstart;
+  		std::ofstream outfile; 
+  		outfile.open(SAVEP2P, std::ios_base::app); // append instead of overwrite
+		outfile << tstart << endl;
 #endif
 	}
 
