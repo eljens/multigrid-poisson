@@ -44,6 +44,7 @@ namespace Poisson{
             void alloc();
         public:
             PoissonSolver(int_t _dev_shape[3], Settings & _settings,BoundaryCondition & _BC);
+            PoissonSolver(Settings & _settings,BoundaryCondition & _BC);
             PoissonSolver(int_t _dev_shape[3], Settings & _settings);
             ~PoissonSolver();
             void init();
@@ -54,6 +55,7 @@ namespace Poisson{
             void solve(const string solver="Vcycle",const int_t nsmooth=10,T omega=-1.0,string ofile="",double maxtime = 20*60);
             void save(uint_t gpuid,string file_name="u.vtk");
             void save_all(uint_t gpuid,string ufile_name="u.vtk",string ffile_name="f.vtk",string rfile_name="r.vtk");
+            void save_all(string ufile_name="u.vtk",string ffile_name="f.vtk",string rfile_name="r.vtk");
             T relative_residual();
             T solve_time();
             T solve_iterations();
@@ -71,6 +73,16 @@ namespace Poisson{
         dev_shape[0] = _dev_shape[0];
         dev_shape[1] = _dev_shape[1];
         dev_shape[2] = _dev_shape[2];
+        this->alloc();
+    }
+
+    template <class T,template<class> class R,template<class> class P,template<class> class S>
+    PoissonSolver<T,R,P,S>::PoissonSolver(Settings & _settings, BoundaryCondition & _BC) : 
+        num_devices(1), settings(_settings), BC(_BC), grid(_settings,_settings.levels)
+    {
+        dev_shape[0] = 1;
+        dev_shape[1] = 1;
+        dev_shape[2] = 1;
         this->alloc();
     }
 
@@ -285,9 +297,9 @@ namespace Poisson{
                 cout << "Vcycle took " << omp_get_wtime()-vctime << " seconds" << endl;
             }
             else if (use_fcycle){
-                //for (uint_t gpuid = 0; gpuid < num_devices; gpuid++){
-                //    Fcycle<T>(this->domains[gpuid],this->restriction_type,this->prolongation,this->relaxation,omega,0,settings.levels,nsmooth);
-                //}
+                double_t vctime = omp_get_wtime();
+                Fcycle<T>(this->domains,this->restriction_type,this->prolongation,this->relaxation,omega,0,settings.levels,num_devices,nsmooth);
+                cout << "Vcycle took " << omp_get_wtime()-vctime << " seconds" << endl;
             }
             else {
                 //for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
@@ -354,6 +366,12 @@ namespace Poisson{
     void PoissonSolver<T,R,P,S>::save_all(uint_t gpuid, string ufile_name,string ffile_name,string rfile_name)
     {
         domains[gpuid][0]->save_all(ufile_name,ffile_name,rfile_name);
+    }
+
+    template <class T,template<class> class R,template<class> class P,template<class> class S>
+    void PoissonSolver<T,R,P,S>::save_all(string ufile_name,string ffile_name,string rfile_name)
+    {
+        domains[0][0]->save_all(ufile_name,ffile_name,rfile_name);
     }
 
     template <class T,template<class> class R,template<class> class P,template<class> class S>

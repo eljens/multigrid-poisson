@@ -1,4 +1,4 @@
-APP?=multi_gpu
+APP?=mixed
 
 #### User must provide a desired compiler
 ifndef COMPILER

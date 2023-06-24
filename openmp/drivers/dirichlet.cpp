@@ -24,13 +24,13 @@ using Poisson::BoundaryCondition;
 int main(int argc, char * argv[]){
     uint_t num_devices = omp_get_num_devices();
     Settings settings = parser(argc,argv);
-    settings.miniter = 20;
+
     // Defining problem
     BoundaryCondition BC;
-    BC.east = NEUMANN;
-    BC.west = NEUMANN;
-    BC.north = NEUMANN;
-    BC.south = NEUMANN;
+    BC.east = DIRICHLET;
+    BC.west = DIRICHLET;
+    BC.north = DIRICHLET;
+    BC.south = DIRICHLET;
     BC.top = DIRICHLET;
     BC.bottom = DIRICHLET;
     int_t dev_shape[3] = {(int_t) num_devices,1,1};
@@ -57,7 +57,7 @@ int main(int argc, char * argv[]){
     solver.verbose(true);
     solver.to_device();
 
-    solver.solve("vcycle",4);
+    solver.solve("vcycle",6);
     cout << "It took " << solver.solve_time() << " seconds to run ";
     cout << solver.solve_iterations() << " Fcycles"<<endl;
 

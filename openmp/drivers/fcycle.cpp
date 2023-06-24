@@ -14,11 +14,18 @@ using Poisson::Injection;
 using Poisson::GaussSeidel;
 using Poisson::TrilinearInterpolation;
 using Poisson::Jacobi;
+using Poisson::BoundaryCondition;
 
 int main(int argc, char * argv[]){
-    bool is_dirichlet = false;
     Settings settings = parser(argc,argv);
-    PoissonSolver<double_t,Injection,TrilinearInterpolation,Jacobi> solver(settings,is_dirichlet);
+    BoundaryCondition BC;
+    BC.east = NEUMANN;
+    BC.west = NEUMANN;
+    BC.north = NEUMANN;
+    BC.south = NEUMANN;
+    BC.top = DIRICHLET;
+    BC.bottom = DIRICHLET;
+    PoissonSolver<double_t,Injection,TrilinearInterpolation,Jacobi> solver(settings,BC);
 
     solver.init();
     solver.verbose(true);
