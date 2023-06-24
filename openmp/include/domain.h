@@ -6,6 +6,7 @@
 #include "boundary.h"
 #include "neumann.h"
 #include "dirichlet.h"
+#include "ompboundary.h"
 #include "problem_definition.h"
 #include "residual.h"
 #include "halo.h"
@@ -30,7 +31,7 @@ namespace Poisson{
 	class GaussSeidel;
 
 	template <typename T>
-	void residual(Domain<T>& domain);
+	void residual(Domain<T>& domain,bool fetch_neighbor);
 
 	template <class T>
 	class Domain
@@ -45,7 +46,7 @@ namespace Poisson{
 
 			friend class GaussSeidel<T>;
 
-			friend void residual<T>(Domain<T>& domain);
+			friend void residual<T>(Domain<T>& domain,bool fetch_neighbor);
 
 			void init_f(funptr ffun);
 
@@ -73,7 +74,7 @@ namespace Poisson{
 
 			}
 
-			Domain(Settings & _settings,bool is_dirichlet,bool requires_duplicate);
+			Domain(Settings & _settings,BoundaryCondition & BC,bool requires_duplicate,int_t device[3], int_t device_shape[3]);
 
 			~Domain();
 
@@ -97,8 +98,15 @@ namespace Poisson{
 	};
 
 	template<class T>
-	Domain<T>::Domain(Settings & _settings,bool is_dirichlet,bool duplicate) : 
-		halo(!is_dirichlet,!is_dirichlet,0,0,!is_dirichlet,!is_dirichlet),is_initialized(true),requires_duplicate(duplicate), settings(_settings)
+	Domain<T>::Domain(Settings & _settings,BoundaryCondition & BC,bool duplicate,int_t dev[3], int_t dev_shape[3]) : 
+		halo(
+			BC.east!=DIRICHLET || dev[0] < dev_shape[0]-1,
+			BC.west!=DIRICHLET  || dev[0] > 0,
+			BC.north!=DIRICHLET || dev[1] < dev_shape[1]-1,
+			BC.south!=DIRICHLET  || dev[1] > 0,
+			BC.top!=DIRICHLET || dev[2] < dev_shape[2]-1,
+			BC.bottom!=DIRICHLET || dev[2] > 0),
+		is_initialized(true),requires_duplicate(duplicate), settings(_settings)
 	{
 		//cout << "Created domain with settings " << endl;
 		//cout << settings;
@@ -112,17 +120,73 @@ namespace Poisson{
 		this->f = new DeviceArray<T>(settings,halo);
 		this->r = new DeviceArray<T>(settings,halo);
 
-		if (is_dirichlet){
-			this->east = new Dirichlet<T>(settings.dev,EAST,1,settings.dims[1],settings.dims[2]);
-			this->west = new Dirichlet<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
-			this->top = new Dirichlet<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
-			this->bottom = new Dirichlet<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
+		//cout << "Making new domain on device " << dev[0] << "," << dev[1] << "," << dev[2] << endl;
+
+		if (dev[2]<dev_shape[2]-1){
+			this->top = new OMPBoundary<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
 		}
 		else {
-			this->east = new Neumann<T>(settings.dev,EAST,1,settings.dims[1],settings.dims[2]);
-			this->west = new Neumann<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
-			this->top = new Neumann<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
-			this->bottom = new Neumann<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
+			if (BC.top == DIRICHLET){
+				this->top = new Dirichlet<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
+			}
+			else {
+				this->top = new Neumann<T>(settings.dev,TOP,settings.dims[0],settings.dims[1],1);
+			}
+		}
+		if (dev[2] > 0){
+			this->bottom = new OMPBoundary<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
+		}
+		else {
+			if (BC.bottom == DIRICHLET){
+				this->bottom = new Dirichlet<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
+			}
+			else {
+				this->bottom = new Dirichlet<T>(settings.dev,BOTTOM,settings.dims[0],settings.dims[1],1);
+			}
+		}
+		if (dev[0]<dev_shape[0]-1){
+			this->east = new OMPBoundary<T>(settings.dev,EAST,1,settings.dims[1],settings.dims[2]);
+		}
+		else {
+			if (BC.east == DIRICHLET){
+				this->east = new Dirichlet<T>(settings.dev,EAST,1,settings.dims[1],settings.dims[2]);
+			}
+			else{
+				this->east = new Neumann<T>(settings.dev,EAST,1,settings.dims[1],settings.dims[2]);
+			}
+		}
+		if (dev[0] > 0){
+			this->west = new OMPBoundary<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
+		}
+		else {
+			if (BC.west == DIRICHLET){
+				this->west = new Dirichlet<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
+			}
+			else{
+				this->west = new Neumann<T>(settings.dev,WEST,1,settings.dims[1],settings.dims[2]);
+			}
+		}
+		if (dev[1] < dev_shape[1]-1){
+			this->north = new OMPBoundary<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
+		}
+		else {
+			if (BC.north == DIRICHLET){
+				this->north = new Dirichlet<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
+			}
+			else {
+				this->north = new Neumann<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
+			}
+		}
+		if (dev[1] > 0){
+			this->south = new OMPBoundary<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);
+		}
+		else {
+			if (BC.south == DIRICHLET){
+				this->south = new Dirichlet<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);
+			}
+			else {
+				this->south = new Neumann<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);
+			}
 		}
 		this->north = new Dirichlet<T>(settings.dev,NORTH,settings.dims[0],1,settings.dims[2]);
 		this->south = new Dirichlet<T>(settings.dev,SOUTH,settings.dims[0],1,settings.dims[2]);

@@ -16,10 +16,20 @@ namespace Poisson{
 
             void write_to(DeviceArray<T> & uarr, Settings & settings);
 
-            void update(DeviceArray<T> & uarr, Settings & settings);
+            void update(Domain<T> & domain,bool previous,bool fetch_neighbor);
 
             void restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction);
+
+            bool is_internal_boundary();
+
+            void init_zero();
+
+            void to_device();
+
+            void link(Boundary<T> * _boundary);
+
+            bool is_non_eliminated();
     };
 
     template<class T>
@@ -52,9 +62,9 @@ namespace Poisson{
 
     template<class T>
     void Neumann<T>::write_to(DeviceArray<T> & uarr, Settings & settings){
-        int_t offx = uarr.halo.west;
-        int_t offy = uarr.halo.south;
-        int_t offz = uarr.halo.bottom;
+        int_t offx = 0;
+        int_t offy = 0;
+        int_t offz = 0;
 
         int_t ii = 0;
         int_t jj = 0;
@@ -64,41 +74,42 @@ namespace Poisson{
 
         switch (this->location){
             case EAST:
-                offx = uarr.shape[0]-1+uarr.halo.east+uarr.halo.west;
+                offx = uarr.shape[0];
                 ii = -2;
                 break;
             case WEST:
-                offx = 0;
+                offx = -1;
                 ii = 2;
                 sign = -1.0;
                 break;
             case NORTH:
-                offy = uarr.shape[1]-1+uarr.halo.north+uarr.halo.south;
+                offy = uarr.shape[1];
                 jj = -2;
                 break;
             case SOUTH:
-                offy=0;
+                offy=-1;
                 sign = -1.0;
                 jj = 2;
                 break;
             case TOP:
-                offz = uarr.shape[2]-1+uarr.halo.top+uarr.halo.bottom;
+                offz = uarr.shape[2];
                 kk = -2;
                 break;
             case BOTTOM:
-                offz = 0;
+                offz = -1;
                 sign = -1.0;
                 kk = 2;
                 break;
         }
         T * udev = uarr.devptr;
-        T * gdev = this->devptr;
+        T * gdev = this->arr.devptr;
         const uint_t (&ustride)[3] = uarr.stride;
+        const Halo & uhalo = uarr.halo;
         const T two_h = 2.0*settings.h;
-        const uint_t (&_shape)[3] = this->shape;
-        const uint_t (&_stride)[3] = this->stride;
-        const Halo & _halo = this->halo;
-        #pragma omp target device(this->device) is_device_ptr(udev,gdev) firstprivate(sign,two_h)
+        const uint_t (&_shape)[3] = this->arr.shape;
+        const uint_t (&_stride)[3] = this->arr.stride;
+        const Halo & _halo = this->arr.halo;
+        #pragma omp target device(this->arr.device) is_device_ptr(udev,gdev) firstprivate(sign,two_h)
         #pragma omp teams distribute parallel for collapse(3) SCHEDULE
         for(int_t i = 0;i<_shape[0];i++){
             for(int_t j = 0;j<_shape[1];j++){
@@ -109,8 +120,8 @@ namespace Poisson{
 #else
                 for(int_t k = 0;k<_shape[2];k++){
 #endif
-                        udev[idx_halo(i+offx,j+offy,k+offz,ustride)] =
-                            sign*two_h*gdev[idx(i,j,k,_halo,_stride)]+udev[idx_halo(i+offx+ii,j+offy+jj,k+offz+kk,ustride)];
+                        udev[idx(i+offx,j+offy,k+offz,uhalo,ustride)] =
+                            sign*two_h*gdev[idx(i,j,k,_halo,_stride)]+udev[idx(i+offx+ii,j+offy+jj,k+offz+kk,uhalo,ustride)];
 #ifdef BLOCK_SIZE
                     }
 #endif
@@ -120,15 +131,23 @@ namespace Poisson{
     };
 
     template<class T>
-    void Neumann<T>::update(DeviceArray<T> & uarr, Settings & settings){
-        this->write_to(uarr,settings);
+    void Neumann<T>::update(Domain<T> & domain,bool previous, bool fetch_neighbor){
+        #pragma omp task default(none) shared(domain) firstprivate(previous) depend(in:domain.uprev->at[0],domain.u->at[0]) depend(out:this->arr.at[0])
+        {
+            if (previous){
+                this->write_to(*domain.uprev,domain.settings);
+            }
+            else {
+                this->write_to(*domain.u,domain.settings);
+            }
+        }
     }
 
     template<class T>
     void Neumann<T>::restrict_to(DeviceArray<T> & u, Boundary<T> & boundary,
                             Settings & settings, Restriction<T> & restriction){
         // Needs to be implemented
-        restriction.restrict_to(boundary,*this);
+        restriction.restrict_to(boundary.arr,this->arr);
         int_t offx = 0;
         int_t offy = 0;
         int_t offz = 0;
@@ -201,13 +220,13 @@ namespace Poisson{
         // Interpolating the Neumann condition
         T h = settings.h;
         T * udev = u.devptr;
-        T * gdev = this->devptr;
+        T * gdev = this->arr.devptr;
         const Halo & uhalo = u.halo;
         const uint_t (&ustride)[3] = u.stride;
-        const uint_t * _shape = this->shape;
-        const Halo & _halo = this->halo;
-        const uint_t (&_stride)[3] = this->stride;
-        const uint _device = this->device;
+        const uint_t * _shape = this->arr.shape;
+        const Halo & _halo = this->arr.halo;
+        const uint_t (&_stride)[3] = this->arr.stride;
+        const uint _device = this->arr.device;
         #pragma omp target device(_device) is_device_ptr(udev,gdev)\
                 firstprivate(c1,c2,c3,h,ii,jj,kk,iii,jjj,kkk)
         #pragma omp teams distribute parallel for collapse(3) SCHEDULE
@@ -231,6 +250,31 @@ namespace Poisson{
             }
         }
     }
+
+    template<class T>
+    bool Neumann<T>::is_internal_boundary(){
+        return false;
+    };
+
+    template<class T>
+    void Neumann<T>::init_zero(){
+        this->arr.init_zero();
+    };
+
+    template<class T>
+    void Neumann<T>::to_device(){
+        this->arr.to_device();
+    };
+
+    template<class T>
+    void Neumann<T>::link(Boundary<T> * _boundary){
+        // No need to link as it is not an internal boundary
+    };
+
+    template<class T>
+    bool Neumann<T>::is_non_eliminated(){
+        return false;
+    };
 }
 
 #endif

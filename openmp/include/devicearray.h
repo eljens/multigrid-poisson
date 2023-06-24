@@ -1,6 +1,6 @@
 #ifndef DEVICE_ARRAY
 #define DEVICE_ARRAY
-
+#include <fstream>
 #include <stdexcept>
 
 #include "array.h"
@@ -27,6 +27,8 @@ namespace Poisson{
 				~DeviceArray();
 
 				void to_device();
+
+				void device_to_device(DeviceArray<T> & devarr);
 
 				void to_host();
 
@@ -68,9 +70,37 @@ namespace Poisson{
 	void DeviceArray<T>::to_device() {
 		int_t res = omp_target_memcpy(this->devptr,this->at,(int) this->size*sizeof(T),0,0,(int) this->device,(int) this->host);
 		if (res != 0){
-			cerr << "Error on device " << this->device << ": omp_target_memcpy returned " << res << endl;
+			cerr << "H2D error on device " << this->device << ": omp_target_memcpy returned " << res << endl;
 		}
 		this->on_device = true;
+	}
+
+	template <class T>
+	void DeviceArray<T>::device_to_device(DeviceArray<T> & devarr) {
+#ifdef SAVEP2P
+		double_t tstart = omp_get_wtime();
+#endif
+#ifdef PEER2PEER
+		int_t res = omp_target_memcpy(devarr.devptr,this->devptr,(int) this->size*sizeof(T),0,0,(int) devarr.device,(int) this->device);
+		if (res != 0){
+			cerr << "D2D error from device " << this->device << " to " << devarr.device << ": omp_target_memcpy returned " << res << endl;
+		}
+#else
+		int_t res = omp_target_memcpy(this->at,this->devptr,(int) this->size*sizeof(T),0,0,this->host,(int) this->device);
+		if (res != 0){
+			cerr << "D2H error from device " << this->device << " to " << this->host << ": omp_target_memcpy returned " << res << endl;
+		}
+		res = omp_target_memcpy(devarr.devptr,this->at,(int) this->size*sizeof(T),0,0,(int) devarr.device,this->host);
+		if (res != 0){
+			cerr << "H2D error from host " << this->host << " to " << devarr.device << ": omp_target_memcpy returned " << res << endl;
+		}
+#endif
+#ifdef SAVEP2P
+		tstart = omp_get_wtime()-tstart;
+  		std::ofstream outfile; 
+  		outfile.open(SAVEP2P, std::ios_base::app); // append instead of overwrite
+		outfile << tstart << endl;
+#endif
 	}
 
 	template <class T>
@@ -194,10 +224,13 @@ namespace Poisson{
 							res = std::max(res,tmp);
 						}
 #else
-						for(uint_t k = 0;k<_shape[2];k++){
-							T abselem = std::abs(_devptr[idx(i,j,k,_halo,_stride)]);
-							res = std::max(abselem,res);
-						}
+                                                for (uint_t k_block = 0;k_block<_shape[2];k_block+=2){
+                                                        T tmp = 0.0;
+                                                        #pragma omp simd reduction(max:tmp)
+                                                        for (int_t k = k_block;k<MIN(k_block+2,_shape[2]);k++){                                                                T abselem = std::abs(_devptr[idx(i,j,k,_halo,_stride)]);                                                                tmp = std::max(abselem,tmp);
+                                                        }
+                                                        res = std::max(res,tmp);
+                                                }
 #endif
 					}
 				}

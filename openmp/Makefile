@@ -1,4 +1,4 @@
-APP?=multigrid
+APP?=multi_gpu
 
 #### User must provide a desired compiler
 ifndef COMPILER
@@ -41,9 +41,20 @@ CXXFLAGS+= -DBLOCK_SIZE=$(BLOCK_SIZE)
 endif
 endif
 
+ifdef PEER2PEER
+ifeq ($(shell test $(PEER2PEER) -gt 0; echo $$?),0)
+CXXFLAGS+= -DPEER2PEER
+endif
+endif
+
 ifdef DIST
 CXXFLAGS+= -DDIST=$(DIST)
 endif
+
+ifdef SAVEP2P
+CXXFLAGS+= -DSAVEP2P='$(SAVEP2P)'
+endif
+
 
 #### Standard settings which are identical for all compilers
 # Add flags start start with -I here (include path)
@@ -81,7 +92,7 @@ archive:
 	make TARGET=lib/libpoisson.a
 
 clean:
-	-rm -f bin/* $(APPSCLEAN)
+	-rm -f $(patsubst drivers/%.cpp,bin/%,$(APPS)) $(APPSCLEAN)
 
 realclean:
 	-rm -f lib/*.o lib/*.a bin/*
