@@ -1,0 +1,45 @@
+# BLOCK_SIZE = 0
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     92.7755  0.00574589  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 4
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     55.5753  0.00574589  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 8
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+      32.693  0.00574589  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 16
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     19.2577  0.00574589  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 32
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+      12.462  0.00574589  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 64
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     10.9986  0.00574592  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 96
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     10.5418  0.00574592  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 128
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     10.3317  0.00610618  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 160
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     10.2938  0.00574619  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 192
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     10.2188  0.00574592  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 224
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     10.2625  0.00575345  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 256
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     10.3953  0.00610618  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 288
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     10.2371  0.00574602  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 320
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     10.3266  0.00575345  1076890625  0.00306787           3      3.1415           9
+# BLOCK_SIZE = 512
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     10.3603  0.00610618  1076890625  0.00306787           3      3.1415           9
