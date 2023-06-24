@@ -115,7 +115,7 @@ namespace Poisson{
 			this->uprev = new DeviceArray<T>(settings,halo);
 		}
 		else {
-			this->uprev = nullptr;
+			this->uprev = this->u;
 		}
 		this->f = new DeviceArray<T>(settings,halo);
 		this->r = new DeviceArray<T>(settings,halo);

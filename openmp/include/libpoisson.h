@@ -299,7 +299,7 @@ namespace Poisson{
             else if (use_fcycle){
                 double_t vctime = omp_get_wtime();
                 Fcycle<T>(this->domains,this->restriction_type,this->prolongation,this->relaxation,omega,0,settings.levels,num_devices,nsmooth);
-                cout << "Vcycle took " << omp_get_wtime()-vctime << " seconds" << endl;
+                cout << "Fcycle took " << omp_get_wtime()-vctime << " seconds" << endl;
             }
             else {
                 //for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
