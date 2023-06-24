@@ -1,8 +1,0 @@
-#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels     threads     devices
-   0.0640099    0.018576   0.0237251      274625      0.0625          20           4           2          63           1
-#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels     threads     devices
-    0.310128   0.0185762   0.0222629      549250      0.0625          20           4           2          63           2
-#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels     threads     devices
-     1.22071    0.018967    0.011343     1098500      0.0625          21           4           2          63           4
-#    seconds     abs_err     rel_res domain_size     spacing     maxiter     lengthx      levels     threads     devices
-      8.2881   0.0190791   0.0114426     2197000      0.0625          51           4           2          63           8
