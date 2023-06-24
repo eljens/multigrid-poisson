@@ -149,7 +149,7 @@ namespace Poisson{
         for (uint_t gpuid = 0; gpuid<num_devices;gpuid++){
             for (uint_t l = 0;l<settings.levels;l++){
                 if (l==0){
-                    domains[gpuid][l]->init(&ufun,&ffun,&dudxfun,&dudyfun);
+                    domains[gpuid][l]->init(&ufun,&ffun,&dudxfun,&dudyfun,&dudzfun);
                 }
                 else {
                     domains[gpuid][l]->init_zero();

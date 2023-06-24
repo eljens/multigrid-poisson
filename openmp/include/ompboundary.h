@@ -16,7 +16,7 @@ namespace Poisson{
 
             virtual ~OMPBoundary();
 
-            void init(funptr ufun,funptr dudxfun,funptr dudyfun,Settings & settings);
+            void init(funptr ufun,funptr dudxfun,funptr dudyfun,funptr dudzfun,Settings & settings);
 
             void write_to(DeviceArray<T> & uarr, Settings & settings);
 
@@ -50,7 +50,7 @@ namespace Poisson{
     }
 
     template <class T>
-    void OMPBoundary<T>::init(funptr ufun,funptr dudxfun,funptr dudyfun,Settings & settings){
+    void OMPBoundary<T>::init(funptr ufun,funptr dudxfun,funptr dudyfun,funptr dudzfun,Settings & settings){
         this->init_zero();
     }
 
