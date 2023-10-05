@@ -1,0 +1,11 @@
+ifeq ("$(CC)","gcc")
+CFLAGS += -foffload=amdgcn-amdhsa -foffload-options=-march=gfx906
+CXXFLAGS += -foffload=amdgcn-amdhsa -foffload-options=-march=gfx906
+endif
+
+ifeq ("$(CC)","clang")
+GPU_ARCH = gfx906
+TARGETFLAGS = --offload-arch=$(GPU_ARCH)
+CFLAGS+=$(TARGETFLAGS)
+CXXFLAGS+=$(TARGETFLAGS)
+endif
