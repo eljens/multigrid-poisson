@@ -1,0 +1,16 @@
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+    0.434953   0.0300115         729    0.392688           7      3.1415           2
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+    0.426558  0.00251753        4913    0.196344           3      3.1415           3
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+    0.968484  0.00869142       35937   0.0981719           5      3.1415           4
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     1.09319   0.0102289      274625   0.0490859           4      3.1415           5
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     2.09792  0.00668679     2146689    0.024543           6      3.1415           6
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+     4.03356  0.00364041    16974593   0.0122715           6      3.1415           7
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+      17.356  0.00187025   135005697  0.00613574           6      3.1415           8
+#    seconds     rel_res domain_size     spacing     maxiter     lengthx      levels
+      140.36 0.000944519  1076890625  0.00306787           7      3.1415           9

@@ -1,0 +1,130 @@
+==28074== NVPROF is profiling process 28074, command: ./bin/weak_scaling -x 1025 -y 1025 -z 641 -levels 5 -length 4 -maxiter 30 -tol 1e-6
+MG running on 15 threads and 4 devices
+DomainSettings:
+	Domain size: (1025,1025,641)
+	GridSpacing: 0.00390625
+DomainSettings:
+	Domain size: (513,513,321)
+	GridSpacing: 0.0078125
+DomainSettings:
+	Domain size: (257,257,161)
+	GridSpacing: 0.015625
+DomainSettings:
+	Domain size: (129,129,81)
+	GridSpacing: 0.03125
+DomainSettings:
+	Domain size: (65,65,41)
+	GridSpacing: 0.0625
+   0: Initial residual:   389.86
+Vcycle took 0.675127 seconds
+   1: Relative residual:  28.2574
+Vcycle took 0.672607 seconds
+   2: Relative residual:  9.37163
+Vcycle took 0.677141 seconds
+   3: Relative residual:  6.22002
+Vcycle took 0.680899 seconds
+   4: Relative residual:  4.20975
+Vcycle took 0.670677 seconds
+   5: Relative residual:  3.04189
+Vcycle took 0.670277 seconds
+   6: Relative residual:   2.0321
+Vcycle took 0.672511 seconds
+   7: Relative residual:  1.52027
+Vcycle took 0.677213 seconds
+   8: Relative residual:  1.09853
+Vcycle took 0.672364 seconds
+   9: Relative residual: 0.836499
+Vcycle took 0.673191 seconds
+  10: Relative residual: 0.611973
+Vcycle took 0.668316 seconds
+  11: Relative residual: 0.455482
+Vcycle took 0.669717 seconds
+  12: Relative residual: 0.338545
+Vcycle took 0.67364 seconds
+  13: Relative residual: 0.250648
+Vcycle took 0.671132 seconds
+  14: Relative residual: 0.185879
+Vcycle took 0.681831 seconds
+  15: Relative residual: 0.137871
+Vcycle took 0.670409 seconds
+  16: Relative residual: 0.102487
+Vcycle took 0.669387 seconds
+  17: Relative residual: 0.0757909
+Vcycle took 0.689507 seconds
+  18: Relative residual: 0.056405
+Vcycle took 0.668838 seconds
+  19: Relative residual: 0.042028
+Vcycle took 0.699666 seconds
+  20: Relative residual: 0.0313771
+Vcycle took 0.692367 seconds
+  21: Relative residual: 0.0234854
+Vcycle took 0.688287 seconds
+  22: Relative residual: 0.0177012
+Vcycle took 0.709375 seconds
+  23: Relative residual: 0.0135407
+Vcycle took 0.671383 seconds
+  24: Relative residual: 0.0103986
+Vcycle took 0.669208 seconds
+  25: Relative residual: 0.0080322
+Vcycle took 0.672542 seconds
+  26: Relative residual: 0.00622894
+Vcycle took 0.693658 seconds
+  27: Relative residual: 0.00484054
+Vcycle took 0.671626 seconds
+  28: Relative residual: 0.00381961
+Vcycle took 0.68998 seconds
+  29: Relative residual: 0.00301148
+Vcycle took 0.67055 seconds
+  30: Relative residual: 0.00240576
+It took 24.0086 seconds to run 30 Fcycles
+Maximal error: 0.00527615
+==28074== Profiling application: ./bin/weak_scaling -x 1025 -y 1025 -z 641 -levels 5 -length 4 -maxiter 30 -tol 1e-6
+==28074== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   37.11%  51.1935s      4320  11.850ms  11.712us  47.053ms  __omp_offloading_10002f_42ccf41d__ZN7Poisson6JacobiIdE17relaxation_kernelERNS_6DomainIdEEdllllll_l138
+                   21.05%  29.0362s     10088  2.8783ms  1.5040us  3.05813s  [CUDA memcpy DtoH]
+                   19.17%  26.4496s     10932  2.4195ms  1.2470us  1.23282s  [CUDA memcpy HtoD]
+                    8.25%  11.3778s       604  18.837ms  75.391us  45.315ms  __omp_offloading_10002f_43bdf8f0__ZN7Poisson8residualIdEEvRNS_6DomainIT_EEb_l58
+                    5.95%  8.21134s       128  64.151ms  63.841ms  66.992ms  __omp_offloading_10002f_45ea1576__ZNK7Poisson11DeviceArrayIdE13infinity_normEv_l202
+                    2.81%  3.87990s       480  8.0831ms  62.560us  28.333ms  __omp_offloading_10002f_45ea1576__ZN7Poisson11DeviceArrayIdE3addERKS1__l166
+                    1.39%  1.91856s       480  3.9970ms  34.592us  13.974ms  __omp_offloading_10002f_42eb575a__ZN7Poisson22TrilinearInterpolationIdE7prolongERNS_11DeviceArrayIdEES4__l113
+                    0.99%  1.36983s       480  2.8538ms  23.520us  9.9595ms  __omp_offloading_10002f_42eb575a__ZN7Poisson22TrilinearInterpolationIdE7prolongERNS_11DeviceArrayIdEES4__l92
+                    0.75%  1.04106s      8640  120.49us  3.4560us  751.17us  __omp_offloading_10002f_42f9330c__ZN7Poisson11OMPBoundaryIdE16fill_send_bufferERNS_11DeviceArrayIdEERKS3_RNS_8SettingsERNS_6DomainIdEEd_l174
+                    0.72%  989.82ms      9928  99.699us  3.5520us  617.54us  __omp_offloading_10002f_42f9330c__ZN7Poisson11OMPBoundaryIdE8write_toERNS_11DeviceArrayIdEERNS_8SettingsE_l91
+                    0.67%  923.33ms       480  1.9236ms  13.088us  6.9392ms  __omp_offloading_10002f_42eb575a__ZN7Poisson22TrilinearInterpolationIdE7prolongERNS_11DeviceArrayIdEES4__l71
+                    0.43%  595.08ms       480  1.2397ms  11.744us  4.3075ms  __omp_offloading_10002f_42eb575a__ZN7Poisson22TrilinearInterpolationIdE7prolongERNS_11DeviceArrayIdEES4__l50
+                    0.37%  508.34ms      1920  264.76us  4.1270us  3.5751ms  __omp_offloading_10002f_42c1dde5__ZN7Poisson9InjectionIdE11restrict_toERNS_11DeviceArrayIdEES4__l47
+                    0.19%  256.65ms     14892  17.234us  4.0630us  106.37us  __omp_offloading_10002f_432cc1cb__ZN7Poisson7NeumannIdE8write_toERNS_11DeviceArrayIdEERNS_8SettingsE_l112
+                    0.14%  189.43ms      2880  65.775us  3.0080us  1.2490ms  __omp_offloading_10002f_45ea1576__ZN7Poisson11DeviceArrayIdE9init_zeroEv_l132
+                    0.02%  21.261ms      1440  14.764us  4.5760us  76.703us  __omp_offloading_10002f_432cc1cb__ZN7Poisson7NeumannIdE11restrict_toERNS_11DeviceArrayIdEERNS_8BoundaryIdEERNS_8SettingsERNS_11RestrictionIdEE_l230
+                    0.00%  6.6655ms        40  166.64us  4.2240us  616.22us  __omp_offloading_10002f_42fb4dfb__ZN7Poisson9DirichletIdE8write_toERNS_11DeviceArrayIdEERNS_8SettingsE_l75
+      API calls:   37.07%  114.622s     67412  1.7003ms  1.5830us  67.534ms  cuStreamSynchronize
+                   30.23%  93.4675s     10928  8.5530ms  2.1340us  1.41019s  cuMemcpyHtoDAsync
+                   28.63%  88.5226s     10028  8.8275ms  24.057us  6.69319s  cuMemcpyDtoHAsync
+                    3.58%  11.0575s     47192  234.31us  3.6610us  67.059ms  cuLaunchKernel
+                    0.17%  521.59ms         4  130.40ms  127.67ms  134.40ms  cuDevicePrimaryCtxRetain
+                    0.14%  417.55ms    232116  1.7980us     343ns  2.1915ms  cuStreamWaitEvent
+                    0.05%  147.73ms         4  36.932ms  34.436ms  40.516ms  cuDevicePrimaryCtxRelease
+                    0.05%  144.06ms       240  600.26us  4.5430us  9.0281ms  cuMemFree
+                    0.04%  124.07ms    116216  1.0670us     120ns  609.88us  cuCtxSetCurrent
+                    0.04%  113.87ms       964  118.12us  2.0810us  5.1240ms  cuMemAlloc
+                    0.01%  35.271ms         4  8.8178ms  717.12us  17.079ms  cuModuleUnload
+                    0.00%  10.405ms         4  2.6011ms  2.3700ms  2.8889ms  cuModuleLoadDataEx
+                    0.00%  2.5624ms        60  42.707us  27.474us  75.611us  cuMemcpyDtoH
+                    0.00%  2.3565ms       976  2.4140us  1.1300us  27.714us  cuEventRecord
+                    0.00%  1.6892ms      1024  1.6490us  1.2930us  10.362us  cuEventDestroy
+                    0.00%  1.4055ms       128  10.980us  1.8620us  159.70us  cuStreamCreate
+                    0.00%  1.0631ms       128  8.3050us  4.0250us  42.675us  cuStreamDestroy
+                    0.00%  499.25us      1024     487ns     247ns  5.8130us  cuEventCreate
+                    0.00%  136.87us        60  2.2810us     293ns  5.9970us  cuFuncGetAttribute
+                    0.00%  38.385us        64     599ns     401ns  2.8250us  cuModuleGetGlobal
+                    0.00%  32.699us        60     544ns     371ns  3.4530us  cuModuleGetFunction
+                    0.00%  23.737us         4  5.9340us  5.4860us  6.9190us  cuMemcpyHtoD
+                    0.00%  12.596us        32     393ns     117ns  5.1410us  cuDeviceGetAttribute
+                    0.00%  10.691us         4  2.6720us     738ns  6.5170us  cuDeviceGetPCIBusId
+                    0.00%  8.0620us         4  2.0150us     356ns  6.6920us  cuCtxGetDevice
+                    0.00%  7.4050us         8     925ns     156ns  4.1720us  cuCtxGetLimit
+                    0.00%  4.6390us         4  1.1590us     388ns  3.3560us  cuDevicePrimaryCtxGetState
+                    0.00%  3.4300us         4     857ns     390ns  2.2300us  cuDevicePrimaryCtxSetFlags
+                    0.00%  2.9410us        12     245ns     106ns     781ns  cuDeviceGet
+                    0.00%  1.8610us         4     465ns     174ns     971ns  cuDeviceGetCount
