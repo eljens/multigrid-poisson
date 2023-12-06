@@ -12,7 +12,7 @@ namespace Poisson{
             virtual bool requires_duplicate_solution()=0;
             virtual int smoothing_multiplier()=0;
             void fill_send_buffer(Domain<T>& domain, const T omega, Location_t loc);
-            virtual void relaxation_kernel(Domain<T>& domain,T omega,const int_t xmin,const int_t xmax,const int_t ymin,const int_t ymax,const int_t zmin,const int_t zmax);
+            virtual void relaxation_kernel(Domain<T>& domain,T omega,const int_t xmin,const int_t xmax,const int_t ymin,const int_t ymax,const int_t zmin,const int_t zmax) = 0;
     };
 
     template <class T>
